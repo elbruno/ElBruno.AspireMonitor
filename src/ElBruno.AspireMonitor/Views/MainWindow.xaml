@@ -19,18 +19,11 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <!-- Version & Title Bar -->
-        <TextBlock Grid.Row="0"
-                   Text="{Binding AppVersionTitle}"
-                   FontSize="14"
-                   FontWeight="Bold"
-                   Foreground="#333333"
-                   Margin="0,0,0,10"/>
 
         <!-- Aspire Logo & Title Bar -->
         <Grid Grid.Row="0"
@@ -57,8 +50,19 @@
                        VerticalAlignment="Center"/>
         </Grid>
 
+        <!-- Working Folder (always visible) -->
+        <TextBlock Grid.Row="1"
+                   FontSize="11"
+                   Foreground="#555555"
+                   Margin="0,0,0,10">
+            <Run Text="📁 Working Folder: "/>
+            <Run Text="{Binding ProjectFolder, Mode=OneWay}"
+                 FontWeight="Bold"
+                 Foreground="#333333"/>
+        </TextBlock>
+
         <!-- Error Banner (visible when not connected) -->
-        <Border Grid.Row="1" 
+        <Border Grid.Row="2"
                 Background="#FFF4E5" 
                 BorderBrush="#FFB74D" 
                 BorderThickness="1" 
@@ -86,7 +90,7 @@
         </Border>
 
         <!-- Top Section: Host URL and Status -->
-        <Border Grid.Row="1" 
+        <Border Grid.Row="2"
                 BorderBrush="#CCCCCC" 
                 BorderThickness="0,0,0,1" 
                 Padding="10"
@@ -94,7 +98,6 @@
                 Visibility="{Binding IsConnected, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
@@ -166,19 +169,6 @@
                            Foreground="#666666"
                            Margin="5,5,0,0"/>
 
-                <!-- Project Folder Row -->
-                <TextBlock Grid.Row="2"
-                           Grid.Column="0"
-                           Grid.ColumnSpan="5"
-                           FontSize="10"
-                           Foreground="#666666"
-                           Margin="5,8,0,0">
-                    <Run Text="📁 Working Folder: "/>
-                    <Run Text="{Binding ProjectFolder, Mode=OneWay}"
-                         FontWeight="Bold"
-                         Foreground="#333333"/>
-                </TextBlock>
-
                 <!-- Command Status -->
                 <TextBlock Grid.Row="2"
                            Grid.Column="3"
@@ -193,7 +183,7 @@
         </Border>
 
         <!-- Middle Section: Split View (Resources + Logs) -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" MinWidth="300"/>
                 <ColumnDefinition Width="Auto"/>
@@ -381,7 +371,7 @@
         </Grid>
 
         <!-- Bottom Section: Control Buttons -->
-        <Border Grid.Row="3" 
+        <Border Grid.Row="4"
                 BorderBrush="#CCCCCC" 
                 BorderThickness="0,1,0,0" 
                 Padding="10"
@@ -406,7 +396,7 @@
         </Border>
 
         <!-- Version Footer -->
-        <TextBlock Grid.Row="4"
+        <TextBlock Grid.Row="5"
                    Text="{Binding AppVersion}"
                    FontSize="9"
                    Foreground="#999999"

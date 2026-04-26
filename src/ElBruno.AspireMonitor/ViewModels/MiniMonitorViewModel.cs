@@ -177,7 +177,7 @@ public class MiniMonitorViewModel : ViewModelBase
             // Show configured folder if set, otherwise default message
             WorkingFolder = !string.IsNullOrEmpty(_mainViewModel.ProjectFolder)
                 ? _mainViewModel.ProjectFolder
-                : "Aspire is not running";
+                : "(no working folder set)";
             StatusBackground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF5, 0xF5, 0xF5)); // Light gray
             StatusBorderColor = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xCC, 0xCC, 0xCC)); // Gray
             StatusForeground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x66, 0x66, 0x66)); // Dark gray

@@ -1032,3 +1032,160 @@ private void LogCollection_CollectionChanged(...)
 - Minimal impact on MiniMonitor performance
 
 
+
+---
+
+### 2026-04-26 — Bug Fixes: Duplicate Title & Working Folder Visibility (Session 7)
+
+**Bug Reports from Bruno:**
+1. Main details window shows duplicate "Aspire Monitor v1.0.0" titles (overlapping text)
+2. Working Folder only visible when connected to Aspire (should always show)
+3. Mini Monitor window: Working Folder not displaying
+
+**Root Cause Analysis:**
+
+1. **Duplicate Title (Bug 1):**
+   - MainWindow.xaml lines 27-33: Standalone TextBlock showing AppVersionTitle
+   - MainWindow.xaml lines 35-58: Grid with logo + AppVersionTitle
+   - Both in Grid.Row="0" → rendered on top of each other
+
+2. **Hidden Working Folder (Bug 2):**
+   - Working Folder TextBlock (lines 169-180) was inside the IsConnected-only Border
+   - Border visibility bound to `IsConnected` (lines 89-193)
+   - When Aspire not connected, entire border (including working folder) collapsed
+   - Working folder is project-level state, should persist regardless of connection
+
+3. **Mini Monitor Missing Folder (Bug 3):**
+   - MiniMonitorWindow.xaml binding correct at line 99
+   - MiniMonitorViewModel.UpdateMiniMonitorData() showing misleading "Aspire is not running" for empty folder
+   - FontSize too small (9px), Opacity too low (0.85), hard to read
+
+**Implementation Completed:**
+
+1. **Bug 1 Fix - Removed Duplicate Title** ✅
+   - Deleted standalone TextBlock at lines 27-33 (including comment)
+   - Kept Grid with logo + title (lines 35-58) — better visual design
+   - Single AppVersionTitle now renders cleanly
+
+2. **Bug 2 Fix - Always-Visible Working Folder** ✅
+   - Added new RowDefinition to MainWindow grid (now 6 rows instead of 5)
+   - Row layout now: Title(0), WorkingFolder(1), ErrorBanner/ConnectedSection(2), MainSplit(3), Buttons(4), Footer(5)
+   - Created standalone Working Folder TextBlock at Grid.Row="1" (always visible)
+   - Removed duplicate Working Folder from inside IsConnected Border (lines 169-180 deleted)
+   - Updated IsConnected Border internal grid: 3 rows → 2 rows (removed working folder row)
+   - Adjusted all subsequent Grid.Row indices: Error banner and connected border → row 2, main split → row 3, buttons → row 4, footer → row 5
+   - Style: FontSize 11, color #555555, folder emoji prefix, bold path
+
+3. **Bug 3 Fix - Mini Monitor Working Folder Enhancement** ✅
+   - MiniMonitorViewModel.cs: Changed empty folder message from "Aspire is not running" to "(no working folder set)"
+   - MiniMonitorWindow.xaml: Increased FontSize from 9 to 11
+   - MiniMonitorWindow.xaml: Removed Opacity attribute (now fully opaque, easier to read)
+   - Working folder now more visible and clearer to users
+
+**Technical Decisions Made:**
+
+1. **Working Folder as Always-Visible State:**
+   - Working folder is project-level configuration, not runtime state
+   - Should persist regardless of Aspire connection status
+   - Moved to dedicated row (Grid.Row="1") outside conditional visibility
+   - Rationale: Users need to see configured folder even when disconnected for troubleshooting
+
+2. **Layout Pattern - Conditional vs Persistent Rows:**
+   - Title bar (always visible)
+   - Working folder (always visible) ← NEW
+   - Error banner OR connected section (mutually exclusive, same row)
+   - Main content (always visible)
+   - Control buttons (always visible)
+   - Footer (always visible)
+   - Pattern: Conditional elements share same Grid.Row with inverse visibility bindings
+
+3. **Mini Monitor Readability:**
+   - Increased font size for important info (working folder)
+   - Removed opacity for better contrast
+   - Clearer empty state message distinguishes "no folder set" from "not running"
+
+**WPF Layout Patterns Learned:**
+
+1. **Duplicate Element Gotcha:**
+   - Multiple elements in same Grid.Row will render on top of each other
+   - Always verify Grid.Row assignments are unique unless intentionally overlapping (like error banner vs connected section with inverse visibility)
+   - Use Visual Studio designer preview to catch overlaps
+
+2. **Conditional Visibility Layout:**
+   - Elements with inverse visibility bindings can share Grid.Row
+   - Example: `IsConnected` and `IsConnected, ConverterParameter=Inverse` in same row
+   - Saves grid rows and provides clean toggle behavior
+
+3. **Row Definition Strategy:**
+   - Start with Auto heights for header/footer sections
+   - Use "*" (star) for main scrollable content
+   - Add rows as needed for persistent vs conditional sections
+   - Always update all Grid.Row indices when inserting new rows
+
+**Build & Test Verification:**
+
+- Build: ✅ Clean (1 unrelated warning in AspireCliService.cs)
+- Tests: ✅ 260/260 passing (no test updates needed — tests don't assert XAML row specifics)
+- Runtime: ✅ App launches successfully (PID 14160)
+- Logs: ✅ No XAML binding errors or exceptions (expected Aspire connection errors when Aspire not running)
+
+**Files Modified:**
+
+1. MainWindow.xaml:
+   - Removed duplicate title TextBlock (lines 27-33)
+   - Added new RowDefinition for working folder (Grid.RowDefinitions: 5→6)
+   - Created always-visible Working Folder TextBlock at Grid.Row="1"
+   - Removed Working Folder from IsConnected Border
+   - Updated IsConnected Border internal grid (3→2 rows)
+   - Adjusted all subsequent Grid.Row indices (+1)
+
+2. MiniMonitorWindow.xaml:
+   - Working Folder FontSize: 9 → 11
+   - Removed Opacity attribute (now fully opaque)
+
+3. MiniMonitorViewModel.cs:
+   - Updated empty folder message: "Aspire is not running" → "(no working folder set)"
+
+**Quality Metrics:**
+- Zero XAML binding errors ✅
+- All 260 unit tests passing ✅
+- Clean build with no new warnings ✅
+- App launches without crashes ✅
+
+---
+
+## Additional Learnings
+
+### WPF Layout Pattern for Always-Visible vs. Conditional Rows
+
+**Problem:** Elements inside visibility-controlled containers (e.g., `IsConnected` bound Border) disappear when condition is false, even if they represent persistent state (like configured working folder).
+
+**Solution:** Separate persistent UI elements into dedicated Grid rows outside conditional containers.
+
+**Pattern:**
+```xaml
+<Grid.RowDefinitions>
+    <RowDefinition Height="Auto"/>  <!-- Always visible: Title -->
+    <RowDefinition Height="Auto"/>  <!-- Always visible: Persistent state (working folder) -->
+    <RowDefinition Height="Auto"/>  <!-- Conditional: Error OR Connected (inverse visibility) -->
+    <RowDefinition Height="*"/>     <!-- Always visible: Main content -->
+    <RowDefinition Height="Auto"/>  <!-- Always visible: Buttons -->
+    <RowDefinition Height="Auto"/>  <!-- Always visible: Footer -->
+</Grid.RowDefinitions>
+```
+
+**Key Insights:**
+1. **Persistent State = Dedicated Row:** Configuration/project-level state should be visible regardless of connection status
+2. **Conditional Elements Share Rows:** Use inverse visibility bindings (`Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse`) for mutually exclusive elements in same row
+3. **Row Index Maintenance:** When inserting new rows, update ALL `Grid.Row` attributes in subsequent elements
+
+### Duplicate Title Gotcha
+
+**Problem:** Multiple elements with same Grid.Row render on top of each other (not side-by-side).
+
+**Root Cause:** Grid layout places elements in cells; same row+column = overlap.
+
+**Fix:** Delete redundant element (kept the better-designed one with logo).
+
+**Prevention:** Always review Grid.Row assignments; use Visual Studio XAML preview to catch overlaps early.
+

@@ -97,11 +97,10 @@
                     </StackPanel>
                     <!-- Working Folder -->
                     <TextBlock Text="{Binding WorkingFolder, StringFormat='📁 {0}'}"
-                               FontSize="9"
+                               FontSize="11"
                                Foreground="{Binding StatusForeground}"
                                TextTrimming="CharacterEllipsis"
-                               ToolTip="{Binding WorkingFolder}"
-                               Opacity="0.85"/>
+                               ToolTip="{Binding WorkingFolder}"/>
                 </StackPanel>
             </Border>
 
