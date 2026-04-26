@@ -1293,6 +1293,130 @@ private void LogCollection_CollectionChanged(...)
 
 ---
 
+### 2026-04-26 — Main Window UI Cleanup: CPU/Memory Removal + Command State Gating (Session 9)
+
+**Bug Reports from Bruno:**
+1. Resource names are not visible in main window
+2. Start button enabled when Aspire is already running
+3. Remove CPU and Memory columns entirely (always show "0.0%" — misleading)
+
+**Root Cause Analysis:**
+
+1. **Invisible Resource Names (Bug 1 + 3 Combined):**
+   - MainWindow at 800px with 2*/3* splitter → resources panel ~300px wide
+   - Grid columns: dot(Auto~12px) + Name(*) + State(100px) + CPU(80px) + Memory(80px) = ~272px fixed
+   - Name column gets only ~28px (300 - 272) → names clipped to nothing
+   - CPU/Memory columns show "0.0%" (aspire describe doesn't provide this data)
+   - **Solution:** Remove CPU and Memory columns → frees 160px for Name column
+
+2. **Start/Stop Button State (Bug 2):**
+   - Both StartAspireCommand and StopAspireCommand CanExecute check only `!_isExecutingCommand`
+   - Doesn't consider `IsConnected` state → Start enabled when already running
+   - **Solution:** Gate Start on `!IsConnected`, gate Stop on `IsConnected`
+
+**Implementation Completed:**
+
+1. **MainWindow.xaml Changes** ✅
+   - Removed CPU column header (TextBlock at line 221)
+   - Removed Memory column header (TextBlock at line 222)
+   - Removed CPU/Memory ColumnDefinitions from header Grid (lines 215-216: 5 columns → 3 columns)
+   - Removed CPU/Memory ColumnDefinitions from DataTemplate Grid (lines 244-245: 5 columns → 3 columns)
+   - Removed CPU TextBlock from DataTemplate (lines 274-279)
+   - Removed Memory TextBlock from DataTemplate (lines 282-286)
+   - Widened State column from 100px to 120px (more room available)
+   - **Result:** Grid now has only: dot(Auto), Name(*), State(120px)
+
+2. **MainViewModel.cs Changes** ✅
+   - StartAspireCommand CanExecute: `!_isExecutingCommand && !_isConnected` (disable when already running)
+   - StopAspireCommand CanExecute: `!_isExecutingCommand && _isConnected` (disable when nothing to stop)
+   - Added `CommandManager.InvalidateRequerySuggested()` to IsConnected setter
+   - **Result:** WPF CommandManager refreshes button states when IsConnected changes
+
+**Technical Decisions Made:**
+
+1. **Keep Model Properties, Remove UI:**
+   - ResourceViewModel still has CpuUsageText and MemoryUsageText properties
+   - Only removed from XAML bindings/columns
+   - Rationale: Bruno said "If we found a way to get that info, we will add it back"
+   - Future-proof: backend can populate these fields when aspire provides data
+
+2. **Column Width Strategy:**
+   - Name column now gets ~160px more space (300 - 12 - 120 = 168px for Name)
+   - State column widened to 120px (was 100px) — better use of freed space
+   - Dot indicator stays Auto (12px with margin)
+   - Result: Resource names now fully visible
+
+3. **Command State Refresh Pattern:**
+   - `CommandManager.InvalidateRequerySuggested()` is WPF's mechanism for forcing CanExecute re-evaluation
+   - Alternative: manually call `CanExecuteChanged` on each RelayCommand (more verbose)
+   - Chosen approach: centralize in IsConnected setter → all commands refresh when connection state changes
+   - Uses existing `using System.Windows.Input;` (already imported for ICommand)
+
+**WPF Command Pattern Learned:**
+
+**Problem:** RelayCommand CanExecute doesn't auto-update when dependent properties change.
+
+**Solution:** Call `CommandManager.InvalidateRequerySuggested()` when properties that affect CanExecute change.
+
+```csharp
+public bool IsConnected
+{
+    get => _isConnected;
+    set
+    {
+        if (SetProperty(ref _isConnected, value))
+        {
+            OnPropertyChanged(nameof(ConnectionStatus));
+            CommandManager.InvalidateRequerySuggested(); // ← Refreshes all commands
+        }
+    }
+}
+
+// Commands now properly react to IsConnected changes:
+StartAspireCommand = new RelayCommand(
+    _ => _ = StartAspireAsync(), 
+    _ => !_isExecutingCommand && !_isConnected  // ← Disabled when connected
+);
+StopAspireCommand = new RelayCommand(
+    _ => _ = StopAspireAsync(), 
+    _ => !_isExecutingCommand && _isConnected   // ← Disabled when not connected
+);
+```
+
+**Key Insights:**
+- WPF CommandManager has idle-time CanExecute refresh via RequerySuggested event
+- Calling InvalidateRequerySuggested() triggers immediate re-evaluation
+- Better than manually tracking command references and calling CanExecuteChanged on each
+- Pattern applies to ANY property-dependent command state
+
+**Build & Test Verification:**
+
+- Build: ✅ Clean (2 pre-existing warnings in unrelated files)
+- Tests: ✅ 260/260 passing (XAML/command changes don't affect test coverage)
+- Layout: ✅ Resource names now visible (Name column gets ~168px vs ~28px before)
+- Buttons: ✅ Start disabled when connected, Stop disabled when disconnected
+
+**Files Modified:**
+
+1. MainWindow.xaml:
+   - Header Grid: 5 columns → 3 columns
+   - DataTemplate Grid: 5 columns → 3 columns
+   - Removed CPU and Memory TextBlocks
+   - State column: 100px → 120px
+
+2. MainViewModel.cs:
+   - StartAspireCommand CanExecute: added `&& !_isConnected`
+   - StopAspireCommand CanExecute: added `&& _isConnected`
+   - IsConnected setter: added `CommandManager.InvalidateRequerySuggested()`
+
+**Quality Metrics:**
+- Zero XAML binding errors ✅
+- All 260 unit tests passing ✅
+- Clean build (2 pre-existing warnings) ✅
+- Proper command state management ✅
+
+---
+
 ## Additional Learnings
 
 ### WPF Layout Pattern for Always-Visible vs. Conditional Rows

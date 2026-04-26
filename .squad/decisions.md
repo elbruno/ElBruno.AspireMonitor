@@ -4470,3 +4470,149 @@ If adding more dynamic content to the mini window:
 **Merged By:** Scribe (GitHub Copilot)  
 **From:** .squad/decisions/luke-dashboard-token-url.md, .squad/decisions/inbox/han-mini-autoresize.md  
 **Status:** Consolidated & Ready for Commit
+
+---
+
+## Main Window UI Cleanup — CPU/Memory Column Removal & Command State Gating
+
+**Date:** 2026-04-26  
+**Status:** ✅ Implemented  
+**Author:** Han (Frontend Dev)  
+**Session:** 9  
+**Commit:** cd41186
+
+### Context
+
+Three issues in MainWindow:
+1. Resource names not visible — clipped to nothing in Name column
+2. Start button enabled when Aspire already running — incorrect command state
+3. CPU/Memory columns showing "0.0%" — misleading (aspire describe doesn't provide this data)
+
+### Root Cause
+
+**Issue 1+3: Column Width Constraint**
+- MainWindow at 800px with 2*/3* splitter → resources panel ~300px wide
+- Grid columns consumed: dot(12px) + Name(*) + State(100px) + CPU(80px) + Memory(80px) = ~272px fixed
+- Name column gets only ~28px (300 - 272) → names clipped
+- CPU/Memory always show "0.0%" because `aspire describe` doesn't provide CPU/memory metrics
+
+**Issue 2: CanExecute Logic Missing State Check**
+- Both StartAspireCommand and StopAspireCommand CanExecute checked only `!_isExecutingCommand`
+- Didn't consider `IsConnected` state → Start enabled when already connected, Stop enabled when disconnected
+
+### Decision
+
+**1. Remove CPU and Memory Columns from UI**
+
+**Rationale:**
+- Free up 160px of horizontal space for Name column
+- Remove misleading "0.0%" metrics
+- Keep model properties (CpuUsageText, MemoryUsageText) intact for future use
+
+**Bruno's Note:** "If we found a way to get that info, we will add it back"
+
+**Implementation:**
+- Removed CPU/Memory TextBlock headers from MainWindow.xaml
+- Removed CPU/Memory ColumnDefinitions from header Grid (5 → 3 columns)
+- Removed CPU/Memory ColumnDefinitions from DataTemplate Grid (5 → 3 columns)
+- Removed CPU/Memory TextBlock bindings from DataTemplate
+- Widened State column from 100px to 120px (better use of freed space)
+- **Did NOT remove** ResourceViewModel.CpuUsage or MemoryUsage properties
+
+**Grid Layout Before:**
+```
+dot(Auto~12px) | Name(*) | State(100px) | CPU(80px) | Memory(80px)
+→ Name gets ~28px at 300px panel width
+```
+
+**Grid Layout After:**
+```
+dot(Auto~12px) | Name(*) | State(120px)
+→ Name gets ~168px at 300px panel width
+```
+
+**2. Gate Start/Stop Commands on Connection State**
+
+**Rationale:**
+- Start should be disabled when Aspire is already running (IsConnected=true)
+- Stop should be disabled when Aspire is not running (IsConnected=false)
+- Improves UX by preventing invalid operations
+
+**Implementation:**
+- StartAspireCommand CanExecute: `!_isExecutingCommand && !_isConnected`
+- StopAspireCommand CanExecute: `!_isExecutingCommand && _isConnected`
+- Added `CommandManager.InvalidateRequerySuggested()` to IsConnected setter
+
+**WPF Pattern:**
+```csharp
+public bool IsConnected
+{
+    get => _isConnected;
+    set
+    {
+        if (SetProperty(ref _isConnected, value))
+        {
+            CommandManager.InvalidateRequerySuggested(); // Forces CanExecute refresh
+        }
+    }
+}
+```
+
+### Alternatives Considered
+
+**Alternative 1: Use Converter to Hide CPU/Memory Columns**  
+Rejected: Complexity. Better to remove columns entirely since data is unavailable.
+
+**Alternative 2: Show "N/A" in CPU/Memory Columns**  
+Rejected: Wastes horizontal space. User doesn't gain value from seeing "N/A" repeatedly.
+
+**Alternative 3: Manually Call CanExecuteChanged on Commands**  
+Rejected: More verbose. `CommandManager.InvalidateRequerySuggested()` is WPF's standard pattern.
+
+### Consequences
+
+**Positive:**
+- ✅ Resource names now fully visible (~168px vs ~28px before)
+- ✅ Removed misleading "0.0%" metrics
+- ✅ Start/Stop buttons now correctly reflect connection state
+- ✅ Better UX: prevents invalid operations (start when running, stop when not running)
+- ✅ Model remains intact for future CPU/memory support
+
+**Neutral:**
+- State column widened to 120px (was 100px) — uses freed space effectively
+
+**Negative:**
+- None identified
+
+### Validation
+
+- **Build:** ✅ Clean (2 pre-existing warnings in unrelated files)
+- **Tests:** ✅ 260/260 passing
+- **Layout:** ✅ Resource names visible at default 800px window width
+- **Command State:** ✅ Start disabled when connected, Stop disabled when disconnected
+
+### Related Decisions
+
+- [MainViewModel command initialization pattern](../decisions.md#command-initialization)
+- [MVVM binding patterns for WPF](../decisions.md#mvvm-patterns)
+
+### Future Work
+
+- **IF** `aspire describe` adds CPU/memory metrics in future → re-add columns to XAML, wire up bindings to existing ResourceViewModel properties
+- Consider adding tooltip on State column to show detailed resource health info
+- Consider making State column width user-adjustable (GridSplitter)
+
+### Files Changed
+
+- `src/ElBruno.AspireMonitor/Views/MainWindow.xaml` — removed CPU/Memory columns
+- `src/ElBruno.AspireMonitor/ViewModels/MainViewModel.cs` — updated command CanExecute logic
+
+---
+
+**Decision Owner:** Han (Frontend Dev)  
+**Approved By:** Bruno Capuano (user acceptance)  
+**Commit:** cd41186  
+**Merged Date:** 2026-04-26T20:11:17Z  
+**Merged By:** Scribe (GitHub Copilot)  
+**From:** .squad/decisions/inbox/han-main-window-cleanup.md  
+**Status:** Consolidated & Ready for Commit

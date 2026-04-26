@@ -1037,3 +1037,21 @@ MainViewModel.StartAspireAsync()
 - [ ] Export log contents to file (Help → Export Logs)
 - [ ] Increase max log lines for scrollable log view
 
+
+---
+
+## Cross-Agent Note: UI No Longer Surfaces CPU/Memory (2026-04-26)
+
+**From:** Han (Frontend Dev) via Scribe  
+**Subject:** Main Window cleanup complete
+
+Han removed CPU/Memory columns from MainWindow to free horizontal space for resource names. Columns now: dot | Name | State (was: dot | Name | State | CPU | Memory).
+
+Model properties (CpuUsageText, MemoryUsageText) remain in ResourceViewModel for future use — no backend changes needed now. If aspire describe API adds CPU/memory metrics later, re-enabling will be straightforward.
+
+**Impact on Backend:**
+- UI no longer displays CPU/Memory — deprioritize collection if API cost is a concern
+- All polling service, retry logic, status calculation remain unchanged
+- Future work: if metrics data becomes available, re-add to UI with minimal changes
+
+**Reference:** Commit cd41186, Decision consolidated in .squad/decisions.md
