@@ -532,4 +532,69 @@ Bruno clarified the actual mental model: Users set a working folder → app disc
 
 **Status:** ✅ COMPLETE — README repositioned around directory-based Aspire discovery workflow
 
+---
+
+### 2026-04-27 — System Tray Icons: Reality Alignment
+
+**Task:** Update README.md "System Tray Status" section to reflect real app icons instead of fictional emoji-based states.
+
+**Discovery:**
+- The app has 4 actual tray icon PNG files in `images/`:
+  - `aspire_trayicon_running.png` — Aspire running, all resources healthy (green)
+  - `aspire_trayicon_warning.png` — Aspire running, some resources with warnings (yellow)
+  - `aspire_trayicon_error.png` — Connection/polling error (red)
+  - `aspire_trayicon_norunning.png` — No Aspire instance found (gray/neutral)
+- **NO "Orange/Partial" state exists** — the previous README had fictional status that didn't match actual app
+- Previous state model (Green/Yellow/Orange/Red) was inaccurate; actual is (Green/Yellow/Red/Gray)
+
+**Work Completed:**
+
+1. ✅ **README.md System Tray Status Section** (lines 57-66)
+   - Changed heading from `## 🟢🟡🟠🔴 System Tray Status` to `## 🖼️ System Tray Status`
+   - Replaced emoji table with HTML `<img>` tags pointing to real PNG icons
+   - Each icon row: `<img src="./images/aspire_trayicon_*.png" width="24" alt="...">`
+   - Width set to 24px to keep icons reasonable size (full-size PNGs would dominate README)
+   - Descriptions clarified to match actual app behavior:
+     - Running: "all resources healthy"
+     - Warning: "one or more resources in warning state"
+     - Error: "Lost connection to Aspire or polling failed; auto-reconnect in progress"
+     - Not Running: "No Aspire instance found in the configured working folder"
+
+2. ✅ **README.md Features Table** (line 32)
+   - Changed emoji from `🟢🟡🟠🔴` to `🖼️` (image gallery)
+   - Updated description from "Green/Yellow/Orange/Red" to "Green/Yellow/Red/Gray" (accurate)
+
+3. ✅ **README.md System Tray Usage** (line 91)
+   - Changed "Icon color" terminology to "Icon status"
+   - Updated description: "green=running, yellow=warning, red=error, gray=not running"
+
+4. ✅ **Commit & Push**
+   - Message: `docs(readme): refresh System Tray Status with real app icons`
+   - Push to origin/main successful
+
+**Key Learnings:**
+
+1. **Markdown image embedding:** Use `<img width="24">` HTML tags (not `![...]` markdown) for size control. Full-size icon PNGs would otherwise dominate README layout. This pattern should be applied consistently when embedding tray icons in documentation.
+
+2. **Icon state reality vs documentation:** The documented icon states (Green/Yellow/Orange/Red) had diverged from actual app implementation (Green/Yellow/Red/Gray). Always verify icon states match actual code (check `StatusCalculator`, `PollingServiceState` enum).
+
+3. **No "Partial" state exists:** The Orange/Partial state (some resources available, others unavailable) was documentation fiction. Actual app only supports 4 states mapped to 4 PNGs. Remove this assumption from any future icon documentation.
+
+4. **Gray/Neutral for "not running":** The `aspire_trayicon_norunning.png` is distinct from error state. This is correct UX (not running ≠ error), but documentation must always distinguish these two states.
+
+**Cross-Document Impact:**
+- QUICKSTART.md may reference emoji-based icon states; should be verified/updated if found
+- Troubleshooting.md references icon meanings; verify it matches new 4-state model
+- Configuration guide doesn't embed icons; no update needed
+
+**Quality Checklist:**
+- ✅ All 4 real PNG icons embedded in README
+- ✅ Emoji states (🟢🟡🟠🔴) removed (were inaccurate)
+- ✅ "Orange/Partial" state removed (doesn't exist)
+- ✅ 24px width applied consistently
+- ✅ Icon state descriptions match actual app behavior
+- ✅ Commit message clear and focused
+
+**Status:** ✅ COMPLETE — README updated with real tray icons; emoji-based fiction removed
+
 

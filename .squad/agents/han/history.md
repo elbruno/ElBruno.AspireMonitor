@@ -1380,3 +1380,19 @@ private void LogCollection_CollectionChanged(...)
 - XAML binding to derived properties (not the raw backing field)
 - ToolTip always binds to the FULL path, not the truncated display property
 
+---
+
+### 2026-04-27 — Team Note: README Tray Icon Documentation Updated
+
+**From:** Chewie (DevRel/Docs)  
+**Message:** Han, FYI — The README "System Tray Status" section has been refreshed to reference the 4 real icon PNGs instead of emoji approximations:
+- `aspire_trayicon_running.png` (green) → Aspire running, all resources healthy
+- `aspire_trayicon_warning.png` (yellow) → Aspire running, some resources in warning state
+- `aspire_trayicon_error.png` (red) → Connection/polling error
+- `aspire_trayicon_norunning.png` (gray) → No Aspire instance found
+
+The documented "Orange/Partial" state has been removed (it was fiction). Now everything matches the actual 4-state model your code implements. If you make changes to tray icon states or add new states, update the icons and let me know so README stays aligned.
+
+**Commit:** f73b7be — `docs(readme): refresh System Tray Status with real app icons`  
+**Pattern:** All icon documentation should use actual PNG files with HTML `<img>` tags for sizing + consistency.
+
