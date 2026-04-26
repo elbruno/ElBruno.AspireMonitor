@@ -251,7 +251,7 @@ public class AspireCommandServiceTests
     }
 
     [Fact]
-    public void ParseEndpointFromAspirePs_WithQueryParams_RemovesQueryParams()
+    public void ParseEndpointFromAspirePs_WithQueryParams_PreservesQueryParams()
     {
         // Arrange
         var service = new AspireCommandService();
@@ -263,7 +263,7 @@ public class AspireCommandServiceTests
         var result = method?.Invoke(service, new[] { output }) as string;
 
         // Assert
-        result.Should().Be("http://localhost:18888", "should remove query parameters");
+        result.Should().Be("http://localhost:18888/login?t=abc123", "should preserve query parameters for login token");
     }
 
     [Fact]

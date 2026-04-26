@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace ElBruno.AspireMonitor.Services;
@@ -112,8 +113,20 @@ public class AspireCommandService : IAspireCommandService
     {
         try
         {
-            var output = await RunAspireCommandAsync("ps", logCallback);
-            return ParseEndpointFromAspirePs(output);
+            // Try JSON format first (preserves login token in URL)
+            var jsonOutput = await RunAspireCommandAsync("ps --format json", logCallback);
+            var endpointFromJson = ParseEndpointFromAspirePsJson(jsonOutput);
+            
+            if (endpointFromJson != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Detected endpoint from JSON: {endpointFromJson}");
+                return endpointFromJson;
+            }
+            
+            // Fallback to text format if JSON fails
+            System.Diagnostics.Debug.WriteLine("[AspireCommandService] JSON parsing failed, falling back to text format");
+            var textOutput = await RunAspireCommandAsync("ps", logCallback);
+            return ParseEndpointFromAspirePs(textOutput);
         }
         catch (Exception ex)
         {
@@ -242,8 +255,63 @@ public class AspireCommandService : IAspireCommandService
     }
 
     /// <summary>
-    /// Parses 'aspire ps' output to extract the dashboard endpoint URL.
+    /// Parses 'aspire ps --format json' output to extract the dashboard URL with login token.
+    /// JSON format includes the full login URL with authentication token.
+    /// </summary>
+    private string? ParseEndpointFromAspirePsJson(string output)
+    {
+        if (string.IsNullOrWhiteSpace(output))
+        {
+            System.Diagnostics.Debug.WriteLine("[AspireCommandService] ParseEndpointFromAspirePsJson: output is null or empty");
+            return null;
+        }
+
+        try
+        {
+            var jsonDocument = JsonDocument.Parse(output);
+            var root = jsonDocument.RootElement;
+
+            // JSON output is an array of running instances
+            if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 0)
+            {
+                var firstInstance = root[0];
+                
+                // Try to get dashboardUrl field (includes login token)
+                if (firstInstance.TryGetProperty("dashboardUrl", out var dashboardUrlElement))
+                {
+                    var dashboardUrl = dashboardUrlElement.GetString();
+                    if (!string.IsNullOrEmpty(dashboardUrl))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Parsed dashboardUrl from JSON: {dashboardUrl}");
+                        return dashboardUrl;
+                    }
+                }
+                
+                System.Diagnostics.Debug.WriteLine("[AspireCommandService] dashboardUrl field not found in JSON");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("[AspireCommandService] JSON root is not an array or is empty");
+            }
+
+            return null;
+        }
+        catch (JsonException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] JSON parsing error: {ex.Message}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Error parsing JSON output: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Parses 'aspire ps' text output to extract the dashboard endpoint URL.
     /// Looks for URLs in the format http://localhost:PORT or https://localhost:PORT
+    /// Preserves query parameters (e.g., /login?t=...) for authentication tokens.
     /// </summary>
     private string? ParseEndpointFromAspirePs(string output)
     {
@@ -255,9 +323,10 @@ public class AspireCommandService : IAspireCommandService
 
         try
         {
-            // Look for URLs in the format http://localhost:PORT or https://localhost:PORT
-            // Also support http://127.0.0.1:PORT
-            var urlPattern = @"https?://(?:localhost|127\.0\.0\.1):\d+";
+            // Look for URLs with optional path and query string (to preserve login tokens)
+            // Pattern matches: http://localhost:PORT or https://localhost:PORT
+            // Followed by optional path (/login) and query string (?t=token)
+            var urlPattern = @"https?://(?:localhost|127\.0\.0\.1):\d+(?:/[^\s]*)?";
             var match = Regex.Match(output, urlPattern);
             
             System.Diagnostics.Debug.WriteLine($"[AspireCommandService] ParseEndpointFromAspirePs: pattern={urlPattern}, match.Success={match.Success}");
@@ -265,11 +334,6 @@ public class AspireCommandService : IAspireCommandService
             if (match.Success)
             {
                 var endpoint = match.Value;
-                // Remove any query parameters (e.g., /login?t=...)
-                if (endpoint.Contains("?"))
-                {
-                    endpoint = endpoint.Split('?')[0];
-                }
                 System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Detected endpoint: {endpoint}");
                 return endpoint;
             }
