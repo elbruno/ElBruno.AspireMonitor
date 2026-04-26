@@ -7,7 +7,6 @@ namespace ElBruno.AspireMonitor.ViewModels;
 public class SettingsViewModel : ViewModelBase
 {
     private readonly IConfigurationService _configService;
-    private string _aspireEndpoint = "http://localhost:15888";
     private int _pollingInterval = 5000;
     private int _cpuThresholdWarning = 70;
     private int _cpuThresholdCritical = 90;
@@ -15,19 +14,12 @@ public class SettingsViewModel : ViewModelBase
     private int _memoryThresholdCritical = 90;
     private bool _startWithWindows;
     private string _projectFolder = string.Empty;
-    private string _repositoryUrl = string.Empty;
     private string _validationMessage = string.Empty;
 
     public SettingsViewModel(IConfigurationService configService)
     {
         _configService = configService;
         LoadSettings();
-    }
-
-    public string AspireEndpoint
-    {
-        get => _aspireEndpoint;
-        set => SetProperty(ref _aspireEndpoint, value);
     }
 
     public int PollingInterval
@@ -72,12 +64,6 @@ public class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _projectFolder, value);
     }
 
-    public string RepositoryUrl
-    {
-        get => _repositoryUrl;
-        set => SetProperty(ref _repositoryUrl, value);
-    }
-
     public string ValidationMessage
     {
         get => _validationMessage;
@@ -87,20 +73,6 @@ public class SettingsViewModel : ViewModelBase
     public bool Validate()
     {
         ValidationMessage = string.Empty;
-
-        // Validate URL
-        if (string.IsNullOrWhiteSpace(AspireEndpoint))
-        {
-            ValidationMessage = "Aspire Endpoint cannot be empty.";
-            return false;
-        }
-
-        if (!Uri.TryCreate(AspireEndpoint, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-        {
-            ValidationMessage = "Aspire Endpoint must be a valid HTTP or HTTPS URL.";
-            return false;
-        }
 
         // Validate polling interval
         if (PollingInterval < 1000 || PollingInterval > 60000)
@@ -156,17 +128,6 @@ public class SettingsViewModel : ViewModelBase
             }
         }
 
-        // Validate RepositoryUrl if set
-        if (!string.IsNullOrWhiteSpace(RepositoryUrl))
-        {
-            if (!Uri.TryCreate(RepositoryUrl, UriKind.Absolute, out var repoUri) ||
-                (repoUri.Scheme != Uri.UriSchemeHttp && repoUri.Scheme != Uri.UriSchemeHttps))
-            {
-                ValidationMessage = "RepositoryUrl must be a valid HTTP or HTTPS URL";
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -177,15 +138,13 @@ public class SettingsViewModel : ViewModelBase
 
         var config = new Models.Configuration
         {
-            AspireEndpoint = AspireEndpoint,
             PollingIntervalMs = PollingInterval,
             CpuThresholdWarning = CpuThresholdWarning,
             CpuThresholdCritical = CpuThresholdCritical,
             MemoryThresholdWarning = MemoryThresholdWarning,
             MemoryThresholdCritical = MemoryThresholdCritical,
             StartWithWindows = StartWithWindows,
-            ProjectFolder = ProjectFolder ?? string.Empty,
-            RepositoryUrl = RepositoryUrl ?? string.Empty
+            ProjectFolder = ProjectFolder ?? string.Empty
         };
 
         _configService.SaveConfiguration(config);
@@ -195,7 +154,6 @@ public class SettingsViewModel : ViewModelBase
     {
         var config = _configService.LoadConfiguration();
         
-        AspireEndpoint = config.AspireEndpoint;
         PollingInterval = config.PollingIntervalMs;
         CpuThresholdWarning = config.CpuThresholdWarning;
         CpuThresholdCritical = config.CpuThresholdCritical;
@@ -203,7 +161,6 @@ public class SettingsViewModel : ViewModelBase
         MemoryThresholdCritical = config.MemoryThresholdCritical;
         StartWithWindows = config.StartWithWindows;
         ProjectFolder = config.ProjectFolder ?? string.Empty;
-        RepositoryUrl = config.RepositoryUrl ?? string.Empty;
     }
 
     public void DetectAspireEndpointFromFolder()
@@ -214,7 +171,7 @@ public class SettingsViewModel : ViewModelBase
         var detectedEndpoint = Models.AppConfiguration.DetectAspireEndpoint(ProjectFolder);
         if (!string.IsNullOrWhiteSpace(detectedEndpoint))
         {
-            AspireEndpoint = detectedEndpoint;
+            // Endpoint is auto-detected and used internally, no need to store
         }
     }
 }

@@ -40,25 +40,6 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void OpenGitHub_Click(object sender, RoutedEventArgs e)
-    {
-        if (ViewModel != null && !string.IsNullOrWhiteSpace(ViewModel.RepositoryUrl))
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = ViewModel.RepositoryUrl,
-                    UseShellExecute = true
-                });
-            }
-            catch
-            {
-                System.Windows.MessageBox.Show("Could not open the URL. Please check that it is a valid GitHub repository URL.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-    }
-
     private void OK_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel?.Validate() == true)
