@@ -17,7 +17,25 @@ public partial class App : System.Windows.Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        
+
+        // Mirror Debug/Trace output to a file so logs can be tailed without a debugger
+        try
+        {
+            var logDir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ElBruno.AspireMonitor", "logs");
+            System.IO.Directory.CreateDirectory(logDir);
+            var logPath = System.IO.Path.Combine(logDir, $"app-{DateTime.Now:yyyyMMdd-HHmmss}.log");
+            var listener = new System.Diagnostics.TextWriterTraceListener(logPath) { Name = "FileLogger" };
+            System.Diagnostics.Trace.Listeners.Add(listener);
+            System.Diagnostics.Trace.AutoFlush = true;
+            System.Diagnostics.Debug.WriteLine($"[App] Log file: {logPath}");
+        }
+        catch (Exception logEx)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] Failed to set up file logging: {logEx.Message}");
+        }
+
         System.Diagnostics.Debug.WriteLine("[App] ========== APPLICATION STARTUP ==========");
         System.Diagnostics.Debug.WriteLine("[App] Initializing CLI-based Aspire Monitor...");
         
