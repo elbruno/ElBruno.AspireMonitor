@@ -74,6 +74,15 @@ public class AspirePollingService : IAspirePollingService, IDisposable
         await PollResourcesAsync();
     }
 
+    public void UpdateEndpoint(string newEndpoint)
+    {
+        if (!string.IsNullOrWhiteSpace(newEndpoint))
+        {
+            _apiClient.UpdateEndpoint(newEndpoint);
+            System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Endpoint updated to: {newEndpoint}");
+        }
+    }
+
     private async void OnPollingTimerElapsed(object? sender, ElapsedEventArgs e)
     {
         await PollResourcesAsync();

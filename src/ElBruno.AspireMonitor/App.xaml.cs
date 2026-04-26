@@ -21,10 +21,42 @@ public partial class App : System.Windows.Application
         _configService = new ConfigurationService();
         var configuration = _configService.LoadConfiguration();
         
+        // Try to auto-detect running Aspire endpoint
+        _commandService = new AspireCommandService();
+        try
+        {
+            var detectTask = _commandService.DetectAspireEndpointAsync();
+            if (detectTask.Wait(TimeSpan.FromSeconds(5)))
+            {
+                var detectedEndpoint = detectTask.Result;
+                if (!string.IsNullOrWhiteSpace(detectedEndpoint))
+                {
+                    configuration.AspireEndpoint = detectedEndpoint;
+                    _configService.SaveConfiguration(configuration);
+                    System.Diagnostics.Debug.WriteLine($"[App] Auto-detected and saved Aspire endpoint: {detectedEndpoint}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] Failed to auto-detect endpoint: {ex.Message}");
+        }
+        
+        // If detection failed, try to find Aspire by probing common ports
+        if (!IsAspireEndpointResponding(configuration.AspireEndpoint))
+        {
+            var foundEndpoint = ProbeForAspireEndpoint();
+            if (!string.IsNullOrWhiteSpace(foundEndpoint))
+            {
+                configuration.AspireEndpoint = foundEndpoint;
+                _configService.SaveConfiguration(configuration);
+                System.Diagnostics.Debug.WriteLine($"[App] Found Aspire endpoint via probing: {foundEndpoint}");
+            }
+        }
+        
         // Initialize API client and polling service
         _apiClient = new AspireApiClient(configuration);
         _pollingService = new AspirePollingService(_apiClient, configuration);
-        _commandService = new AspireCommandService();
         
         // Create MainViewModel and MainWindow with dependencies
         var viewModel = new MainViewModel(_pollingService, _configService, _commandService);
@@ -37,6 +69,52 @@ public partial class App : System.Windows.Application
         // Only the system tray icon should be visible
         MainWindow.Visibility = Visibility.Hidden;
         MainWindow.ShowInTaskbar = false;
+    }
+
+    private bool IsAspireEndpointResponding(string endpoint)
+    {
+        try
+        {
+            var handler = new System.Net.Http.HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+            
+            using (var client = new System.Net.Http.HttpClient(handler) { Timeout = TimeSpan.FromSeconds(2) })
+            {
+                var response = client.GetAsync($"{endpoint}/api/health").Result;
+                return response.IsSuccessStatusCode;
+            }
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private string? ProbeForAspireEndpoint()
+    {
+        // Common Aspire dashboard ports (typically in range 17000-18000)
+        var commonPorts = new[] { 17195, 17196, 17197, 17000, 17500, 18000, 18888 };
+        
+        foreach (var port in commonPorts)
+        {
+            // Try HTTPS first (Aspire dashboard uses HTTPS)
+            var endpoint = $"https://localhost:{port}";
+            if (IsAspireEndpointResponding(endpoint))
+            {
+                System.Diagnostics.Debug.WriteLine($"[App] Found Aspire endpoint: {endpoint}");
+                return endpoint;
+            }
+            
+            // Fallback to HTTP
+            endpoint = $"http://localhost:{port}";
+            if (IsAspireEndpointResponding(endpoint))
+            {
+                System.Diagnostics.Debug.WriteLine($"[App] Found Aspire endpoint: {endpoint}");
+                return endpoint;
+            }
+        }
+        
+        return null;
     }
 
     protected override void OnExit(ExitEventArgs e)

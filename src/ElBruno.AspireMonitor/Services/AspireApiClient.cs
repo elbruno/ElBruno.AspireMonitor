@@ -164,6 +164,15 @@ public class AspireApiClient : IDisposable
         }
     }
 
+    public void UpdateEndpoint(string newEndpoint)
+    {
+        if (!string.IsNullOrWhiteSpace(newEndpoint))
+        {
+            _httpClient.BaseAddress = new Uri(newEndpoint);
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Endpoint updated to: {newEndpoint}");
+        }
+    }
+
     public void Dispose()
     {
         if (!_disposed)

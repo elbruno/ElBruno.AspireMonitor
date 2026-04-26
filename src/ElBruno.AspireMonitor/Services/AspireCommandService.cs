@@ -248,22 +248,34 @@ public class AspireCommandService : IAspireCommandService
     private string? ParseEndpointFromAspirePs(string output)
     {
         if (string.IsNullOrWhiteSpace(output))
+        {
+            System.Diagnostics.Debug.WriteLine("[AspireCommandService] ParseEndpointFromAspirePs: output is null or empty");
             return null;
+        }
 
         try
         {
             // Look for URLs in the format http://localhost:PORT or https://localhost:PORT
-            var urlPattern = @"https?://localhost:\d+";
+            // Also support http://127.0.0.1:PORT
+            var urlPattern = @"https?://(?:localhost|127\.0\.0\.1):\d+";
             var match = Regex.Match(output, urlPattern);
+            
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] ParseEndpointFromAspirePs: pattern={urlPattern}, match.Success={match.Success}");
             
             if (match.Success)
             {
                 var endpoint = match.Value;
+                // Remove any query parameters (e.g., /login?t=...)
+                if (endpoint.Contains("?"))
+                {
+                    endpoint = endpoint.Split('?')[0];
+                }
                 System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Detected endpoint: {endpoint}");
                 return endpoint;
             }
 
             System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Could not parse endpoint from aspire ps output");
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Output preview: {(output.Length > 200 ? output.Substring(0, 200) : output)}");
             return null;
         }
         catch (Exception ex)

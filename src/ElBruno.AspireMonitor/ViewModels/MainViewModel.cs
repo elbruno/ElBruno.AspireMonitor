@@ -301,6 +301,13 @@ public class MainViewModel : ViewModelBase
                 {
                     // Update the API client endpoint
                     HostUrl = endpoint;
+                    
+                    // CRITICAL: Update the polling service's API client endpoint before refreshing
+                    if (_pollingService is AspirePollingService pollingService)
+                    {
+                        pollingService.UpdateEndpoint(endpoint);
+                    }
+                    
                     CommandStatus = "✅ Aspire started successfully";
                     System.Diagnostics.Debug.WriteLine($"[MainViewModel] Aspire started with endpoint: {endpoint}");
                     

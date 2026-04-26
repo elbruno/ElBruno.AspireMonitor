@@ -91,7 +91,7 @@ public class ConfigurationService : IConfigurationService
             if (!File.Exists(_configFilePath))
             {
                 var defaultConfig = new Configuration();
-                SaveConfigurationToFile();
+                SaveConfigurationToFile(defaultConfig);
                 return defaultConfig;
             }
 
@@ -126,11 +126,19 @@ public class ConfigurationService : IConfigurationService
 
     private void SaveConfigurationToFile()
     {
+        SaveConfigurationToFile(_configuration);
+    }
+
+    private void SaveConfigurationToFile(Configuration? config)
+    {
+        if (config == null)
+            return;
+
         var options = new JsonSerializerOptions
         {
             WriteIndented = true
         };
-        var json = JsonSerializer.Serialize(_configuration, options);
+        var json = JsonSerializer.Serialize(config, options);
         File.WriteAllText(_configFilePath, json);
     }
 
