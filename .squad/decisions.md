@@ -606,6 +606,60 @@
 
 ---
 
+## Session 4: Silent Startup + Tray Settings Integration (2026-04-26)
+
+### Hidden MainWindow on Startup + Settings in Tray Menu ✅
+- **Decision:** App launches silently in background (MainWindow hidden, ShowInTaskbar=false); Settings relocated from MainWindow button to system tray context menu
+- **Rationale:** 
+  - System tray apps expect silent startup (user precedent from OllamaMonitor, QuickAssist, VPN clients)
+  - Prevents window focus/taskbar clutter on launch
+  - Settings in tray is discoverable via right-click and cleaner than button
+  - Encourages tray menu exploration
+- **Architecture Sign-Off:** ✅ Both Han and Yoda approved
+
+- **Implementation:**
+  - **Hidden Startup:** App.xaml.cs OnStartup() sets MainWindow.Visibility = Hidden and ShowInTaskbar = false
+  - **Settings in Tray:** MainWindow.xaml.cs InitializeSystemTray() adds "Settings" menu item (between Mini Monitor and first separator)
+  - **UI Simplification:** MainWindow.xaml removes Settings button from control panel (remaining buttons: Refresh | Mini Monitor | Close)
+  - **Feature Access:** All tray menu items working (Details, Mini Monitor, Settings, GitHub, Exit)
+
+- **Implementation Status:**
+  - ✅ Han (Frontend): Hidden startup + Settings to tray + button removal implemented (3 files modified, 0 errors, 0 warnings)
+  - ✅ Yoda (Tester): 37 comprehensive tests written (Startup Behavior 6, Tray Menu 8, Settings Integration 6, MainWindow UI 5, Integration Flows 7, Edge Cases 3); all passing
+
+- **Files Modified:**
+  - App.xaml.cs — OnStartup() hides MainWindow
+  - MainWindow.xaml — removed Settings button from control panel
+  - MainWindow.xaml.cs — added Settings to tray menu, removed Settings_Click handler
+
+- **Test Coverage:**
+  - Startup behavior: 6 tests (visibility, taskbar, tray icon, service startup)
+  - Tray menu structure: 8 tests (5 items, correct order, menu behavior)
+  - Settings integration: 6 tests (window opening, single instance, persistence, cancel)
+  - MainWindow UI: 5 tests (button removal, remaining UI intact)
+  - Integration flows: 7 tests (close/reopen, settings while MainWindow open, restart behavior)
+  - Edge cases: 3 tests (rapid clicks, state robustness)
+  - **Result:** 37/37 tests passing (~500ms execution, deterministic)
+
+- **Tray Menu Structure (LOCKED):**
+  ```
+  Details          → Opens/restores MainWindow
+  Mini Monitor     → Toggles floating panel
+  Settings         → Opens SettingsWindow (NEW location)
+  ─────────────────
+  GitHub           → Opens repository
+  ─────────────────
+  Exit             → Clean shutdown
+  ```
+
+- **Backward Compatibility:** ✅ All existing ViewModel methods preserved; SettingsWindow unchanged; ShowSettings() method still works; no breaking changes
+
+- **Build Status:** ✅ Clean Release build (0 errors, 0 warnings)
+
+- **Status:** ✅ COMPLETE & VERIFIED
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus (documented here)

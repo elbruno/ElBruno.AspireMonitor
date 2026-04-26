@@ -455,4 +455,146 @@
 - Integration tests verify save/load roundtrip
 - All tests passing ✅
 
+---
+
+### 2026-04-26 — UI/UX Enhancements: Hidden Startup & Tray Settings (Session 6)
+
+**Feature Scope:**
+- Hide MainWindow on app startup (only system tray icon visible)
+- Move Settings from MainWindow button to system tray context menu
+- App runs silently in background until user clicks "Details"
+
+**Implementation Completed:**
+
+1. **App.xaml.cs - Startup Behavior** ✅
+   - Modified OnStartup() to hide MainWindow on application launch
+   - Set Visibility to Hidden and ShowInTaskbar to false
+   - App runs in background with only system tray icon active
+   - When user clicks "Details" from tray, MainWindow appears and becomes visible
+
+2. **MainWindow.xaml - Removed Settings Button** ✅
+   - Removed Settings button from control panel (was between "Mini Monitor" and "Close")
+   - Settings now only accessible via tray menu
+   - Control buttons now: Refresh | Mini Monitor | Close
+   - Simplifies UI and encourages tray interaction
+
+3. **MainWindow.xaml.cs - Tray Menu Enhancement** ✅
+   - Added "Settings" menu item to system tray context menu
+   - Position: Between "Mini Monitor" and first separator
+   - Calls existing ShowSettings() method
+   - New tray menu structure:
+     * Details → Opens/restores main window
+     * Mini Monitor → Toggles floating monitor panel
+     * Settings → Opens settings dialog (via tray)
+     * (separator)
+     * GitHub → Opens repository in browser
+     * (separator)
+     * Exit → Clean shutdown
+
+4. **Code Cleanup** ✅
+   - Removed Settings_Click event handler (was button click handler in MainWindow.xaml.cs)
+   - ShowSettings() method remains for tray menu integration
+   - All event wiring updated and consistent
+
+5. **Build Verification** ✅
+   - Project builds successfully: 0 errors, 0 warnings
+   - All XAML changes valid and compiled
+   - Code-behind updates correct and complete
+
+**Technical Decisions Made:**
+
+1. **Silent Background Launch:**
+   - MainWindow hidden from start, not minimized
+   - Distinguishes from minimize behavior (can't see window in taskbar)
+   - Users expect system tray apps to launch silently
+   - Prevents accidental window focus on startup
+
+2. **Settings in Tray Only:**
+   - Removes UI clutter from MainWindow (one less button)
+   - Encourages tray menu exploration
+   - Consistent with typical system tray app patterns
+   - Settings still easily accessible via tray right-click
+
+**XAML/MVVM Patterns Reinforced:**
+
+1. **Window Lifecycle:**
+   - OnStartup() controls initial visibility (not XAML)
+   - ShowWindow() method already existed, now primary entry point
+   - Window remains in memory but hidden until needed
+
+2. **Context Menu Structure:**
+   - Menu mirrors primary features: Details (show window) + Monitor (mini) + Settings (config)
+   - Separators group related functions (utility) vs (exit)
+   - All handlers use existing ViewModel methods
+
+**Quality Assurance:**
+
+- Build: 0 errors, 0 warnings ✅
+- MainWindow.xaml: Settings button removed, control panel simplified ✅
+- MainWindow.xaml.cs: Settings menu item added to tray, Settings_Click removed ✅
+- App.xaml.cs: OnStartup() hides window correctly ✅
+- Verified all event handlers still intact ✅
+- No orphaned code or dangling references ✅
+
+**Integration Points:**
+
+- App startup behavior: Silent background ✅
+- Tray menu: Full feature access without MainWindow ✅
+- MainWindow: Only opened on user action (Details click or double-click tray) ✅
+- Settings: Accessible from tray, saves config properly ✅
+- Next phase: End-to-end testing with real Aspire data
+
+---
+
+## Cross-Agent Context (Session 4)
+
+### Yoda's Parallel Work (Tester)
+
+**What Yoda Built:**
+- Wrote 37 comprehensive tests for hidden startup + tray settings feature
+- Test categories: Startup Behavior (6), Tray Menu Structure (8), Settings Integration (6), MainWindow UI (5), Integration Flows (7), Edge Cases (3)
+- All tests written in TDD style (before Han's implementation)
+- Test file: `AppStartupTests.cs` in Views subfolder
+- All 37 tests passing (100% pass rate, ~500ms execution, deterministic)
+
+**Execution Pattern:**
+- Yoda creates high-fidelity behavioral mocks simulating MainWindow + Tray behavior
+- Han implements real features against these test contracts
+- Tests act as executable specification + validation
+
+**Key Test Insights (For Han's Future Features):**
+1. Startup sequence must coordinate: Hide MainWindow → Show Tray → Start Services
+2. Single instance pattern prevents duplicate Settings windows
+3. Tray menu order is fixed: Details → Mini Monitor → Settings → separator → GitHub → separator → Exit
+4. Settings changes must trigger polling service restart (test validates)
+5. Cancel button must discard unsaved changes (test validates)
+
+**Cross-Phase Learning:**
+- Mock infrastructure proven effective across Sessions 5-6
+- High-fidelity mocks accurately document WPF behavior for implementers
+- Fast feedback loop (500ms) enables rapid iteration
+- Tests serve as living documentation
+
+---
+
+### Coordination Pattern Established
+
+**Workflow:**
+1. Yoda designs test suite (before feature exists)
+2. Han implements feature against tests
+3. Both report to session log + decisions.md
+4. Orchestration logs document individual contributions
+5. Cross-agent context captures dependencies + learnings
+
+**Next Session Application:**
+- For any new feature, Yoda writes tests first
+- Han implements against tests
+- Coordination ensures parallel work with no blocking
+
+**Backward Compatibility Check:**
+- All 135+ existing tests still passing
+- New 37 tests orthogonal (no test suite conflicts)
+- No regression on existing features
+- Ready for Phase 4-5 integration testing
+
 
