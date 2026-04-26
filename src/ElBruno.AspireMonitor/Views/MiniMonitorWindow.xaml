@@ -6,7 +6,8 @@
         mc:Ignorable="d"
         Title="Aspire Monitor"
         Width="520"
-        Height="200"
+        MinHeight="180"
+        SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -101,6 +102,17 @@
                                Foreground="{Binding StatusForeground}"
                                TextTrimming="CharacterEllipsis"
                                ToolTip="{Binding WorkingFolder}"/>
+                    <!-- Dashboard URL (only when running) -->
+                    <TextBlock FontSize="11"
+                               Margin="0,3,0,0"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding DashboardUrl}"
+                               Visibility="{Binding HasDashboard, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Run Text="🔗 " Foreground="{Binding StatusForeground}"/><Hyperlink NavigateUri="{Binding DashboardUrl}"
+                                                                                          RequestNavigate="DashboardLink_RequestNavigate"
+                                                                                          Foreground="#1565C0"
+                                                                                          TextDecorations="None"><Run Text="{Binding DashboardUrl, Mode=OneWay}"/></Hyperlink>
+                    </TextBlock>
                 </StackPanel>
             </Border>
 
