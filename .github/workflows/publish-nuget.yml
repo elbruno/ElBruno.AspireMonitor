@@ -1,0 +1,58 @@
+name: Publish to NuGet
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+          
+      - name: Restore dependencies
+        run: |
+          dotnet restore src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj
+          dotnet restore src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj
+        
+      - name: Build
+        run: |
+          dotnet build src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj --configuration Release --no-restore
+          dotnet build src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj --configuration Release --no-restore
+        
+      - name: Run tests
+        run: dotnet test src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj --configuration Release --no-build --verbosity normal
+        
+      - name: Pack NuGet package
+        shell: pwsh
+        run: |
+          $version = "${{ github.event.release.tag_name }}" -replace '^v', ''
+          if ([string]::IsNullOrEmpty($version)) {
+            $version = "${{ github.event.inputs.version }}"
+          }
+          dotnet pack src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj --configuration Release --output ./packages --no-build
+        
+      - name: Publish to NuGet
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem ./packages/*.nupkg
+          foreach ($package in $packages) {
+            Write-Host "Publishing $($package.Name) to NuGet..."
+            dotnet nuget push $package.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          }
