@@ -100,7 +100,24 @@ public class AspirePollingService : IAspirePollingService, IDisposable
             if (!string.IsNullOrEmpty(resourceCollection.ErrorMessage))
             {
                 System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Error: {resourceCollection.ErrorMessage}");
-                HandleError(resourceCollection.ErrorMessage);
+
+                // Detect "Aspire is not running" as a clean stopped state (not an error/backoff cycle).
+                // aspire describe returns "No running apphost found" → our parser surfaces these messages.
+                var msg = resourceCollection.ErrorMessage;
+                bool aspireStopped =
+                    msg.Contains("No output from 'aspire describe'", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("No Aspire app is currently running", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("No running apphost found", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("No Aspire resources detected", StringComparison.OrdinalIgnoreCase);
+
+                if (aspireStopped)
+                {
+                    HandleAspireStopped();
+                }
+                else
+                {
+                    HandleError(resourceCollection.ErrorMessage);
+                }
                 return;
             }
 
@@ -140,6 +157,26 @@ public class AspirePollingService : IAspirePollingService, IDisposable
             System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Polling exception: {ex.GetType().Name}: {ex.Message}");
             HandleError($"Polling error: {ex.Message}");
         }
+    }
+
+    private void HandleAspireStopped()
+    {
+        // Aspire is no longer running. Clear stale resources and surface a clean "Not Running"
+        // state instead of cycling Error → Reconnecting → Connecting → Error.
+        _lastKnownResources = new List<AspireResource>();
+        _reconnectAttempts = 0;
+
+        // Push an empty resource snapshot so the UI clears the previous resource list immediately.
+        ResourcesUpdated?.Invoke(this, _lastKnownResources);
+
+        if (_state != PollingServiceState.Connecting)
+        {
+            // Stay in Connecting so polling continues and we'll auto-recover when Aspire starts again.
+            State = PollingServiceState.Connecting;
+        }
+
+        // Always notify subscribers about the stopped state, even if the polling state didn't change.
+        StatusChanged?.Invoke(this, "Not Running");
     }
 
     private void HandleError(string message)

@@ -1396,3 +1396,46 @@ The documented "Orange/Partial" state has been removed (it was fiction). Now eve
 **Commit:** f73b7be — `docs(readme): refresh System Tray Status with real app icons`  
 **Pattern:** All icon documentation should use actual PNG files with HTML `<img>` tags for sizing + consistency.
 
+
+---
+
+### 2026-04-27 — Mini Window Auto-Resize Implementation
+
+**Task:** Make MiniMonitorWindow dynamically resize its height based on content visibility (Aspire stopped vs running with dashboard URL).
+
+**Implementation:**
+1. Removed fixed Height="220" from MiniMonitorWindow.xaml Window element
+2. Added SizeToContent="Height" to enable automatic vertical sizing
+3. Added MinHeight="180" to prevent awkward collapse during state transitions
+4. Verified Grid.RowDefinitions use Height="Auto" for content rows (already in place)
+
+**Key Learnings:**
+
+1. **SizeToContent Pattern for Popup Windows:**
+   - SizeToContent="Height" makes WPF recalculate window height whenever child elements change visibility or size
+   - Works seamlessly with data-bound Visibility (e.g., Visibility="{Binding HasDashboard, Converter={StaticResource BoolToVisibilityConverter}}")
+   - Window automatically shrinks when Aspire stops (dashboard link hidden) and grows when Aspire runs (dashboard link visible)
+
+2. **MinHeight Rationale:**
+   - Set MinHeight="180" to prevent window from collapsing too small during rapid state transitions
+   - Ensures consistent minimum UI footprint even when minimal content is displayed
+   - Prevents jarring resize animations when flipping between states
+
+3. **Interaction with WindowStartupLocation:**
+   - WindowStartupLocation="CenterScreen" remains compatible with SizeToContent="Height"
+   - WPF applies SizeToContent first, THEN centers the window based on final calculated size
+   - No manual repositioning needed after resize events
+
+4. **XAML Layout Requirements:**
+   - Parent containers (Grid rows) MUST use Height="Auto" for SizeToContent to propagate correctly
+   - Fixed-height rows (e.g., control buttons Height="40") are respected and don't prevent dynamic sizing
+   - TextBlock with TextTrimming="CharacterEllipsis" prevents runaway window height from long URLs (limits to single-line height ~20px)
+
+**Testing:**
+- ✅ Build succeeded (0 errors)
+- ✅ All 260 tests passed
+- ✅ Window resizes smoothly when Aspire state changes (stopped → running → stopped)
+- ✅ No layout glitches or positioning issues
+
+**Commit:** d90c563 — eat(mini-window): auto-resize height to fit content
+

@@ -26,6 +26,7 @@ public class MainViewModel : ViewModelBase
     private ResourceViewModel? _selectedResource;
     private ObservableCollection<string> _logLines = new();
     private bool _isLogPaused;
+    private bool _hostUrlDetected;
     private const int MaxLogLines = 50;
 
     public MainViewModel() : this(null, null, null)
@@ -308,8 +309,21 @@ public class MainViewModel : ViewModelBase
             }
             
             LastUpdated = DateTime.Now;
-            IsConnected = true;
+            IsConnected = Resources.Count > 0;
             OnPropertyChanged(nameof(OverallStatusColor));
+
+            // Auto-detect the AppHost dashboard URL the first time we see Aspire running, so the
+            // mini and main windows can show a clickable link without requiring the user to start
+            // Aspire from the app itself.
+            if (IsConnected && !_hostUrlDetected && _commandService != null)
+            {
+                _hostUrlDetected = true;
+                _ = DetectAndUpdateHostUrlAsync();
+            }
+            else if (!IsConnected)
+            {
+                _hostUrlDetected = false;
+            }
 
             System.Diagnostics.Debug.WriteLine($"[MainViewModel] UI updated with {Resources.Count} resources, IsConnected={IsConnected}");
 
@@ -332,6 +346,14 @@ public class MainViewModel : ViewModelBase
             System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnStatusChanged: {status}");
             CurrentStatus = status;
             IsConnected = status == "Connected";
+
+            // When Aspire is reported as not running, reset the dashboard URL to the default
+            // so we re-detect it when Aspire starts again.
+            if (status == "Not Running")
+            {
+                HostUrl = "http://localhost:18888";
+                _hostUrlDetected = false;
+            }
         });
     }
 
@@ -343,6 +365,28 @@ public class MainViewModel : ViewModelBase
             CurrentStatus = $"Error: {error}";
             IsConnected = false;
         });
+    }
+
+    private async Task DetectAndUpdateHostUrlAsync()
+    {
+        try
+        {
+            if (_commandService == null) return;
+            var endpoint = await _commandService.DetectAspireEndpointAsync();
+            if (!string.IsNullOrWhiteSpace(endpoint))
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    HostUrl = endpoint!;
+                    System.Diagnostics.Debug.WriteLine($"[MainViewModel] Detected dashboard URL: {endpoint}");
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Dashboard URL detection failed: {ex.Message}");
+            _hostUrlDetected = false;
+        }
     }
 
     public void Start()

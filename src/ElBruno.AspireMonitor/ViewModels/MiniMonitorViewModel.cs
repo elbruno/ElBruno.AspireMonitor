@@ -159,7 +159,9 @@ public class MiniMonitorViewModel : ViewModelBase
 
         if (e.PropertyName == nameof(MainViewModel.Resources) ||
             e.PropertyName == nameof(MainViewModel.OverallStatusColor) ||
-            e.PropertyName == nameof(MainViewModel.ProjectFolder))
+            e.PropertyName == nameof(MainViewModel.ProjectFolder) ||
+            e.PropertyName == nameof(MainViewModel.IsConnected) ||
+            e.PropertyName == nameof(MainViewModel.HostUrl))
         {
             System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] Triggering UI update due to {e.PropertyName} change");
             UpdateMiniMonitorData();
@@ -175,10 +177,12 @@ public class MiniMonitorViewModel : ViewModelBase
         System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Resources: {_mainViewModel.Resources.Count}");
         System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   ProjectFolder: {_mainViewModel.ProjectFolder}");
 
-        // Update resource count and status
+        // Update resource count and status. Treat "not connected" as "not running" so the UI
+        // recovers immediately when Aspire stops, even if the resources collection wasn't cleared yet.
         int count = _mainViewModel.Resources.Count;
-        
-        if (count == 0)
+        bool aspireRunning = _mainViewModel.IsConnected && count > 0;
+
+        if (!aspireRunning)
         {
             // Aspire not running
             ResourceCount = "No Aspire Running";
@@ -259,7 +263,17 @@ public class MiniMonitorViewModel : ViewModelBase
         OnPropertyChanged(nameof(StatusLine));
         OnPropertyChanged(nameof(CanStartAspire));
         OnPropertyChanged(nameof(CanStopAspire));
+        OnPropertyChanged(nameof(DashboardUrl));
+        OnPropertyChanged(nameof(HasDashboard));
         
         System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] ResourceCount: {ResourceCount}, StatusEmoji: {StatusEmoji}");
     }
+
+    public string DashboardUrl => _mainViewModel?.HostUrl ?? string.Empty;
+
+    public bool HasDashboard =>
+        _mainViewModel != null
+        && _mainViewModel.IsConnected
+        && _mainViewModel.Resources.Count > 0
+        && !string.IsNullOrWhiteSpace(_mainViewModel.HostUrl);
 }
