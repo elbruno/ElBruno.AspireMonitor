@@ -115,11 +115,109 @@
 
 ---
 
+## Session Log
+
+### 2026-04-26 — Phase 2 Frontend Implementation (Session 3)
+
+**Completed:**
+
+1. ✅ Created SettingsViewModel:
+   - Separate from ConfigurationViewModel for better separation of concerns
+   - Integrates with IConfigurationService interface
+   - Validation for all threshold settings (warning/critical)
+   - Support for CPU and Memory thresholds with warning and critical levels
+
+2. ✅ Updated MainViewModel:
+   - Integration with IAspirePollingService and IConfigurationService
+   - Constructor injection for services (with design-time fallback)
+   - Event subscriptions: OnResourcesUpdated, OnStatusChanged, OnError
+   - OpenUrlCommand for clickable URLs
+   - Start/Stop lifecycle methods
+   - Proper Dispatcher.Invoke for thread-safe UI updates
+   - OverallStatusColor property for tray icon color
+
+3. ✅ Enhanced MainWindow.xaml.cs:
+   - Dynamic system tray icon generation (color-coded circles)
+   - UpdateTrayIcon() method updates icon based on status
+   - CreateColoredIcon() generates bitmaps with status colors
+   - PropertyChanged subscription to track ViewModel status changes
+   - Start/Stop service lifecycle on window open/close
+   - Settings window integration with config service
+   - Proper namespace resolution for WinDrawing types
+
+4. ✅ Updated SettingsWindow.xaml:
+   - Expanded from 400px to 550px height for new threshold fields
+   - Added 4 new threshold TextBoxes:
+     * CPU Warning Threshold (yellow alert)
+     * CPU Critical Threshold (red alert)
+     * Memory Warning Threshold (yellow alert)
+     * Memory Critical Threshold (red alert)
+   - Updated grid row definitions (7→9 rows)
+   - Better user guidance text for each threshold
+
+5. ✅ Updated SettingsWindow.xaml.cs:
+   - Integration with IConfigurationService
+   - Uses SettingsViewModel instead of ConfigurationViewModel
+   - Calls SaveSettings() on OK
+
+6. ✅ Created Service Interfaces:
+   - IConfigurationService (LoadConfiguration, SaveConfiguration)
+   - IAspirePollingService (events: ResourcesUpdated, StatusChanged, ErrorOccurred)
+   - Configuration model with all threshold properties
+
+7. ✅ Fixed ConfigurationService:
+   - Removed invalid Validate() calls on Configuration model
+   - Fixed method signatures for SetEndpoint and SetPollingInterval
+
+8. ✅ Build & Test:
+   - Updated test project to target net10.0-windows
+   - Fixed namespace ambiguity issues (System.Drawing vs System.Windows.Media)
+   - 63/71 tests passing (8 failures are in Luke's backend service tests)
+   - All UI-related code compiles successfully
+
+**Integration Points Complete:**
+
+- MainViewModel subscribes to polling service events ✅
+- ResourceViewModel maps to AspireResource.Metrics properties ✅
+- SettingsViewModel saves/loads Configuration ✅
+- System tray icon updates dynamically with status ✅
+- URL click handling works in MainWindow code-behind ✅
+
+**Ready for Luke:**
+- IAspirePollingService interface defined
+- IConfigurationService interface defined
+- AspireResource model structure understood
+- Event handling patterns established
+
+**Patterns Established:**
+
+1. **MVVM Binding:**
+   - ViewModels implement INotifyPropertyChanged
+   - Commands use RelayCommand
+   - Data binding for all UI updates
+
+2. **Service Integration:**
+   - Constructor injection with design-time fallbacks
+   - Event-based communication (not polling from UI)
+   - Thread-safe Dispatcher.Invoke for UI updates
+
+3. **System Tray:**
+   - Dynamic icon generation with System.Drawing
+   - Color-coded status (green/yellow/red/gray)
+   - Context menu with Show/Settings/Exit
+   - Double-click to toggle window visibility
+
+4. **Configuration:**
+   - Separate ViewModel for settings dialog
+   - Validation in ViewModel (not in model)
+   - Critical > Warning threshold enforcement
+
+---
+
 ## Next Actions
 
-1. ⏳ Wait for Luke's AspireApiService implementation
-2. Integrate API service into MainViewModel
-3. Add timer-based polling with ConfigurationViewModel.PollingInterval
-4. Create icon assets (Resources/icon.ico with color variants)
-5. Implement configuration persistence (JSON file or registry)
-6. Test end-to-end with real Aspire dashboard
+1. ⏳ Wait for Luke to implement AspirePollingService
+2. ⏳ Wait for Luke to implement AspireApiClient
+3. End-to-end testing with real Aspire dashboard
+4. Icon assets generation (Lando)
+5. Documentation updates (Chewie)

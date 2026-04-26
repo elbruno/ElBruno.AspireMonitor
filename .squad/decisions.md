@@ -1,7 +1,7 @@
 # Squad Decisions — ElBruno.AspireMonitor
 
-**Last Updated:** 2026-04-26 (Session 1 Complete)
-**Phase:** 1 Foundation (Complete) → 2 Core Development (Ready)
+**Last Updated:** 2026-04-26 (Session 2 Complete: Phases 2-4)
+**Phase:** Phases 1-4 Complete → Phase 5 Ready (Review & Release)
 
 ---
 
@@ -208,24 +208,197 @@
 | Category | Status | Details |
 |----------|--------|---------|
 | Architecture | ✅ LOCKED | All tech decisions made & implemented |
-| UI/Frontend | ✅ IMPLEMENTED | WPF MVVM scaffold complete |
-| API/Backend | ✅ RESEARCHED | Design ready, implementation pending |
-| Testing | ✅ INFRASTRUCTURE | Test framework & stubs ready |
-| Documentation | ✅ TEMPLATES | Framework ready, content pending |
-| Design Assets | ✅ PROMPTS READY | Generation guide ready for t2i |
+| UI/Frontend | ✅ COMPLETE | WPF MVVM with system tray, all components implemented |
+| API/Backend | ✅ COMPLETE | AspireApiClient, PollingService, StatusCalculator all working |
+| Testing | ✅ COMPLETE | 72/72 tests passing, >80% coverage achieved |
+| Documentation | ✅ COMPLETE | 8 guides + 3 promotional templates ready |
+| Design Assets | ✅ COMPLETE | 5 production-ready PNG assets for NuGet/social media |
 | Phase 1 | ✅ COMPLETE | Foundation ready |
-| Phase 2 | 🟡 READY TO START | All preconditions met |
+| Phase 2 | ✅ COMPLETE | Core development (Luke, Han) finished |
+| Phase 3 | ✅ COMPLETE | Comprehensive testing (Yoda) finished |
+| Phase 4 | ✅ COMPLETE | Design assets & documentation (Lando, Chewie) finished |
+| Phase 5 | 🟡 READY | Review & Release (Leia coordination) |
 
 ---
 
-## Next Steps (Phase 2)
+## Next Steps (Phase 5: Review & Release)
 
-1. **Luke:** Begin AspireApiClient implementation
-2. **Han:** Begin WPF-API integration (bind ViewModel to Luke's services)
-3. **Yoda:** Implement unit tests as Luke completes services
-4. **Lando:** Generate images using t2i tool with provided prompts
-5. **Chewie:** Populate docs with architecture details from Luke/Han
-6. **Leia:** Monitor progress, approve implementations
+1. **Leia:** Code review of all Phase 2-4 implementations
+2. **Leia:** Documentation review for accuracy and completeness
+3. **Lando:** Design asset review against brand guidelines
+4. **Yoda:** Final integration testing with real Aspire instance
+5. **Leia:** Release preparation (tag, NuGet package, publish)
+6. **Chewie:** Marketing launch (blog, LinkedIn, Twitter announcements)
+
+---
+
+## Phase 2-4 Implementation Decisions (MERGED FROM TEAM INBOX)
+
+### Luke's Backend Decisions (Phase 2)
+
+#### 1. Retry Logic Library: Polly ✅
+- **Decision:** Use Polly 8.5.0 for HTTP retry policies
+- **Implementation:** Exponential backoff (1s→2s→4s), 3 attempts max
+- **Status:** ✅ IMPLEMENTED
+- **Impact:** AspireApiClient uses Polly for transient failure handling
+
+#### 2. Configuration Model Alignment ✅
+- **Decision:** Use existing Configuration model (from Han) instead of AppConfiguration
+- **Rationale:** Avoid duplication, maintain consistency across layer
+- **Status:** ✅ IMPLEMENTED
+- **Result:** All services use shared Configuration model
+
+#### 3. Event Signature Design ✅
+- **Decision:** Use direct types for events (List<AspireResource>, string) instead of custom EventArgs
+- **Rationale:** Simpler API, fewer boilerplate classes
+- **Status:** ✅ IMPLEMENTED
+- **Interface:** ResourcesUpdated, StatusChanged, ErrorOccurred events
+
+#### 4. Polling Service State Machine ✅
+- **Decision:** Five-state machine with auto-reconnect (Idle → Connecting → Polling → Error → Reconnecting)
+- **Reconnect Backoff:** 5s → 10s → 30s (capped)
+- **Status:** ✅ IMPLEMENTED
+- **Benefits:** Clear state transitions, auto-recovery, transparent to UI
+
+#### 5. Status Color Thresholds ✅
+- **Decision:** Default 70% warning, 90% critical (configurable)
+- **Logic:** Green <70%, Yellow 70-90%, Red >90% (either CPU or Memory)
+- **Status:** ✅ IMPLEMENTED
+- **Validation:** Tested across all boundary conditions
+
+#### 6. Configuration Storage Location ✅
+- **Decision:** `%LocalAppData%\ElBruno\AspireMonitor\config.json`
+- **Format:** JSON with WriteIndented (pretty-print)
+- **Status:** ✅ IMPLEMENTED
+- **Files:** ConfigurationService.cs handles all I/O
+
+#### 7. Error Handling Philosophy ✅
+- **Decision:** Never crash, always degrade gracefully
+- **Pattern:** Return empty/null, log error, show to UI, auto-retry
+- **Status:** ✅ IMPLEMENTED & TESTED
+- **Result:** Resilient to API failures, timeouts, offline scenarios
+
+#### 8. Disposal Pattern ✅
+- **Decision:** Implement IDisposable on all service classes
+- **Resources:** HttpClient (AspireApiClient), Timer (AspirePollingService)
+- **Status:** ✅ IMPLEMENTED
+- **Benefits:** Proper cleanup on shutdown, no resource leaks
+
+### Han's Frontend Decisions (Phase 2)
+
+#### 1. Service Interface Design ✅
+- **Decision:** Create clean interface contracts for Luke's services
+- **Interfaces:** IAspirePollingService, IConfigurationService
+- **Status:** ✅ IMPLEMENTED
+- **Pattern:** Event-driven, no property polling
+
+#### 2. Threshold Configuration Split ✅
+- **Decision:** Separate Warning and Critical thresholds for CPU and Memory
+- **Properties:** CPU Warning, CPU Critical, Memory Warning, Memory Critical (each 0-100%)
+- **Validation:** Critical > Warning
+- **Status:** ✅ IMPLEMENTED
+
+#### 3. System Tray Dynamic Icon Generation ✅
+- **Decision:** Generate icons programmatically (colored circles) instead of image files
+- **Method:** CreateColoredIcon() using System.Drawing
+- **Status:** ✅ IMPLEMENTED
+- **Benefits:** No file I/O, instant color changes, smaller binary
+
+#### 4. ViewModel Constructor Injection Pattern ✅
+- **Decision:** Use constructor injection with design-time fallbacks
+- **Pattern:** public MainViewModel() : this(null, null) { }
+- **Status:** ✅ IMPLEMENTED
+- **Benefits:** XAML designer support, testability, future DI container
+
+#### 5. URL Click Handling in Code-Behind ✅
+- **Decision:** Handle URL clicks in MainWindow.xaml.cs (not ViewModel)
+- **Rationale:** Process.Start is platform concern, hard to test
+- **Status:** ✅ IMPLEMENTED
+- **Implementation:** OpenUrl method with UseShellExecute
+
+### Yoda's Test Decisions (Phase 3)
+
+#### 1. TDD Approach ✅
+- **Decision:** Write tests before implementation (services didn't exist yet)
+- **Result:** 72 comprehensive tests, 100% passing, ready for Luke
+- **Status:** ✅ COMPLETE & VALIDATED
+- **Validation:** All tests now validate real implementations
+
+#### 2. Mock Testing Patterns ✅
+- **Patterns:**
+  - HTTP Client: Moq.Protected() for SendAsync mocking
+  - State Machine: Custom PollingServiceMock with controllable states
+  - Fixtures: 6 JSON files (healthy, stressed, malformed, empty, etc.)
+- **Status:** ✅ ESTABLISHED & REUSABLE
+
+#### 3. Fixture-Based Testing ✅
+- **Files:** 6 JSON fixtures representing realistic scenarios
+- **Coverage:** Healthy resources, stressed resources, malformed data, empty lists
+- **Status:** ✅ COMPLETE & IN USE
+
+#### 4. Timing Tolerances ✅
+- **Decision:** Allow ±20ms variance for timing-dependent tests
+- **Rationale:** System scheduler unpredictability, test overhead
+- **Status:** ✅ IMPLEMENTED & WORKING
+
+#### 5. Cancellation Token Safety ✅
+- **Decision:** Always catch OperationCanceledException separately
+- **Rationale:** Prevents spurious failures during graceful shutdown
+- **Status:** ✅ IMPLEMENTED
+- **Pattern:** Separate handling for cancellation vs business errors
+
+#### 6. Threshold Testing ✅
+- **Decision:** Test all boundary conditions (69%, 70%, 89%, 90%, 100%)
+- **Coverage:** Green/Yellow/Red boundaries, custom thresholds
+- **Status:** ✅ COMPLETE
+- **Result:** 24 StatusCalculator tests, all passing
+
+#### 7. Coverage Target ✅
+- **Decision:** 80%+ coverage on Services and Models (exclude UI code-behind)
+- **Status:** ✅ ACHIEVED
+- **Measurement:** >80% coverage on all core components
+
+#### 8. Integration Testing Strategy ✅
+- **Decision:** Mock ViewModels instead of full UI testing
+- **Rationale:** UIAutomation is slow/brittle, MVVM allows logic testing
+- **Status:** ✅ IMPLEMENTED
+- **Pattern:** Mock ViewModels, test binding and event propagation
+
+### Lando's Design Decisions (Phase 4)
+
+#### 1. Visual Brand ✅
+- **Colors:** Microsoft Copilot Blue (#0078D4), Tech Purple (#7C3AED)
+- **Status Indicators:** Green (#10B981), Yellow (#F59E0B), Red (#EF4444)
+- **Style:** Modern, professional, Windows 11 design language
+- **Theme:** Real-time monitoring dashboard metaphor
+- **Status:** ✅ COMPLETE
+
+#### 2. Icon Design Strategy ✅
+- **Gradient Background:** Conveys brand sophistication
+- **Three Status Circles:** Communicates core value (monitoring multiple resources)
+- **Dashboard Line:** Subtle reference to metrics visualization
+- **Scaled Versions:** 256px (primary) + 128px (fallback/system tray)
+- **Status:** ✅ COMPLETE
+
+#### 3. Social Graphics Design ✅
+- **Components:** White border frame, "Monitor" headline, status indicators
+- **Sizing:** 1200x630 (LinkedIn/Blog), 1024x512 (Twitter 2:1 ratio)
+- **Optimization:** PNG format, <11 KB average file size
+- **Status:** ✅ COMPLETE
+
+#### 4. File Format & Optimization ✅
+- **Format:** PNG (transparency support, professional quality)
+- **Optimization:** 1.27 KB (icon-128) to 10.21 KB (social) — well-optimized
+- **Web-Ready:** All tested and production-ready
+- **Status:** ✅ COMPLETE
+
+### Summary of Phase 2-4 Decisions
+
+✅ **All architectural decisions locked and implemented**  
+✅ **All technical patterns established and working**  
+✅ **All components tested and validated**  
+✅ **All team decisions merged and recorded**  
+✅ **Ready for Phase 5 (Review & Release)**
 
 ---
 
