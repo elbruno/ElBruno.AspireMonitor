@@ -53,9 +53,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="Resources\**">
+    <!-- Tray icon PNGs are loaded via filesystem path by System.Windows.Forms.NotifyIcon -->
+    <None Update="Resources\aspire_trayicon_*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <!-- Logos are referenced from XAML via pack:// URIs and must be embedded as WPF Resources.
+         Remove them from the SDK's auto-included None items first to avoid duplicates. -->
+    <None Remove="Resources\aspire-logo*.png" />
+    <Resource Include="Resources\aspire-logo*.png" />
   </ItemGroup>
 
   <!-- Package Content -->

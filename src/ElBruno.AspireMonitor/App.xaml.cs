@@ -8,11 +8,14 @@ using ElBruno.AspireMonitor.Infrastructure;
 using System.Drawing;
 using System.Windows.Media;
 using WinDrawing = System.Drawing;
+using System.Threading;
 
 namespace ElBruno.AspireMonitor;
 
 public partial class App : System.Windows.Application
 {
+    private const string MutexName = "ElBruno.AspireMonitor.SingleInstance";
+    private Mutex? _singleInstanceMutex;
     private IAspirePollingService? _pollingService;
     private IConfigurationService? _configService;
     private AspireCliService? _cliService;
@@ -24,6 +27,38 @@ public partial class App : System.Windows.Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        // CRITICAL: Single-instance check MUST be first, before any UI resource creation
+        bool isNewInstance;
+        _singleInstanceMutex = new Mutex(true, MutexName, out isNewInstance);
+
+        if (!isNewInstance)
+        {
+            // Another instance is already running - exit immediately
+            // Set up minimal logging first
+            try
+            {
+                var logDir = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "ElBruno.AspireMonitor", "logs");
+                System.IO.Directory.CreateDirectory(logDir);
+                var logPath = System.IO.Path.Combine(logDir, $"app-{DateTime.Now:yyyyMMdd-HHmmss}.log");
+                var listener = new System.Diagnostics.TextWriterTraceListener(logPath) { Name = "FileLogger" };
+                System.Diagnostics.Trace.Listeners.Add(listener);
+                System.Diagnostics.Trace.AutoFlush = true;
+                System.Diagnostics.Debug.WriteLine($"[App] Second instance detected - another instance is already running. Exiting.");
+                System.Diagnostics.Trace.WriteLine($"[App] Second instance detected at {DateTime.Now:yyyy-MM-dd HH:mm:ss}. Mutex '{MutexName}' is owned by existing process. Exiting immediately.");
+            }
+            catch
+            {
+                // If logging fails, just exit silently
+            }
+
+            _singleInstanceMutex?.Dispose();
+            _singleInstanceMutex = null;
+            Environment.Exit(0);
+            return;
+        }
+
         base.OnStartup(e);
 
         // Mirror Debug/Trace output to a file so logs can be tailed without a debugger
@@ -335,6 +370,21 @@ public partial class App : System.Windows.Application
         _logsService?.Dispose();
         _notifyIcon?.Dispose();
         _currentIcon?.Dispose();
+        
+        // Release single-instance mutex
+        if (_singleInstanceMutex != null)
+        {
+            try
+            {
+                _singleInstanceMutex.ReleaseMutex();
+                _singleInstanceMutex.Dispose();
+                System.Diagnostics.Debug.WriteLine("[App] Single-instance mutex released.");
+            }
+            catch
+            {
+                // Silently fail if mutex is already released
+            }
+        }
         
         base.OnExit(e);
     }
