@@ -276,3 +276,61 @@ Phase 4 design assets complete. All 7 professional graphics delivered using offi
 - ✅ All assets: PNG format, optimized file sizes, professional quality
 
 **Status:** ✅ COMPLETE — Ready for Phase 5 (NuGet packaging & release)
+
+---
+
+### 2026-04-28 — Tray Icon Transparency Fix
+
+**Issue:** All 8 tray status icons (running, warning, error, norunning) lost their transparent backgrounds. Icons displayed with solid gray backgrounds in the Windows system tray instead of seamless transparency.
+
+**Root Cause Analysis:**
+- AI image generation tools (t2i with MAI-Image-2/GPT-Image-2) don't produce true alpha transparency
+- Icons were RGBA mode with alpha=255 everywhere (fully opaque)
+- "Transparency" was rendered as solid gray pixels (~76-224 grayscale) in RGB channels
+- This is a known limitation of current AI image generators
+
+**Diagnostic Method:**
+```python
+# Pillow-based analysis
+from PIL import Image
+img = Image.open(icon_path)
+alpha = img.split()[3]  # Extract alpha channel
+print(f"Alpha min/max: {alpha.getextrema()}")  # (255, 255) = no transparency
+```
+
+**Fix Applied:**
+Used Pillow flood-fill algorithm from all 4 corners:
+- `tolerance=45` for color similarity (handles light and dark gray backgrounds)
+- `is_grayish()` check: R≈G≈B within 15 units (prevents icon content from being affected)
+- Sets alpha=0 for matched background pixels
+
+**Results:**
+| Icon | Pixels Made Transparent |
+|------|-------------------------|
+| running | 76.4% |
+| norunning | 79.9% |
+| warning | 69.1% |
+| error | 38.1% |
+
+**Files Fixed:**
+- `src/ElBruno.AspireMonitor/Resources/aspire_trayicon_*.png` (4 files)
+- `images/aspire_trayicon_*.png` (4 files)
+
+**Verification:**
+- All icons now have alpha min=0, max=255 (true transparency)
+- Corner pixels have alpha=0 (transparent)
+- Build succeeded with updated resources
+
+**Key Learnings:**
+1. **AI image generators struggle with true alpha transparency** — even with explicit "transparent background, alpha channel" prompts, they generate solid backgrounds
+2. **Always verify alpha channel values** — visual inspection isn't enough; check `alpha.getextrema()` to confirm (255,255) vs (0,255)
+3. **Flood-fill is effective for post-processing** — can reliably convert solid backgrounds to transparent when background is uniform/grayish
+4. **Higher tolerance needed for varied AI output** — tolerance=45 handles both light (~180-220) and dark (~76-128) gray backgrounds
+5. **Grayish pixel check prevents over-removal** — ensures only background, not colored icon content, is made transparent
+
+**Design Standard Update:**
+When using AI-generated icons:
+1. Always check alpha channel after generation
+2. If alpha is fully opaque, apply flood-fill transparency fix
+3. Use tolerance=45 and grayish check for best results
+4. Verify corner alpha=0 after fix
