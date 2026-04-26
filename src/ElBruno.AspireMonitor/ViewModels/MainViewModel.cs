@@ -18,6 +18,7 @@ public class MainViewModel : ViewModelBase
     private DateTime _lastUpdated = DateTime.Now;
     private ObservableCollection<ResourceViewModel> _resources = new();
     private string _projectFolder = string.Empty;
+    private string _hostUrl = "http://localhost:18888";
     private bool _isExecutingCommand;
     private string _commandStatus = string.Empty;
     private MiniMonitorViewModel? _miniMonitorViewModel;
@@ -164,6 +165,12 @@ public class MainViewModel : ViewModelBase
     {
         get => _projectFolder;
         set => SetProperty(ref _projectFolder, value);
+    }
+
+    public string HostUrl
+    {
+        get => _hostUrl;
+        set => SetProperty(ref _hostUrl, value);
     }
 
     public string CommandStatus

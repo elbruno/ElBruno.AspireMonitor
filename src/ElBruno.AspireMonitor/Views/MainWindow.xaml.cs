@@ -240,6 +240,12 @@ public partial class MainWindow : Window
             
             if (settingsWindow.ShowDialog() == true)
             {
+                // Reload ProjectFolder from updated config
+                if (configService != null && ViewModel != null)
+                {
+                    var updatedConfig = configService.LoadConfiguration();
+                    ViewModel.ProjectFolder = updatedConfig.ProjectFolder ?? string.Empty;
+                }
                 // Configuration changed, restart polling service
                 ViewModel?.Stop();
                 ViewModel?.Start();

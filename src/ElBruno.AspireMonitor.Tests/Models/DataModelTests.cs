@@ -256,7 +256,7 @@ public class ResourceStatusTests
     public void ResourceStatus_HasExpectedValues()
     {
         // Assert
-        Enum.GetValues(typeof(ResourceStatus)).Length.Should().Be(5);
+        Enum.GetValues(typeof(ResourceStatus)).Length.Should().Be(6);
     }
 
     [Theory]
@@ -325,7 +325,6 @@ public class AspireConfigurationTests
         var config = new ElBruno.AspireMonitor.Models.Configuration();
 
         // Assert
-        config.AspireEndpoint.Should().Be("http://localhost:18888");
         config.PollingIntervalMs.Should().Be(5000);
         config.CpuThresholdWarning.Should().Be(70);
         config.CpuThresholdCritical.Should().Be(90);
@@ -333,7 +332,6 @@ public class AspireConfigurationTests
         config.MemoryThresholdCritical.Should().Be(90);
         config.StartWithWindows.Should().BeFalse();
         config.ProjectFolder.Should().BeEmpty();
-        config.RepositoryUrl.Should().BeEmpty();
     }
 
     [Fact]
@@ -343,7 +341,6 @@ public class AspireConfigurationTests
         var config = new ElBruno.AspireMonitor.Models.Configuration();
 
         // Act
-        config.AspireEndpoint = "http://localhost:19999";
         config.PollingIntervalMs = 3000;
         config.CpuThresholdWarning = 60;
         config.CpuThresholdCritical = 85;
@@ -351,10 +348,8 @@ public class AspireConfigurationTests
         config.MemoryThresholdCritical = 88;
         config.StartWithWindows = true;
         config.ProjectFolder = @"C:\Projects\MyApp";
-        config.RepositoryUrl = "https://github.com/user/repo";
 
         // Assert
-        config.AspireEndpoint.Should().Be("http://localhost:19999");
         config.PollingIntervalMs.Should().Be(3000);
         config.CpuThresholdWarning.Should().Be(60);
         config.CpuThresholdCritical.Should().Be(85);
@@ -362,7 +357,6 @@ public class AspireConfigurationTests
         config.MemoryThresholdCritical.Should().Be(88);
         config.StartWithWindows.Should().BeTrue();
         config.ProjectFolder.Should().Be(@"C:\Projects\MyApp");
-        config.RepositoryUrl.Should().Be("https://github.com/user/repo");
     }
 
     [Theory]
@@ -380,22 +374,6 @@ public class AspireConfigurationTests
 
         // Assert
         config.PollingIntervalMs.Should().Be(intervalMs);
-    }
-
-    [Theory]
-    [InlineData("http://localhost:18888")]
-    [InlineData("https://localhost:19999")]
-    [InlineData("http://127.0.0.1:5000")]
-    public void Configuration_AspireEndpoint_AcceptsVariousUrls(string endpoint)
-    {
-        // Arrange
-        var config = new ElBruno.AspireMonitor.Models.Configuration();
-
-        // Act
-        config.AspireEndpoint = endpoint;
-
-        // Assert
-        config.AspireEndpoint.Should().Be(endpoint);
     }
 
     [Fact]

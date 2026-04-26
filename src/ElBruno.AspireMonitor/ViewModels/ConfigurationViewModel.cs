@@ -4,18 +4,11 @@ namespace ElBruno.AspireMonitor.ViewModels;
 
 public class ConfigurationViewModel : ViewModelBase
 {
-    private string _aspireEndpoint = "http://localhost:18888";
     private int _pollingInterval = 5000;
     private int _cpuThreshold = 70;
     private int _memoryThreshold = 70;
     private bool _startWithWindows;
     private string _validationMessage = string.Empty;
-
-    public string AspireEndpoint
-    {
-        get => _aspireEndpoint;
-        set => SetProperty(ref _aspireEndpoint, value);
-    }
 
     public int PollingInterval
     {
@@ -50,20 +43,6 @@ public class ConfigurationViewModel : ViewModelBase
     public bool Validate()
     {
         ValidationMessage = string.Empty;
-
-        // Validate URL
-        if (string.IsNullOrWhiteSpace(AspireEndpoint))
-        {
-            ValidationMessage = "Aspire Endpoint cannot be empty.";
-            return false;
-        }
-
-        if (!Uri.TryCreate(AspireEndpoint, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-        {
-            ValidationMessage = "Aspire Endpoint must be a valid HTTP or HTTPS URL.";
-            return false;
-        }
 
         // Validate polling interval
         if (PollingInterval < 1000 || PollingInterval > 60000)

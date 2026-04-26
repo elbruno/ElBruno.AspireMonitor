@@ -266,19 +266,6 @@ public class AppStartupTests
     }
 
     [Fact]
-    public void Tray_Settings_Window_Shows_RepositoryUrl_Field()
-    {
-        // Arrange
-        var settingsWindow = new MockSettingsWindow();
-        
-        // Act
-        var hasRepositoryUrlField = settingsWindow.HasField("RepositoryUrl");
-        
-        // Assert
-        hasRepositoryUrlField.Should().BeTrue("Settings window should show RepositoryUrl field");
-    }
-
-    [Fact]
     public void Settings_Can_Be_Opened_Multiple_Times_Without_Duplicate_Windows()
     {
         // Arrange
@@ -315,7 +302,6 @@ public class AppStartupTests
         windowManager.OpenSettingsWindow();
         windowManager.SaveSettingsChanges(new Dictionary<string, object> 
         { 
-            { "AspireEndpoint", "http://localhost:15888" },
             { "PollingInterval", 5000 }
         });
         
@@ -831,15 +817,13 @@ public class AppStartupTests
     {
         private List<string> _fields = new()
         {
-            "AspireEndpoint",
             "PollingInterval",
             "CpuThresholdWarning",
             "CpuThresholdCritical",
             "MemoryThresholdWarning",
             "MemoryThresholdCritical",
             "StartWithWindows",
-            "ProjectFolder",
-            "RepositoryUrl"
+            "ProjectFolder"
         };
 
         public bool HasField(string fieldName)

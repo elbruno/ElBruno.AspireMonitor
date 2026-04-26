@@ -56,12 +56,6 @@ public class ConfigurationService : IConfigurationService
         SaveConfigurationToFile();
     }
 
-    public void SetEndpoint(string endpoint)
-    {
-        _configuration.AspireEndpoint = endpoint;
-        SaveConfiguration(_configuration);
-    }
-
     public void SetPollingInterval(int intervalMs)
     {
         _configuration.PollingIntervalMs = intervalMs;
@@ -144,12 +138,6 @@ public class ConfigurationService : IConfigurationService
 
     private void ValidateConfiguration(Configuration configuration)
     {
-        if (string.IsNullOrWhiteSpace(configuration.AspireEndpoint))
-            throw new InvalidOperationException("AspireEndpoint cannot be empty");
-
-        if (!Uri.TryCreate(configuration.AspireEndpoint, UriKind.Absolute, out _))
-            throw new InvalidOperationException("AspireEndpoint must be a valid URL");
-
         if (configuration.PollingIntervalMs < 500 || configuration.PollingIntervalMs > 60000)
             throw new InvalidOperationException("PollingIntervalMs must be between 500 and 60000");
 

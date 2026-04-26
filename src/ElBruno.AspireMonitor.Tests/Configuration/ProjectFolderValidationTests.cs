@@ -3,7 +3,6 @@ using System.Text.Json;
 using Xunit;
 using ElBruno.AspireMonitor.Models;
 using ElBruno.AspireMonitor.Services;
-using Configuration = ElBruno.AspireMonitor.Models.Configuration;
 
 namespace ElBruno.AspireMonitor.Tests.Configuration;
 
@@ -49,10 +48,9 @@ public class ProjectFolderValidationTests : IDisposable
         var aspireConfigPath = Path.Combine(projectPath, "aspire.config.json");
         File.WriteAllText(aspireConfigPath, "{}");
 
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = projectPath,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act & Assert
@@ -69,10 +67,9 @@ public class ProjectFolderValidationTests : IDisposable
         var appHostPath = Path.Combine(projectPath, "AppHost.cs");
         File.WriteAllText(appHostPath, "// Valid AppHost");
 
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = projectPath,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act & Assert
@@ -84,10 +81,9 @@ public class ProjectFolderValidationTests : IDisposable
     public void ProjectFolder_SetToNullOrEmpty_ShouldBeValid()
     {
         // Arrange
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = null,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act & Assert
@@ -98,10 +94,9 @@ public class ProjectFolderValidationTests : IDisposable
     public void ProjectFolder_SetToEmptyString_ShouldResetToNoFolder()
     {
         // Arrange
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = "",
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act & Assert
@@ -117,10 +112,9 @@ public class ProjectFolderValidationTests : IDisposable
         var aspireConfigPath = Path.Combine(projectPath, "aspire.config.json");
         File.WriteAllText(aspireConfigPath, "{}");
 
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = projectPath,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act & Assert
@@ -145,10 +139,9 @@ public class ProjectFolderValidationTests : IDisposable
         File.WriteAllText(aspireConfigPath, aspireConfigContent);
 
         // Act
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = projectPath,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Assert
@@ -190,16 +183,14 @@ public class ProjectFolderValidationTests : IDisposable
         var projectPath = Path.Combine(_testProjectDir, "MissingAspireConfig");
         Directory.CreateDirectory(projectPath);
 
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = projectPath,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act & Assert
         var aspireConfigPath = Path.Combine(projectPath, "aspire.config.json");
         File.Exists(aspireConfigPath).Should().BeFalse();
-        config.AspireEndpoint.Should().Be("http://localhost:18888");
     }
 
     [Fact]
@@ -239,9 +230,8 @@ public class ProjectFolderValidationTests : IDisposable
         Directory.CreateDirectory(projectPath);
         
         var configService = new ConfigurationService(_configFilePath);
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
-            AspireEndpoint = "http://localhost:18888",
             ProjectFolder = projectPath
         };
 
@@ -301,7 +291,6 @@ public class ProjectFolderValidationTests : IDisposable
 
         // Assert - Missing field deserializes to empty string (default value)
         loadedConfig.ProjectFolder.Should().Be(string.Empty);
-        loadedConfig.AspireEndpoint.Should().Be("http://localhost:18888");
     }
 
     #endregion
@@ -313,10 +302,9 @@ public class ProjectFolderValidationTests : IDisposable
     {
         // Arrange
         var relativePath = @"..\Projects\MyProject";
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = relativePath,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act & Assert
@@ -328,10 +316,9 @@ public class ProjectFolderValidationTests : IDisposable
     {
         // Arrange
         var uncPath = @"\\server\share\project";
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = uncPath,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act & Assert
@@ -345,10 +332,9 @@ public class ProjectFolderValidationTests : IDisposable
         var projectPath = Path.Combine(_testProjectDir, "ResetProject");
         Directory.CreateDirectory(projectPath);
         
-        var config = new Models.Configuration
+        var config = new ElBruno.AspireMonitor.Models.Configuration
         {
             ProjectFolder = projectPath,
-            AspireEndpoint = "http://localhost:18888"
         };
 
         // Act
