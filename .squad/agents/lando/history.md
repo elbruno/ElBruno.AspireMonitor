@@ -334,3 +334,49 @@ When using AI-generated icons:
 2. If alpha is fully opaque, apply flood-fill transparency fix
 3. Use tolerance=45 and grayish check for best results
 4. Verify corner alpha=0 after fix
+
+### 2026-04-26 — Team Session: Parallel Delivery with Han & Yoda
+
+**Session Summary:**
+
+Completed tray icon transparency fix in parallel with Han's MiniWindowResources implementation and Yoda's test coverage work. All three agents delivered simultaneously with no blocking dependencies.
+
+**Coordination Notes:**
+
+1. **Han** (Frontend Dev): MiniWindowResources feature complete — 273 tests passing
+2. **Yoda** (Tester): 13 new tests for MiniWindowResources — ready for integration validation
+3. **Lando** (Design): 8 tray icons fixed with Pillow transparency post-processing — commits pushed to main
+4. **Bruno** (User/Coordinator): Captured NuGet tool naming directive (AspireMon package / aspiremon CLI)
+
+### Design Decisions Documented
+
+**Future Icon Generation Workflow Update:**
+1. Generate icon with t2i tool (AI model)
+2. Verify alpha channel: Image.split()[3].getextrema() should be (0, 255) after processing
+3. If alpha is (255, 255) or close, apply Pillow flood-fill post-processing
+4. Tolerance=45 + grayish pixel check recommended for gray backgrounds
+5. Verify corner pixels have alpha=0 before deployment
+
+**Tolerance Calibration Reference:**
+- tolerance=45: Handles light (~180-220) and dark (~76-128) gray backgrounds
+- grayish check (R≈G≈B within 15 units): Protects colored icon content from over-removal
+
+### Deliverables Summary
+
+✅ All 8 icons fixed (running, warning, error, norunning × 2 locations)
+✅ Alpha channel verified: min=0, max=255 (true transparency)
+✅ Commits: 349223d + 98b0209 pushed to main
+✅ Design standard established for future AI-generated assets
+✅ Decision file merged to decisions.md
+
+### Phase 5 Readiness
+
+All three parallel workstreams complete:
+- Frontend feature (Han)
+- Test coverage (Yoda)
+- Design polish (Lando)
+- User directive locked (Bruno)
+
+**Status:** Ready for Phase 5 integration testing and release preparation.
+
+---
