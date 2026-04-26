@@ -594,3 +594,110 @@ upkg/ — NuGet Artifacts:**
 - Contributing guidelines documented
 - Rules captured for future enforcement
 
+---
+
+### 2026-04-26 — v1.2.0 NuGet Release (Session 8)
+
+**Context:**
+- HEAD was 17 commits ahead of v1.1.0 tag (major user-visible features added)
+- HEAD was 1 commit ahead of origin/main (squad docs commit)
+- 273 tests passing
+- Ready for v1.2.0 release to NuGet
+
+**Release Process Executed:**
+
+1. **Version Bump** ✅
+   - Updated `src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj`
+   - Version: 1.1.0 → 1.2.0
+   - AssemblyVersion: 1.1.0.0 → 1.2.0.0
+   - FileVersion: 1.1.0.0 → 1.2.0.0
+   - PackageReleaseNotes: v1.1.0 → v1.2.0 URL
+
+2. **Build & Test** ✅
+   - Built main project and tests in Release mode
+   - All 273 tests passed (100% success)
+   - Zero errors (2 nullable warnings in test code only)
+
+3. **NuGet Package Creation** ✅
+   - Packed with: `dotnet pack src\ElBruno.AspireMonitor\ElBruno.AspireMonitor.csproj -c Release -o artifacts`
+   - Created: `ElBruno.AspireMonitor.1.2.0.nupkg` (103,817 bytes)
+   - Created: `ElBruno.AspireMonitor.1.2.0.snupkg` (38,287 bytes) — symbols package
+
+4. **Git Operations** ✅
+   - Committed version bump: `chore(release): bump version to 1.2.0`
+   - Pushed to GitHub: main branch updated (commit 5fd4d41)
+   - Created tag: `v1.2.0`
+   - Pushed tag: `git push origin refs/tags/v1.2.0`
+
+5. **GitHub Release** ✅
+   - Created release: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.2.0
+   - Attached artifacts: .nupkg and .snupkg
+   - Comprehensive release notes with Features, Fixes, Tests, and Documentation sections
+   - Marked as Latest release
+
+6. **NuGet.org Publishing** ⏳
+   - No API key found in environment or NuGet.Config
+   - .nupkg and .snupkg attached to GitHub release for manual push
+   - Bruno needs to manually push: `dotnet nuget push .\artifacts\ElBruno.AspireMonitor.1.2.0.nupkg -s https://api.nuget.org/v3/index.json -k <API_KEY> --skip-duplicate`
+
+**Key Release Features (v1.1.0 → v1.2.0):**
+
+**Features:**
+- Configurable pinned resources in mini window (always visible)
+- Auto-resize mini window height to fit content
+- Dashboard link in mini window
+
+**Fixes:**
+- Preserve dashboard login token in detected endpoint URL
+- Recover from aspire stop in mini window
+- Remove unused CPU/Memory columns from main window
+- Gate Start/Stop buttons on connection state
+- Restore transparent background on tray icons
+- AspireCliService runs from configured ProjectFolder
+
+**Tests:**
+- Added comprehensive tests for pinned resources feature
+- 273 tests passing (100%)
+
+**NuGet Release Process Learnings:**
+
+1. **Build Process:**
+   - No .sln file required — build projects directly with `dotnet build <csproj>`
+   - Chain multiple projects with `&&` for efficiency
+   - Release configuration required for packaging
+
+2. **NuGet Pack Command:**
+   - `dotnet pack <csproj> -c Release -o <output_dir>`
+   - Produces both .nupkg (package) and .snupkg (symbols) automatically when `<IncludeSymbols>true</IncludeSymbols>` in csproj
+   - Output artifacts should go to dedicated `artifacts/` directory
+
+3. **GitHub Release Creation:**
+   - Use `gh release create <tag>` with `--notes` for inline release notes
+   - Attach .nupkg and .snupkg to release with file arguments
+   - Mark as `--latest` to update repository's latest release badge
+
+4. **NuGet API Key Management:**
+   - Check environment variables: `$env:NUGET_API_KEY` or `$env:NUGET_APIKEY`
+   - Check NuGet.Config: `$env:USERPROFILE\.nuget\NuGet\NuGet.Config`
+   - If not found, document manual push command for user
+
+5. **Manual NuGet Push (when no API key):**
+   - Command: `dotnet nuget push <path_to_nupkg> -s https://api.nuget.org/v3/index.json -k <API_KEY> --skip-duplicate`
+   - Also push .snupkg for debugging symbols
+   - Verify after push: https://www.nuget.org/packages/ElBruno.AspireMonitor/1.2.0 (may take minutes to index)
+
+6. **Git Lock File Recovery:**
+   - If `index.lock` exists: `Remove-Item .git\index.lock -Force`
+   - Then retry git operations
+
+7. **Release Notes Structure:**
+   - Group changes by: Features, Fixes, Tests, Documentation
+   - Use emoji headers for visual organization: ✨ 🐛 🧪 📚 📦
+   - Include package details: ID, version, license, target framework, test count
+   - Highlight user-visible improvements prominently
+
+**Status:** ✅ COMPLETE — v1.2.0 tagged, released on GitHub, ready for NuGet push
+
+**Next Steps (User Action Required):**
+- Bruno needs to push to NuGet.org with his API key (command documented above)
+
