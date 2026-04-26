@@ -10,18 +10,30 @@
         MinHeight="400"
         MinWidth="600"
         WindowStartupLocation="CenterScreen"
+        Visibility="Hidden"
+        ShowInTaskbar="False"
         StateChanged="Window_StateChanged"
         Closing="Window_Closing">
     
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Version & Title Bar -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding AppVersionTitle}"
+                   FontSize="14"
+                   FontWeight="Bold"
+                   Foreground="#333333"
+                   Margin="0,0,0,10"/>
+
         <!-- Top Section: Host URL and Status -->
-        <Border Grid.Row="0" 
+        <Border Grid.Row="1" 
                 BorderBrush="#CCCCCC" 
                 BorderThickness="0,0,0,1" 
                 Padding="10"
@@ -76,7 +88,7 @@
         </Border>
 
         <!-- Middle Section: Resource List -->
-        <ScrollViewer Grid.Row="1" 
+        <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{Binding Resources}">
@@ -151,7 +163,7 @@
         </ScrollViewer>
 
         <!-- Bottom Section: Control Buttons -->
-        <Border Grid.Row="2" 
+        <Border Grid.Row="3" 
                 BorderBrush="#CCCCCC" 
                 BorderThickness="0,1,0,0" 
                 Padding="10"
@@ -163,16 +175,24 @@
                         Height="30"
                         Margin="0,0,10,0"
                         Click="Refresh_Click"/>
-                <Button Content="Settings" 
-                        Width="80" 
+                <Button Content="Mini Monitor" 
+                        Width="100" 
                         Height="30"
                         Margin="0,0,10,0"
-                        Click="Settings_Click"/>
+                        Click="MiniMonitor_Click"/>
                 <Button Content="Close" 
                         Width="80" 
                         Height="30"
                         Click="Close_Click"/>
             </StackPanel>
         </Border>
+
+        <!-- Version Footer -->
+        <TextBlock Grid.Row="4"
+                   Text="{Binding AppVersion}"
+                   FontSize="9"
+                   Foreground="#999999"
+                   HorizontalAlignment="Right"
+                   Margin="0,5,0,0"/>
     </Grid>
 </Window>

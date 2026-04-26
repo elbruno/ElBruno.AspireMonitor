@@ -39,6 +39,10 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    public string AppVersion => VersionHelper.GetAppVersion();
+
+    public string AppVersionTitle => $"Aspire Monitor {AppVersion}";
+
     public string HostUrl
     {
         get => _hostUrl;

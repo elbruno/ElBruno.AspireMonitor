@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ElBruno.AspireMonitor.ViewModels;
 using ElBruno.AspireMonitor.Services;
+using ElBruno.AspireMonitor.Infrastructure;
 using WinDrawing = System.Drawing;
 
 namespace ElBruno.AspireMonitor.Views;
@@ -12,6 +13,7 @@ namespace ElBruno.AspireMonitor.Views;
 public partial class MainWindow : Window
 {
     private NotifyIcon? _notifyIcon;
+    private MiniMonitor? _miniMonitor;
     private MainViewModel? ViewModel => DataContext as MainViewModel;
     private readonly IConfigurationService? _configService;
 
@@ -45,15 +47,18 @@ public partial class MainWindow : Window
     {
         _notifyIcon = new NotifyIcon
         {
-            Text = "Aspire Monitor",
+            Text = $"Aspire Monitor {VersionHelper.GetAppVersion()}",
             Visible = true
         };
 
         UpdateTrayIcon();
 
         var contextMenu = new ContextMenuStrip();
-        contextMenu.Items.Add("Show", null, (s, e) => ShowWindow());
+        contextMenu.Items.Add("Details", null, (s, e) => ShowWindow());
+        contextMenu.Items.Add("Mini Monitor", null, (s, e) => ToggleMiniMonitor());
         contextMenu.Items.Add("Settings", null, (s, e) => ShowSettings());
+        contextMenu.Items.Add("-");
+        contextMenu.Items.Add("GitHub", null, (s, e) => OpenGitHub());
         contextMenu.Items.Add("-");
         contextMenu.Items.Add("Exit", null, (s, e) => ExitApplication());
 
@@ -128,15 +133,24 @@ public partial class MainWindow : Window
     private void ExitApplication()
     {
         ViewModel?.Stop();
+        _miniMonitor?.Close();
         _notifyIcon?.Dispose();
         System.Windows.Application.Current.Shutdown();
     }
 
     private void ShowSettings()
     {
-        if (_configService != null)
+        // Get config service from ViewModel if not already set
+        var configService = _configService;
+        if (configService == null && ViewModel != null)
         {
-            var settingsWindow = new SettingsWindow(_configService)
+            // Try to get from application's service provider or create default
+            configService = new ConfigurationService();
+        }
+        
+        if (configService != null)
+        {
+            var settingsWindow = new SettingsWindow(configService)
             {
                 Owner = this
             };
@@ -146,6 +160,44 @@ public partial class MainWindow : Window
                 ViewModel?.Stop();
                 ViewModel?.Start();
             }
+        }
+    }
+
+    private void ToggleMiniMonitor()
+    {
+        if (_miniMonitor == null)
+        {
+            _miniMonitor = new MiniMonitor
+            {
+                DataContext = new MiniMonitorViewModel(ViewModel)
+            };
+            _miniMonitor.Closed += (s, e) => _miniMonitor = null;
+            _miniMonitor.Show();
+        }
+        else if (_miniMonitor.IsVisible)
+        {
+            _miniMonitor.Hide();
+        }
+        else
+        {
+            _miniMonitor.Show();
+            _miniMonitor.Activate();
+        }
+    }
+
+    private void OpenGitHub()
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://github.com/elbruno/ElBruno.AspireMonitor",
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+            // Silently fail if browser can't be opened
         }
     }
 
@@ -205,14 +257,14 @@ public partial class MainWindow : Window
         ViewModel?.RefreshCommand?.Execute(null);
     }
 
-    private void Settings_Click(object sender, RoutedEventArgs e)
-    {
-        ShowSettings();
-    }
-
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         HideWindow();
+    }
+
+    private void MiniMonitor_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleMiniMonitor();
     }
 
     protected override void OnClosed(EventArgs e)
@@ -222,6 +274,7 @@ public partial class MainWindow : Window
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
             ViewModel.Stop();
         }
+        _miniMonitor?.Close();
         _notifyIcon?.Dispose();
         base.OnClosed(e);
     }

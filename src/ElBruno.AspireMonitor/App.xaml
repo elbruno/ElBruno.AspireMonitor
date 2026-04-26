@@ -7,6 +7,12 @@
         <!-- Converters -->
         <infrastructure:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         
+        <!-- Drop Shadow Effect -->
+        <DropShadowEffect x:Key="DropShadowEffect" 
+                         BlurRadius="8" 
+                         ShadowDepth="3" 
+                         Opacity="0.3"/>
+        
         <!-- Global styles -->
         <SolidColorBrush x:Key="StatusGreen" Color="#4CAF50"/>
         <SolidColorBrush x:Key="StatusYellow" Color="#FFC107"/>
