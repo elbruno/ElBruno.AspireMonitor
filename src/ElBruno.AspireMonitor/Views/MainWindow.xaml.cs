@@ -150,10 +150,14 @@ public partial class MainWindow : Window
         
         if (configService != null)
         {
-            var settingsWindow = new SettingsWindow(configService)
+            var settingsWindow = new SettingsWindow(configService);
+            
+            // Only set Owner if this window is visible
+            if (IsVisible)
             {
-                Owner = this
-            };
+                settingsWindow.Owner = this;
+            }
+            
             if (settingsWindow.ShowDialog() == true)
             {
                 // Configuration changed, restart polling service
