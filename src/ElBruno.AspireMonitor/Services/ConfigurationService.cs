@@ -96,7 +96,11 @@ public class ConfigurationService : IConfigurationService
             }
 
             var json = File.ReadAllText(_configFilePath);
-            var config = JsonSerializer.Deserialize<Configuration>(json);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var config = JsonSerializer.Deserialize<Configuration>(json, options);
             
             if (config == null)
             {

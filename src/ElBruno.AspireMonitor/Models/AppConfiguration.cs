@@ -1,3 +1,6 @@
+using System.IO;
+using System.Text.Json;
+
 namespace ElBruno.AspireMonitor.Models;
 
 public class AppConfiguration
@@ -10,6 +13,8 @@ public class AppConfiguration
     public int MemoryThresholdCritical { get; set; } = 90;
     public int HttpTimeoutSeconds { get; set; } = 5;
     public int MaxRetries { get; set; } = 3;
+    public string? ProjectFolder { get; set; }
+    public string? RepositoryUrl { get; set; }
 
     public void Validate()
     {
@@ -45,5 +50,67 @@ public class AppConfiguration
 
         if (MaxRetries < 0 || MaxRetries > 10)
             throw new InvalidOperationException("MaxRetries must be between 0 and 10");
+
+        // Validate ProjectFolder if set
+        if (!string.IsNullOrWhiteSpace(ProjectFolder))
+        {
+            if (!Directory.Exists(ProjectFolder))
+                throw new InvalidOperationException("ProjectFolder does not exist or is not a valid Aspire project (missing aspire.config.json or AppHost.cs)");
+
+            bool hasAspireConfig = File.Exists(Path.Combine(ProjectFolder, "aspire.config.json"));
+            bool hasAppHost = File.Exists(Path.Combine(ProjectFolder, "AppHost.cs"));
+
+            if (!hasAspireConfig && !hasAppHost)
+                throw new InvalidOperationException("ProjectFolder does not exist or is not a valid Aspire project (missing aspire.config.json or AppHost.cs)");
+        }
+
+        // Validate RepositoryUrl if set
+        if (!string.IsNullOrWhiteSpace(RepositoryUrl))
+        {
+            if (!Uri.TryCreate(RepositoryUrl, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+                throw new InvalidOperationException("RepositoryUrl must be a valid HTTP or HTTPS URL");
+        }
+    }
+
+    public static string? DetectAspireEndpoint(string projectFolder)
+    {
+        if (string.IsNullOrWhiteSpace(projectFolder) || !Directory.Exists(projectFolder))
+            return null;
+
+        try
+        {
+            var aspireConfigPath = Path.Combine(projectFolder, "aspire.config.json");
+            if (!File.Exists(aspireConfigPath))
+                return null;
+
+            var jsonContent = File.ReadAllText(aspireConfigPath);
+            using var doc = JsonDocument.Parse(jsonContent);
+            var root = doc.RootElement;
+
+            // Try to extract appHost URL or port
+            if (root.TryGetProperty("appHost", out var appHostElement))
+            {
+                if (appHostElement.TryGetProperty("url", out var urlElement) && 
+                    urlElement.ValueKind == JsonValueKind.String)
+                {
+                    return urlElement.GetString();
+                }
+
+                if (appHostElement.TryGetProperty("port", out var portElement) && 
+                    portElement.ValueKind == JsonValueKind.Number)
+                {
+                    int port = portElement.GetInt32();
+                    return $"http://localhost:{port}";
+                }
+            }
+
+            // Default Aspire dashboard port
+            return "http://localhost:18888";
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

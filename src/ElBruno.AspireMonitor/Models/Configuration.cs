@@ -9,4 +9,6 @@ public class Configuration
     public int MemoryThresholdWarning { get; set; } = 70;
     public int MemoryThresholdCritical { get; set; } = 90;
     public bool StartWithWindows { get; set; }
+    public string ProjectFolder { get; set; } = string.Empty;
+    public string RepositoryUrl { get; set; } = string.Empty;
 }

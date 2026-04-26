@@ -2,13 +2,15 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Settings" 
-        Height="550" 
+        Height="750" 
         Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -110,8 +112,63 @@
                   IsChecked="{Binding StartWithWindows}"
                   Margin="0,0,0,15"/>
 
+        <!-- Project Folder -->
+        <StackPanel Grid.Row="7" Margin="0,0,0,15">
+            <TextBlock Text="Project Folder:" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                         Text="{Binding ProjectFolder, UpdateSourceTrigger=PropertyChanged}"
+                         Height="25"
+                         Padding="5,3"
+                         Margin="0,0,5,0"/>
+                <Button Grid.Column="1"
+                        Content="Browse..."
+                        Width="75"
+                        Height="25"
+                        Click="BrowseFolder_Click"/>
+            </Grid>
+            <TextBlock Text="Location of your Aspire project (must contain aspire.config.json or AppHost)" 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+
+        <!-- GitHub Repository URL -->
+        <StackPanel Grid.Row="8" Margin="0,0,0,15">
+            <TextBlock Text="GitHub Repository URL:" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                         Text="{Binding RepositoryUrl, UpdateSourceTrigger=PropertyChanged}"
+                         Height="25"
+                         Padding="5,3"
+                         Margin="0,0,5,0"/>
+                <Button Grid.Column="1"
+                        Content="Open in Browser"
+                        Width="100"
+                        Height="25"
+                        Click="OpenGitHub_Click"
+                        Name="GitHubButton"/>
+            </Grid>
+            <TextBlock Text="Optional: GitHub repository URL (e.g., https://github.com/user/repo)" 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+
         <!-- Validation Message -->
-        <TextBlock Grid.Row="7"
+        <TextBlock Grid.Row="9"
                    Text="{Binding ValidationMessage}"
                    Foreground="Red"
                    FontSize="11"
@@ -120,7 +177,7 @@
                    Margin="0,0,0,10"/>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="8"
+        <StackPanel Grid.Row="10"
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right"
                     Margin="0,10,0,0">

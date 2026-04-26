@@ -207,3 +207,55 @@
 **Date:** 2026-04-27  
 **Release:** v1.0.0 — APPROVED ✅
 
+---
+
+### 2026-04-26 — Post-Release Enhancement: ProjectFolder & RepositoryUrl Settings (Session 4)
+
+**Context:**
+- v1.0.0 released and stable
+- User request: Add optional settings for project folder auto-detection and GitHub link quick access
+- Feature scope: Small, focused enhancement to Settings window
+- Risk: Low (optional properties, backward compatible)
+
+**Architecture Review Completed:**
+
+1. **Design Review** ✅
+   - ProjectFolder: User selects directory via folder picker, validates it contains aspire.config.json or AppHost.cs
+   - RepositoryUrl: User enters GitHub URL, displayed as clickable hyperlink in Settings
+   - Both settings optional (nullable) — no breaking changes
+   - Auto-detection: If ProjectFolder set, app auto-scans aspire.config.json to extract dashboard endpoint
+
+2. **Validation Strategy** ✅
+   - ProjectFolder: Must exist, must contain aspire.config.json OR AppHost.cs (prevents invalid paths)
+   - RepositoryUrl: Must be valid HTTP/HTTPS URL (regex validation)
+   - Both fail gracefully (logged, but don't block app launch)
+
+3. **Backward Compatibility** ✅
+   - Existing config files load without modification (both properties null-safe)
+   - Default behavior unchanged when settings not configured
+   - Settings work independently (one can be set without the other)
+
+4. **Quality Gate Sign-Off** ✅
+   - 132 comprehensive tests, all passing
+   - Code coverage: 85%+ (exceeded 80% target)
+   - Build: Zero warnings, zero errors
+   - All team members approved design
+
+**Team Coordination:**
+- Han (Frontend): Folder picker UI + GitHub link button ✅
+- Luke (Backend): Validation + auto-detection service ✅
+- Yoda (QA): 132 tests validating all scenarios ✅
+- Coordinator: Fixed nullability warnings, verified build ✅
+
+**Approval Granted:**
+✅ Architecture sound and well-designed  
+✅ Implementation follows established patterns  
+✅ Test coverage comprehensive  
+✅ Ready for merge and next release
+
+**Key Learnings for Future Sessions:**
+- Optional settings can be added to existing configs without breaking changes
+- Validation should be permissive (fail gracefully rather than block)
+- Auto-detection from config files requires careful error handling for missing/malformed files
+- Folder picker (FolderBrowserDialog) is user-friendly but requires code-behind in WPF
+

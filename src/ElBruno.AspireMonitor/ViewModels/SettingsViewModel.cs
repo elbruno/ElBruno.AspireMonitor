@@ -1,3 +1,4 @@
+using System.IO;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Services;
 
@@ -13,6 +14,8 @@ public class SettingsViewModel : ViewModelBase
     private int _memoryThresholdWarning = 70;
     private int _memoryThresholdCritical = 90;
     private bool _startWithWindows;
+    private string _projectFolder = string.Empty;
+    private string _repositoryUrl = string.Empty;
     private string _validationMessage = string.Empty;
 
     public SettingsViewModel(IConfigurationService configService)
@@ -61,6 +64,18 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _startWithWindows;
         set => SetProperty(ref _startWithWindows, value);
+    }
+
+    public string ProjectFolder
+    {
+        get => _projectFolder;
+        set => SetProperty(ref _projectFolder, value);
+    }
+
+    public string RepositoryUrl
+    {
+        get => _repositoryUrl;
+        set => SetProperty(ref _repositoryUrl, value);
     }
 
     public string ValidationMessage
@@ -131,6 +146,27 @@ public class SettingsViewModel : ViewModelBase
             return false;
         }
 
+        // Validate ProjectFolder if set
+        if (!string.IsNullOrWhiteSpace(ProjectFolder))
+        {
+            if (!Directory.Exists(ProjectFolder))
+            {
+                ValidationMessage = "ProjectFolder does not exist.";
+                return false;
+            }
+        }
+
+        // Validate RepositoryUrl if set
+        if (!string.IsNullOrWhiteSpace(RepositoryUrl))
+        {
+            if (!Uri.TryCreate(RepositoryUrl, UriKind.Absolute, out var repoUri) ||
+                (repoUri.Scheme != Uri.UriSchemeHttp && repoUri.Scheme != Uri.UriSchemeHttps))
+            {
+                ValidationMessage = "RepositoryUrl must be a valid HTTP or HTTPS URL";
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -147,7 +183,9 @@ public class SettingsViewModel : ViewModelBase
             CpuThresholdCritical = CpuThresholdCritical,
             MemoryThresholdWarning = MemoryThresholdWarning,
             MemoryThresholdCritical = MemoryThresholdCritical,
-            StartWithWindows = StartWithWindows
+            StartWithWindows = StartWithWindows,
+            ProjectFolder = ProjectFolder ?? string.Empty,
+            RepositoryUrl = RepositoryUrl ?? string.Empty
         };
 
         _configService.SaveConfiguration(config);
@@ -164,5 +202,19 @@ public class SettingsViewModel : ViewModelBase
         MemoryThresholdWarning = config.MemoryThresholdWarning;
         MemoryThresholdCritical = config.MemoryThresholdCritical;
         StartWithWindows = config.StartWithWindows;
+        ProjectFolder = config.ProjectFolder ?? string.Empty;
+        RepositoryUrl = config.RepositoryUrl ?? string.Empty;
+    }
+
+    public void DetectAspireEndpointFromFolder()
+    {
+        if (string.IsNullOrWhiteSpace(ProjectFolder) || !Directory.Exists(ProjectFolder))
+            return;
+
+        var detectedEndpoint = Models.AppConfiguration.DetectAspireEndpoint(ProjectFolder);
+        if (!string.IsNullOrWhiteSpace(detectedEndpoint))
+        {
+            AspireEndpoint = detectedEndpoint;
+        }
     }
 }

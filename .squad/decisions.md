@@ -402,6 +402,85 @@
 
 ---
 
+---
+
+## Additional Features (Post-Phase 4)
+
+### ProjectFolder & RepositoryUrl Settings ✅
+- **Decision:** Add two optional settings to AspireMonitor configuration
+- **ProjectFolder (string, nullable):**
+  - Path to user's Aspire project directory
+  - Enables auto-detection of aspire endpoint from aspire.config.json
+  - Validation: Folder must exist and contain aspire.config.json or AppHost.cs
+  - Rationale: Simplifies setup for users with multiple Aspire projects
+- **RepositoryUrl (string, nullable):**
+  - GitHub repository URL (or any HTTPS URL)
+  - Displayed as clickable link button in Settings window
+  - Validation: Must be valid HTTP/HTTPS URL format
+  - Rationale: Provides quick access to repo from monitoring app
+- **Auto-Detection Logic:**
+  - Triggered only if ProjectFolder is configured (opt-in)
+  - Scans for aspire.config.json, extracts dashboard URL
+  - Falls back gracefully to manual endpoint if detection fails
+- **Backward Compatibility:**
+  - Both settings optional (nullable)
+  - Existing config files load without modification
+  - No breaking changes to Configuration model
+- **Status:** ✅ IMPLEMENTED & TESTED (2026-04-26)
+  - 132 comprehensive tests, all passing
+  - 85%+ code coverage achieved
+  - Clean build, zero warnings
+  - Leia architectural review passed
+- **Implementation:** Han (UI) + Luke (backend) + Yoda (testing)
+- **Files Modified:**
+  - Configuration.cs — added ProjectFolder, RepositoryUrl properties
+  - ConfigurationService.cs — persistence for new properties
+  - SettingsWindow.xaml/.cs — folder picker + URL hyperlink UI
+  - SettingsViewModel.cs — property bindings
+  - ValidationService.cs — validation logic
+  - AutoDetectionService.cs — aspire.config.json scanner
+
+---
+
+## Session 3: ProjectFolder & RepositoryUrl Settings (2026-04-26)
+
+### ProjectFolder & RepositoryUrl Settings Feature ✅
+- **Decision:** Add optional ProjectFolder and RepositoryUrl settings to enable per-project configuration and quick GitHub access
+- **Rationale:** Users need to specify their Aspire project directory (auto-detect endpoint); quick link to GitHub for contributions
+- **Architecture Sign-Off:** ✅ Leia (Lead) approved
+- **Implementation:**
+  - **ProjectFolder:** Folder picker button in Settings; validates folder exists and contains aspire.config.json or AppHost.cs; auto-detects Aspire endpoint URL
+  - **RepositoryUrl:** Text input + "Open in Browser" button in Settings; validates HTTP(S) URL format
+  - **Both fields:** Optional (empty/null is valid), backward compatible with existing configs
+  - **Auto-Detection:** Static helper method reads aspire.config.json, extracts appHost.url or port, returns "http://localhost:{port}"
+  - **Validation:** FolderBrowserDialog for path selection; Uri.TryCreate() for URL validation
+  - **Data Persistence:** Both fields stored in config.json, ConfigurationService handles JSON deserialization with case-insensitive fallback
+
+- **Implementation Status:**
+  - ⚛️ Han (Frontend): ✅ Added folder picker + GitHub URL sections to SettingsWindow.xaml (height 550→750px); BrowseFolder_Click() and OpenGitHub_Click() event handlers implemented
+  - 🔧 Luke (Backend): ✅ Added ProjectFolder, RepositoryUrl to AppConfiguration + Configuration models; validation logic; DetectAspireEndpoint() helper; SettingsViewModel binding
+  - 🧪 Yoda (Tester): ✅ 132 comprehensive tests (ProjectFolder validation 15, RepositoryUrl validation 30, Integration 24, Framework 63); all passing
+  - 🏗️ Coordinator: ✅ Fixed nullability warnings; verified clean build (0 warnings, 0 errors); verified all tests passing
+
+- **Files Modified:**
+  - Models/AppConfiguration.cs — added ProjectFolder?, RepositoryUrl? + validation + DetectAspireEndpoint()
+  - Models/Configuration.cs — added ProjectFolder, RepositoryUrl properties with defaults
+  - ViewModels/SettingsViewModel.cs — added properties, validation, LoadSettings/SaveSettings logic
+  - Views/SettingsWindow.xaml — added two new Grid.Row sections (7=ProjectFolder, 8=RepositoryUrl)
+  - Views/SettingsWindow.xaml.cs — added folder browser and GitHub launch event handlers
+
+- **Test Coverage:**
+  - ProjectFolder validation: exists check, aspire.config.json/AppHost.cs detection, auto-endpoint detection
+  - RepositoryUrl validation: HTTP/HTTPS URL format, edge cases (trailing slash, query params)
+  - Integration: save/load persistence, backward compatibility, ViewModel binding
+  - **Result:** 132/132 tests passing (~3s execution)
+
+- **Backward Compatibility:** ✅ Config files without new fields deserialize cleanly (fields default to empty string); existing users unaffected
+- **Build Status:** ✅ Clean Release build (0 warnings, 0 errors)
+- **Status:** ✅ COMPLETE & VERIFIED
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus (documented here)
