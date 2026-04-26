@@ -19,7 +19,6 @@ public class AspireCommandService : IAspireCommandService
                 return false;
             }
 
-            // Start aspire silently (no window, detached from parent process)
             var processInfo = new ProcessStartInfo
             {
                 FileName = "aspire",
@@ -42,7 +41,6 @@ public class AspireCommandService : IAspireCommandService
                 System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Started aspire silently (PID: {process.Id}) in {workingFolder}");
                 
                 // Don't wait for completion - aspire start runs the server in background
-                // Give it a moment to initialize
                 await Task.Delay(1000);
                 return true;
             }
@@ -79,7 +77,7 @@ public class AspireCommandService : IAspireCommandService
                     return false;
                 }
 
-                await Task.Run(() => process.WaitForExit(5000));
+                await Task.Run(() => process.WaitForExit(10000));
                 System.Diagnostics.Debug.WriteLine("[AspireCommandService] Stopped aspire");
                 return true;
             }
@@ -99,26 +97,8 @@ public class AspireCommandService : IAspireCommandService
     {
         try
         {
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = "aspire",
-                Arguments = "ps",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-
-            using (var process = Process.Start(processInfo))
-            {
-                if (process == null)
-                    return null;
-
-                var output = await process.StandardOutput.ReadToEndAsync();
-                await Task.Run(() => process.WaitForExit(5000));
-
-                return ParseEndpointFromAspirePs(output);
-            }
+            var output = await RunAspireCommandAsync("ps");
+            return ParseEndpointFromAspirePs(output);
         }
         catch (Exception ex)
         {
@@ -128,8 +108,76 @@ public class AspireCommandService : IAspireCommandService
     }
 
     /// <summary>
+    /// Gets running Aspire instances information via 'aspire ps' command.
+    /// </summary>
+    public async Task<string> GetRunningInstancesAsync()
+    {
+        try
+        {
+            var output = await RunAspireCommandAsync("ps");
+            return string.IsNullOrWhiteSpace(output) ? "No running instances" : output;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Error getting running instances: {ex.Message}");
+            return $"Error: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Gets detailed resource information via 'aspire describe' command.
+    /// </summary>
+    public async Task<string> DescribeResourcesAsync()
+    {
+        try
+        {
+            var output = await RunAspireCommandAsync("describe");
+            return string.IsNullOrWhiteSpace(output) ? "No resources found" : output;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Error describing resources: {ex.Message}");
+            return $"Error: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Generic method to run Aspire commands silently and capture output.
+    /// </summary>
+    private async Task<string> RunAspireCommandAsync(string arguments)
+    {
+        var processInfo = new ProcessStartInfo
+        {
+            FileName = "aspire",
+            Arguments = arguments,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+
+        using (var process = Process.Start(processInfo))
+        {
+            if (process == null)
+                return string.Empty;
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
+            
+            await Task.Run(() => process.WaitForExit(10000));
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Command 'aspire {arguments}' error: {error}");
+            }
+
+            return output ?? string.Empty;
+        }
+    }
+
+    /// <summary>
     /// Parses 'aspire ps' output to extract the dashboard endpoint URL.
-    /// The output format typically shows AppHost with a URL like: http://localhost:17195
+    /// Looks for URLs in the format http://localhost:PORT or https://localhost:PORT
     /// </summary>
     private string? ParseEndpointFromAspirePs(string output)
     {
@@ -149,7 +197,7 @@ public class AspireCommandService : IAspireCommandService
                 return endpoint;
             }
 
-            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Could not parse endpoint from aspire ps output: {output}");
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Could not parse endpoint from aspire ps output");
             return null;
         }
         catch (Exception ex)
@@ -161,32 +209,6 @@ public class AspireCommandService : IAspireCommandService
 
     public async Task<string> GetStatusAsync()
     {
-        try
-        {
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = "aspire",
-                Arguments = "ps",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
-
-            using (var process = Process.Start(processInfo))
-            {
-                if (process == null)
-                    return "Unable to check status";
-
-                var output = await process.StandardOutput.ReadToEndAsync();
-                await Task.Run(() => process.WaitForExit(5000));
-
-                return string.IsNullOrWhiteSpace(output) ? "No running instances" : output;
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Error getting status: {ex.Message}");
-            return $"Error: {ex.Message}";
-        }
+        return await GetRunningInstancesAsync();
     }
 }

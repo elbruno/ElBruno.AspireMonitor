@@ -6,4 +6,6 @@ public interface IAspireCommandService
     Task<bool> StopAspireAsync();
     Task<string> GetStatusAsync();
     Task<string?> DetectAspireEndpointAsync();
+    Task<string> GetRunningInstancesAsync();
+    Task<string> DescribeResourcesAsync();
 }
