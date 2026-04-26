@@ -481,3 +481,116 @@ Phase 4 architecture design and integration verification complete. Designed poll
 4. Publish to NuGet.org
 5. Post social announcements (LinkedIn, Twitter, Blog)
 
+
+---
+
+### 2026-04-26 — Repository Structure Enforcement (Session 7)
+
+**Context:**
+- Repository had misplaced files at the root (images, docs, scripts)
+- User (Bruno Capuano) requested strict enforcement of repository structure rules
+- Goal: Clean repo layout with only README.md and LICENSE at root
+
+**Repository Structure Rules Established:**
+
+1. **Root Directory (Minimal):**
+   - Only README.md and LICENSE allowed at repo root
+   - Exception: aspire.config.json (Aspire build configuration)
+
+2. **docs/ — All Documentation:**
+   - General guides in docs/
+   - Subfolders: docs/design/, docs/releases/, docs/promotional/
+   - CHANGELOG.md → docs/CHANGELOG.md
+   - DESIGN.md → docs/design/DESIGN.md
+   - Release notes → docs/releases/
+
+3. **images/ — All Images:**
+   - All PNG, JPG, GIF, SVG files belong in images/
+   - NuGet package icons referenced via .csproj with relative path: ..\..\images\aspire-monitor-icon-128.png
+
+4. **src/ — All Code:**
+   - All source code, projects, tests
+   - Subdirectories: src/ElBruno.AspireMonitor/, src/ElBruno.AspireMonitor.Tests/
+
+5. **scripts/ — Utility Scripts:**
+   - Standalone scripts (Python, PowerShell, shell)
+   - generate_images.py → scripts/generate_images.py
+
+6. **
+upkg/ — NuGet Artifacts:**
+   - Extracted NuGet package contents for inspection
+
+**Actions Completed:**
+
+1. **Deleted Duplicate Images from Root** ✅
+   - aspire-monitor-blog.png
+   - aspire-monitor-icon-128.png
+   - aspire-monitor-icon-256.png
+   - aspire-monitor-linkedin.png
+   - aspire-monitor-twitter.png
+   (All already existed in images/)
+
+2. **Moved New Images to images/** ✅
+   - aspire-monitor-dashboard-blog-hero-image-monitoring-analytic-20260426-105611.png
+   - aspire-monitor-distributed-application-architecture-visualiz-20260426-105652.png
+   - linkedin-professional-social-media-banner-for-aspire-monitor-20260426-105712.png
+   - modern-application-monitoring-icon-purple-gradient-circular-20260426-105632.png
+   - modern-nuget-package-logo-icon-minimalist-design-with-purple-20260426-105551.png
+
+3. **Moved Documentation Files** ✅
+   - CHANGELOG.md → docs/CHANGELOG.md
+   - DESIGN.md → docs/design/DESIGN.md
+   - RELEASE-v1.0.0.md → docs/releases/RELEASE-v1.0.0.md
+
+4. **Moved Script** ✅
+   - generate_images.py → scripts/generate_images.py
+
+5. **Updated File References** ✅
+   - docs/design/DESIGN.md: Updated Asset Locations section to reflect images/ folder
+   - images/README.md: Updated asset status table with all newly moved images
+   - README.md: No links to CHANGELOG/DESIGN found (no updates needed)
+
+6. **Created Contributing Guide** ✅
+   - docs/CONTRIBUTING.md with structure rules and development workflow
+
+7. **Captured Decision** ✅
+   - .squad/decisions/inbox/leia-repo-structure-rules.md documents the rules and changes
+
+8. **Git Commit** ✅
+   - Committed all changes with descriptive message
+   - Commit hash: ef99a19
+
+**Key Technical Learnings:**
+
+1. **NuGet Icon Paths:**
+   - .csproj already correctly references ..\..\images\aspire-monitor-icon-128.png
+   - Relative paths work correctly when images are in images/ folder
+   - No changes needed to .csproj after moving images
+
+2. **Git Operations for Restructuring:**
+   - git rm for removing duplicate files
+   - git mv for moving files (preserves history)
+   - Create directories first with New-Item -Force
+   - Git automatically tracks moves and shows as renames (R) in status
+
+3. **Repository Organization Best Practices:**
+   - Minimal root: Only essential files at top level
+   - Logical grouping: docs/, images/, src/, scripts/ separation
+   - Clear structure: Easy navigation for contributors
+   - Documentation: CONTRIBUTING.md codifies rules for future work
+
+4. **Decision Tracking:**
+   - Structural decisions captured in .squad/decisions/inbox/
+   - Files document what/why/who for future reference
+   - Enables traceability of architectural decisions
+
+**Status:** ✅ COMPLETE — Repository structure rules enforced and documented
+
+**Result:**
+- Root directory now contains only: README.md, LICENSE, aspire.config.json
+- All documentation organized in docs/ with subfolders
+- All images consolidated in images/
+- All scripts in scripts/
+- Contributing guidelines documented
+- Rules captured for future enforcement
+
