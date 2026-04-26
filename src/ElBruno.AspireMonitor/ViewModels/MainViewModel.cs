@@ -43,8 +43,8 @@ public class MainViewModel : ViewModelBase
         
         RefreshCommand = new RelayCommand(_ => RefreshData());
         OpenUrlCommand = new RelayCommand(param => OpenUrl(param?.ToString() ?? string.Empty));
-        StartAspireCommand = new RelayCommand(_ => _ = StartAspireAsync(), _ => !_isExecutingCommand);
-        StopAspireCommand = new RelayCommand(_ => _ = StopAspireAsync(), _ => !_isExecutingCommand);
+        StartAspireCommand = new RelayCommand(_ => _ = StartAspireAsync(), _ => !_isExecutingCommand && !_isConnected);
+        StopAspireCommand = new RelayCommand(_ => _ = StopAspireAsync(), _ => !_isExecutingCommand && _isConnected);
         
         // Load project folder from config
         if (_configService != null)
@@ -91,6 +91,7 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(ErrorTitle));
                 OnPropertyChanged(nameof(ErrorMessage));
                 OnPropertyChanged(nameof(OverallStatusColor));
+                CommandManager.InvalidateRequerySuggested();
             }
         }
     }
