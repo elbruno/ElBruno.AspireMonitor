@@ -5,6 +5,32 @@
 **Role:** Tester (QA/Quality)
 **Created:** 2026-04-26
 
+## Core Context
+
+**Project:** Windows system tray monitor for Aspire distributed applications (.NET 10, WPF)  
+**Current Version:** 1.2.0 (273 tests, 100% passing)  
+**Coverage:** >80% code coverage (target met)  
+
+**Primary Responsibility:** Unit & integration testing for API client, polling, status logic, configuration, UI, edge cases  
+
+**Key Testing Focus:**
+- API error handling (timeout, malformed, offline)
+- Status calculation accuracy (color thresholds: <70% green, 70-90% yellow, >90% red)
+- Configuration persistence (file I/O, JSON parsing)
+- Polling state transitions and recovery
+- Edge cases: duplicate URLs, large datasets (1000+), missing fields, network offline
+
+**Critical Tests Written:**
+- Aspire API mock tests (responses, errors, timeout)
+- Status calculation logic (threshold verification)
+- Configuration file parsing and persistence
+- Polling service state machine
+- Mini window pinned resources feature (v1.2.0)
+
+**Release Gate:** All tests passing required before release approval. v1.0.0 shipped with 223/223 passing. v1.2.0 shipped with 273/273 passing (100%).
+
+---
+
 ## Session Log
 
 ### 2026-04-26 — Team Initialization (Session 1)

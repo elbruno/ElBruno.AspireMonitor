@@ -5,6 +5,26 @@
 **Role:** Lead
 **Created:** 2026-04-26
 
+## Core Context
+
+**Project:** Windows system tray monitor for Aspire distributed applications (.NET 10, WPF)  
+**Current Version:** 1.2.0 (released 2026-04-26)  
+**Team:** Leia (Lead), Han (Frontend), Luke (Backend), Yoda (Tester), Chewie (DevRel), Lando (Designer), Ralph (Orchestrator)  
+
+**Key Architecture:** WPF UI + Aspire HTTP API integration + 2-sec polling + color-coded status (green <70%, yellow 70-90%, red >90%) + global tool packaging with OIDC  
+
+**Repository Structure:** src/ (code), docs/ (guides), images/ (assets), scripts/ (utilities)  
+
+**v1.0.0 Release (2026-04-26):** Stable baseline with core monitoring, UI, configuration (223 tests, >80% coverage)  
+
+**v1.2.0 Release (2026-04-26):** Pinned resources, auto-resize mini window, dashboard link, dashboard token preservation, CLI path fix, transparent tray icons (273 tests, 100% passing)  
+
+**Repository Structure Rules:** Minimal root (README.md, LICENSE, aspire.config.json only) + organized docs/, images/, src/, scripts/  
+
+**Status:** Production release, NuGet push pending (API key required)  
+
+---
+
 ## Session Log
 
 ### 2026-04-26 — Team Initialization (Session 1)

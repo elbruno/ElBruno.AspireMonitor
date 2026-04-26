@@ -5,6 +5,38 @@
 **Role:** Design (Graphics, Icons, Image Generation)
 **Created:** 2026-04-26
 
+## Core Context
+
+**Project:** Windows system tray monitor for Aspire distributed applications  
+**Current Version:** 1.2.0 (released 2026-04-26)  
+**Brand Theme:** Aspire (Microsoft Copilot blue), monitor/dashboard aesthetic  
+
+**Design Deliverables:**
+- NuGet package icons: 256x256 PNG, 128x128 PNG (primary & secondary)
+- Promotional graphics: LinkedIn (1200x630), Twitter (1024x512), blog header (1200x630)
+- Demo GIF: 10-15 seconds showing app UI, status colors, tray icon, URL clicking
+- All assets organized in images/ folder
+
+**Visual Design System:**
+- Primary colors: Green (healthy <70%), Yellow (warning 70-90%), Red (critical >90%) status indicators
+- Icon style: Modern, clean, scalable, professional
+- Graphics: Tech-forward, educational, consistent branding across all materials
+
+**Key Assets Created:**
+- aspire-monitor-icon-128.png (NuGet icon)
+- aspire-monitor-icon-256.png (NuGet icon)
+- aspire-monitor-linkedin.png, aspire-monitor-twitter.png, aspire-monitor-blog.png (social/promotional)
+- aspire-monitor-dashboard-blog-hero-image-monitoring-analytic-*.png (AI-generated graphics)
+- modern-application-monitoring-icon-purple-gradient-circular-*.png (AI-generated icon variants)
+- modern-nuget-package-logo-icon-minimalist-design-*.png (AI-generated package logo)
+- linkedin-professional-social-media-banner-*.png (AI-generated social banner)
+
+**Design Tools:** t2i CLI for AI image generation (FLUX.2, MAI-Image-2 providers), optimized for web and package visibility  
+
+**Status:** All visual assets completed and integrated into v1.2.0 release
+
+---
+
 ## Session Log
 
 ### 2026-04-26 — Team Initialization (Session 1)
