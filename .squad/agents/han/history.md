@@ -5,6 +5,33 @@
 **Role:** Frontend Dev (UI/UX)
 **Created:** 2026-04-26
 
+## Core Context
+
+**Architecture:** WPF MVVM system tray monitor for Aspire distributed applications. App.xaml.cs owns NotifyIcon (process-scoped); MainWindow is a UI view (minimizable, stays in tray when closed). Status colors determined by backend polling (Green <70%, Yellow 70-90%, Red >90%).
+
+**Key Patterns:**
+- **Tray Icon Ownership:** Process-scoped in App.xaml.cs, NOT in MainWindow. Prevents duplicate icons on window reopen cycles. Mirrors OllamaMonitor pattern.
+- **Path Truncation:** Win32 PathCompactPathEx via Helpers/PathHumanizer.cs. Returns "C:\foo\...\baz\file.txt" format. Fallback: segment-based truncation for cross-platform support.
+- **MVVM Data Binding:** ViewModel derived properties (ProjectFolderDisplay, WorkingFolderDisplay) bind to XAML. Full paths in ToolTips.
+- **Color Thresholds:** Green <70% CPU+MEM, Yellow 70-90%, Red >90% (industry standard, configurable).
+- **NotifyIcon Context Menu:** Details, Mini Monitor, Settings, GitHub, Exit. Icon color updates based on ViewModel.OverallStatusColor.
+
+**Critical Decisions:**
+1. Removed `StartupUri="Views/MainWindow.xaml"` from App.xaml (auto-create MainWindow in App.OnStartup instead) → fixes duplicate tray icons
+2. Move NotifyIcon initialization from MainWindow to App.xaml.cs:OnStartup/OnExit → process-level resource ownership
+3. Use Win32 PathCompactPathEx for path truncation (zero NuGet deps, built-in Windows) + managed fallback
+4. MiniMonitorWindow for quick status view (separate from MainWindow, stays on top)
+
+**Current Status:**
+- ✅ Build clean (0 errors, 2 unrelated warnings)
+- ✅ All 260 tests passing
+- ✅ Tray icon singleton verified at runtime
+- ✅ Path truncation working (50 chars MainWindow, 35 chars MiniMonitor)
+
+**Dependencies:** None new (uses built-in Win32, WPF, .NET 10). PathHumanizer is internal helper.
+
+---
+
 ## Session Log
 
 ### 2026-04-26 — Team Initialization (Session 1)

@@ -5,6 +5,39 @@
 **Role:** Backend Dev (API Integration)
 **Created:** 2026-04-26
 
+## Core Context
+
+**Integration:** Aspire HTTP API polling service. Fetches resource metrics (CPU, memory, disk, status) every 2 seconds (configurable). Calculates color-coded status (Green/Yellow/Red) for tray icon.
+
+**Key Patterns:**
+- **Background Polling:** AspirePollingService runs background thread with exponential backoff retry (3 attempts, configurable timeout). Updates ViewModel via INotifyPropertyChanged.
+- **Status Calculation:** StatusCalculator determines Green/Yellow/Red from CPU+MEM metrics. Thresholds: Green <70%, Yellow 70-90%, Red >90%.
+- **Error Recovery:** Last-known-good state retained on API errors. Auto-reconnect with exponential backoff. Graceful UI updates (status shows "Unknown" during downtime).
+- **Configuration:** JSON file in AppData\Local\ElBruno\AspireMonitor\config.json. 6 properties: AspireEndpoint, PollingIntervalMs, CpuThresholdWarning, CpuThresholdCritical, MemThresholdWarning, MemThresholdCritical.
+- **Data Models:** AspireResource, ResourceMetrics, ResourceStatus, StatusColor, HealthStatus enums. All nullable-reference-safe.
+
+**API Endpoints:**
+- `GET /resources` → List all resources with current metrics
+- `GET /resources/{resource}` → Single resource details
+- `GET /health` → Aspire app health status
+
+**Error Handling:**
+- Network timeout → retry with backoff, show last-known-good state
+- Malformed JSON → log error, use fallback status (Unknown)
+- Aspire offline → show "Offline" status, keep retrying
+- No retry on 4xx (client error) — requires config fix
+
+**Current Status:**
+- ✅ Polling service stable (2-second heartbeat)
+- ✅ Retry logic with exponential backoff verified
+- ✅ Configuration system working (JSON parsing, defaults)
+- ✅ 260+ tests covering all scenarios
+- ✅ Graceful error handling in place
+
+**Dependencies:** Polly (retry policies), System.Net.Http (standard, no NuGet), JSON parsing (built-in System.Text.Json).
+
+---
+
 ## Session Log
 
 ### 2026-04-26 — Team Initialization (Session 1)
