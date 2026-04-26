@@ -1,6 +1,6 @@
 # Squad Decisions — ElBruno.AspireMonitor
 
-**Last Updated:** 2026-04-26 (Session 3 Complete: Phase 3 — Two-Window UI + Test Suite)
+**Last Updated:** 2026-04-26 (Session 4 Complete: Leia Lead Repository Structure Enforcement)
 **Phase:** Phases 1-3 Complete → Phase 4-5 Ready (Integration & Release)
 
 ---
@@ -115,6 +115,22 @@
 - **Disable:** All other workflows (PR validation, code coverage, etc.)
 - **Status:** ✅ VERIFIED (Leia, 2026-04-26)
 - **Notes:** Will be configured during Phase 5 (release phase)
+
+### Repository Structure Rules (2026-04-26)
+- **Decision:** Enforce strict repository layout rules to keep repo clean and predictable
+- **Rules:**
+  - Only `README.md`, `LICENSE`, and `aspire.config.json` allowed at repo root
+  - All documentation → `docs/` with subfolders (design/, releases/, promotional/)
+  - All images → `images/`
+  - All source code and tests → `src/`
+  - Standalone scripts → `scripts/`
+- **Rationale:** Keeps the repo clean, predictable, and easy to navigate
+- **Implementation:** Applied retroactively by Leia (2026-04-26)
+  - Moved images from root → `images/`: aspire-monitor-dashboard-blog-hero-image-monitoring-analytic-20260426-105611.png, aspire-monitor-distributed-application-architecture-visualiz-20260426-105652.png, linkedin-professional-social-media-banner-for-aspire-monitor-20260426-105712.png, modern-application-monitoring-icon-purple-gradient-circular-20260426-105632.png, modern-nuget-package-logo-icon-minimalist-design-with-purple-20260426-105551.png
+  - Moved docs: CHANGELOG.md → `docs/CHANGELOG.md`, DESIGN.md → `docs/design/DESIGN.md`, RELEASE-v1.0.0.md → `docs/releases/RELEASE-v1.0.0.md`
+  - Moved scripts: generate_images.py → `scripts/generate_images.py`
+  - Deleted duplicates: aspire-monitor-blog.png, aspire-monitor-icon-128.png, aspire-monitor-icon-256.png, aspire-monitor-linkedin.png, aspire-monitor-twitter.png
+- **Status:** ✅ COMPLETED (Leia, 2026-04-26, commits ef99a19 + e847533)
 
 ---
 
