@@ -1,4 +1,5 @@
 using System.Windows.Media;
+using System.Windows.Input;
 using ElBruno.AspireMonitor.Infrastructure;
 
 namespace ElBruno.AspireMonitor.ViewModels;
@@ -9,6 +10,7 @@ public class MiniMonitorViewModel : ViewModelBase
     private string _resourceCount = "0 Resources";
     private string _statusEmoji = "⚪";
     private System.Windows.Media.Brush _statusColor = System.Windows.Media.Brushes.Gray;
+    private string _workingFolder = "Not configured";
 
     public MiniMonitorViewModel() : this(null)
     {
@@ -45,6 +47,16 @@ public class MiniMonitorViewModel : ViewModelBase
         set => SetProperty(ref _statusColor, value);
     }
 
+    public string WorkingFolder
+    {
+        get => _workingFolder;
+        set => SetProperty(ref _workingFolder, value);
+    }
+
+    public ICommand? StartAspireCommand => _mainViewModel?.StartAspireCommand;
+
+    public ICommand? StopAspireCommand => _mainViewModel?.StopAspireCommand;
+
     public string DetailsSummary
     {
         get
@@ -64,7 +76,8 @@ public class MiniMonitorViewModel : ViewModelBase
     {
         if (e.PropertyName == nameof(MainViewModel.Resources) ||
             e.PropertyName == nameof(MainViewModel.OverallStatusColor) ||
-            e.PropertyName == nameof(MainViewModel.IsConnected))
+            e.PropertyName == nameof(MainViewModel.IsConnected) ||
+            e.PropertyName == nameof(MainViewModel.ProjectFolder))
         {
             UpdateMiniMonitorData();
         }
@@ -78,6 +91,11 @@ public class MiniMonitorViewModel : ViewModelBase
         // Update resource count
         int count = _mainViewModel.Resources.Count;
         ResourceCount = count == 1 ? "1 Resource" : $"{count} Resources";
+
+        // Update working folder
+        WorkingFolder = string.IsNullOrEmpty(_mainViewModel.ProjectFolder) 
+            ? "Not configured" 
+            : _mainViewModel.ProjectFolder;
 
         // Update status indicator
         var statusBrush = _mainViewModel.OverallStatusColor as SolidColorBrush;

@@ -1,4 +1,5 @@
 using System.Windows;
+using ElBruno.AspireMonitor.ViewModels;
 
 namespace ElBruno.AspireMonitor.Views;
 
@@ -15,6 +16,18 @@ public partial class MiniMonitor : Window
     {
         _dragStartPoint = e.GetPosition(this);
         DragMove();
+    }
+
+    private void Start_Click(object sender, RoutedEventArgs e)
+    {
+        var viewModel = DataContext as MiniMonitorViewModel;
+        viewModel?.StartAspireCommand?.Execute(null);
+    }
+
+    private void Stop_Click(object sender, RoutedEventArgs e)
+    {
+        var viewModel = DataContext as MiniMonitorViewModel;
+        viewModel?.StopAspireCommand?.Execute(null);
     }
 
     private void OpenDetails_Click(object sender, RoutedEventArgs e)

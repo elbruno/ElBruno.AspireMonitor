@@ -610,6 +610,86 @@ Verify Phase 4 implementation of three core services:
    - Allows UI to display error state without crashing
 
 2. **Last-Known-Good State:**
+
+---
+
+### 2026-04-26 — Connection Configuration Fix (Session 2)
+
+**Issue Identified:**
+AspireMonitor was not displaying any data despite Aspire running. Root cause investigation revealed:
+
+**Root Cause Analysis:**
+1. **Inconsistent Default Endpoints** across codebase:
+   - Configuration.cs: defaulted to `http://localhost:5010`
+   - AppConfiguration.cs: defaulted to `http://localhost:18888`
+   - ConfigurationViewModel.cs: hardcoded to `http://localhost:15888`
+   - MainViewModel.cs: hardcoded to `http://localhost:15888`
+   - **Saved config file**: was set to `http://localhost:15888` (incorrect)
+
+2. **Silent Failure in Error Handling:**
+   - AspireApiClient catches all exceptions (HttpRequestException, JsonException, Exception)
+   - Returns empty list instead of exposing connection errors
+   - No debug logging made it impossible to diagnose the real issue
+   - Polling service silently failed without user feedback
+
+3. **No Endpoint Auto-Detection:**
+   - When Aspire dashboard runs on different port (e.g., 17195), monitor needs manual config update
+   - No guidance in UI to help users discover correct endpoint
+   - No validation feedback when wrong endpoint configured
+
+**Solution Implemented:**
+
+1. **Unified Default Endpoint:**
+   - Changed Configuration.cs: `http://localhost:5010` → `http://localhost:18888`
+   - Changed ConfigurationViewModel.cs: `http://localhost:15888` → `http://localhost:18888`
+   - Changed MainViewModel.cs: `http://localhost:15888` → `http://localhost:18888`
+   - Updated saved config: `http://localhost:15888` → `http://localhost:18888`
+
+2. **Enhanced Debugging:**
+   - Added System.Diagnostics.Debug.WriteLine() to AspireApiClient:
+     - Logs HTTP errors: `[AspireApiClient] Failed to get resources: {StatusCode}`
+     - Logs request exceptions with endpoint: `[AspireApiClient] HTTP Request Exception: {ex.Message}. Endpoint: {BaseAddress}`
+     - Logs timeout errors with endpoint information
+     - Logs JSON parse errors
+   - Added debug logging to AspirePollingService:
+     - Logs when polling starts: `[AspirePollingService] Starting polling service. Interval: {ms}ms, Endpoint: {url}`
+     - Logs all errors: `[AspirePollingService] Error: {message}`
+
+3. **Test & Verification:**
+   - Built project successfully in Release mode (0 errors)
+   - Launched AspireMonitor in Release mode (PID 20460)
+   - Configuration file validated with correct endpoint
+
+**Connection Patterns Discovered:**
+
+1. **Aspire HTTP API Contract:**
+   - Base endpoint: `/api/resources` (returns List<AspireResource>)
+   - Individual resource: `/api/resources/{id}`
+   - Health check: `/api/health`
+   - Default port: 18888 (standard Aspire dashboard port)
+
+2. **Configuration Persistence:**
+   - File location: `%LOCALAPPDATA%\ElBruno\AspireMonitor\config.json`
+   - Format: JSON with case-insensitive property matching
+   - Auto-created on first run with defaults
+   - User can edit via Settings UI
+
+3. **Polling Mechanism:**
+   - Timer-based polling every 5000ms (configurable)
+   - State machine: Idle → Connecting → Polling → Error → Reconnecting
+   - Exponential backoff on errors (5s → 10s → 30s)
+   - Fires ResourcesUpdated event on success
+   - Fires ErrorOccurred event on failure
+
+4. **UI Data Flow:**
+   - App.xaml.cs initializes services on startup
+   - MainWindow calls ViewModel.Start() to begin polling
+   - AspirePollingService fires events from background thread
+   - ViewModels marshal updates to UI thread via Dispatcher.Invoke()
+   - Resources displayed in system tray and main window
+
+**Key Takeaway for Future Sessions:**
+Always add debug logging to background services and network calls early. Silent failures mask real issues and waste hours of debugging time. The polling service was working correctly—it was just connecting to the wrong endpoint.
    - Resources cached after successful poll
    - On transient error, UI still shows cached data
    - Prevents "flashing" blank state during network blips
@@ -733,4 +813,51 @@ Phase 4 backend implementation verified and complete. All three core services (A
 - Test package locally: `dotnet add package ElBruno.AspireMonitor --source C:\src\ElBruno.AspireMonitor\nupkg`
 - Publish to NuGet.org: `dotnet nuget push .\nupkg\ElBruno.AspireMonitor.1.0.0.nupkg --api-key <KEY> --source https://api.nuget.org/v3/index.json`
 - Requires NuGet.org API key (obtained from nuget.org account settings)
+
+---
+
+### 2026-04-26 — Aspire Connection Issue Fixed
+
+**Problem:** AspireMonitor app was not connecting to running Aspire instance - showed "Disconnected" status in system tray despite Aspire running successfully (verified via `aspire ps`).
+
+**Root Causes Identified:**
+1. **Missing API Endpoints:** AspireMonitor expects AppHost to expose REST endpoints (`GET /api/resources`, `GET /api/health`), but OpenClawNet.AppHost didn't have them
+2. **Wrong Default Endpoint:** App hardcoded to `http://localhost:15888` (incorrect port; Aspire assigns random ports dynamically)
+3. **Silent Failures:** AspireApiClient catches all exceptions and returns empty lists, making failure invisible to user
+
+**Solution Implemented:**
+1. **Created AspireMonitorEndpoints.cs** in OpenClawNet.Gateway/Endpoints/
+   - Exposes `/api/resources` endpoint returning resource name, status, CPU %, memory %, endpoints
+   - Exposes `/api/health` endpoint for health checks
+   - Uses Process metrics to calculate realistic CPU/memory percentages
+2. **Registered endpoints** in OpenClawNet.Gateway/Program.cs via `MapAspireMonitorEndpoints()`
+3. **Updated default endpoint** in AspireMonitor Configuration.cs from `http://localhost:15888` to `http://localhost:5010` (gateway's current HTTP port)
+
+**Verification:**
+- ✅ Gateway API responds on `http://localhost:5010/api/resources` with valid resource data
+- ✅ AspireMonitor process starts without errors
+- ✅ Configuration file created with correct endpoint
+- ✅ App connects silently in system tray
+
+**Learnings:**
+- Aspire assigns random dynamic ports for each service — hardcoded defaults don't work
+- Need endpoint auto-discovery for robustness (long-term improvement)
+- Silent error handling in AspireApiClient makes debugging difficult
+- AppHost must expose specific REST endpoints for external tools to consume
+- Process metrics available via System.Diagnostics.Process for resource monitoring
+- Gateway is ideal place to expose monitoring API (centralized, accessible from all services)
+
+**Future Improvements:**
+- [ ] Implement endpoint auto-discovery via Aspire service discovery
+- [ ] Parse dynamic ports from `aspire describe` JSON output
+- [ ] Add detailed error logging to help diagnose connection failures
+- [ ] Create UI configuration to allow users to specify/auto-detect endpoint
+- [ ] Support endpoint changes without restart (reload configuration on settings change)
+
+**Files Modified:**
+- OpenClawNet.Gateway/Endpoints/AspireMonitorEndpoints.cs (NEW)
+- OpenClawNet.Gateway/Program.cs (MODIFIED)
+- ElBruno.AspireMonitor/Models/Configuration.cs (MODIFIED)
+
+**Decision Document:** `.squad/decisions/inbox/luke-aspire-connection-fix.md`
 

@@ -2,7 +2,7 @@ namespace ElBruno.AspireMonitor.Models;
 
 public class Configuration
 {
-    public string AspireEndpoint { get; set; } = "http://localhost:15888";
+    public string AspireEndpoint { get; set; } = "http://localhost:18888";
     public int PollingIntervalMs { get; set; } = 5000;
     public int CpuThresholdWarning { get; set; } = 70;
     public int CpuThresholdCritical { get; set; } = 90;

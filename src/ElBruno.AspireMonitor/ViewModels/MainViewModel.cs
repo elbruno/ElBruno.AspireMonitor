@@ -11,25 +11,39 @@ public class MainViewModel : ViewModelBase
 {
     private readonly IAspirePollingService? _pollingService;
     private readonly IConfigurationService? _configService;
-    private string _hostUrl = "http://localhost:15888";
+    private readonly IAspireCommandService? _commandService;
+    private string _hostUrl = "http://localhost:18888";
     private string _currentStatus = "Disconnected";
     private bool _isConnected;
     private DateTime _lastUpdated = DateTime.Now;
     private ObservableCollection<ResourceViewModel> _resources = new();
+    private string _projectFolder = string.Empty;
+    private bool _isExecutingCommand;
+    private string _commandStatus = string.Empty;
 
-    public MainViewModel() : this(null, null)
+    public MainViewModel() : this(null, null, null)
     {
         // Design-time constructor
         InitializeSampleData();
     }
 
-    public MainViewModel(IAspirePollingService? pollingService, IConfigurationService? configService)
+    public MainViewModel(IAspirePollingService? pollingService, IConfigurationService? configService, IAspireCommandService? commandService = null)
     {
         _pollingService = pollingService;
         _configService = configService;
+        _commandService = commandService;
         
         RefreshCommand = new RelayCommand(_ => RefreshData());
         OpenUrlCommand = new RelayCommand(param => OpenUrl(param?.ToString() ?? string.Empty));
+        StartAspireCommand = new RelayCommand(_ => _ = StartAspireAsync(), _ => !_isExecutingCommand);
+        StopAspireCommand = new RelayCommand(_ => _ = StopAspireAsync(), _ => !_isExecutingCommand);
+        
+        // Load project folder from config
+        if (_configService != null)
+        {
+            var config = _configService.LoadConfiguration();
+            ProjectFolder = config.ProjectFolder ?? string.Empty;
+        }
         
         if (_pollingService != null)
         {
@@ -127,8 +141,35 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _resources, value);
     }
 
+    public string ProjectFolder
+    {
+        get => _projectFolder;
+        set => SetProperty(ref _projectFolder, value);
+    }
+
+    public string CommandStatus
+    {
+        get => _commandStatus;
+        set => SetProperty(ref _commandStatus, value);
+    }
+
+    public bool IsExecutingCommand
+    {
+        get => _isExecutingCommand;
+        set
+        {
+            if (SetProperty(ref _isExecutingCommand, value))
+            {
+                // Trigger requery of commands
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
     public ICommand? RefreshCommand { get; }
     public ICommand? OpenUrlCommand { get; }
+    public ICommand? StartAspireCommand { get; }
+    public ICommand? StopAspireCommand { get; }
 
     private void RefreshData()
     {
@@ -221,6 +262,98 @@ public class MainViewModel : ViewModelBase
     public void Stop()
     {
         _pollingService?.Stop();
+    }
+
+    private async Task StartAspireAsync()
+    {
+        if (_commandService == null || string.IsNullOrWhiteSpace(ProjectFolder))
+        {
+            CommandStatus = "❌ Project folder not configured";
+            return;
+        }
+
+        try
+        {
+            IsExecutingCommand = true;
+            CommandStatus = "🚀 Starting Aspire...";
+            
+            var success = await _commandService.StartAspireAsync(ProjectFolder);
+            
+            if (success)
+            {
+                CommandStatus = "✅ Aspire started successfully";
+                System.Diagnostics.Debug.WriteLine("[MainViewModel] Aspire started successfully");
+            }
+            else
+            {
+                CommandStatus = "❌ Failed to start Aspire";
+                System.Diagnostics.Debug.WriteLine("[MainViewModel] Failed to start Aspire");
+            }
+        }
+        catch (Exception ex)
+        {
+            CommandStatus = $"❌ Error: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Error starting Aspire: {ex.Message}");
+        }
+        finally
+        {
+            IsExecutingCommand = false;
+            // Clear status after 5 seconds
+            _ = Task.Delay(5000).ContinueWith(_ =>
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (CommandStatus != "✅ Aspire started successfully" && !CommandStatus.StartsWith("🚀"))
+                        CommandStatus = string.Empty;
+                });
+            });
+        }
+    }
+
+    private async Task StopAspireAsync()
+    {
+        if (_commandService == null)
+        {
+            CommandStatus = "❌ Command service not available";
+            return;
+        }
+
+        try
+        {
+            IsExecutingCommand = true;
+            CommandStatus = "⏹️ Stopping Aspire...";
+            
+            var success = await _commandService.StopAspireAsync();
+            
+            if (success)
+            {
+                CommandStatus = "✅ Aspire stopped successfully";
+                System.Diagnostics.Debug.WriteLine("[MainViewModel] Aspire stopped successfully");
+            }
+            else
+            {
+                CommandStatus = "❌ Failed to stop Aspire";
+                System.Diagnostics.Debug.WriteLine("[MainViewModel] Failed to stop Aspire");
+            }
+        }
+        catch (Exception ex)
+        {
+            CommandStatus = $"❌ Error: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Error stopping Aspire: {ex.Message}");
+        }
+        finally
+        {
+            IsExecutingCommand = false;
+            // Clear status after 5 seconds
+            _ = Task.Delay(5000).ContinueWith(_ =>
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (!CommandStatus.Contains("Error") && CommandStatus != "✅ Aspire stopped successfully")
+                        CommandStatus = string.Empty;
+                });
+            });
+        }
     }
 
     private void InitializeSampleData()

@@ -57,6 +57,7 @@ public class AspireApiClient : IDisposable
 
             if (!response.IsSuccessStatusCode)
             {
+                System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Failed to get resources: {response.StatusCode}");
                 return new List<AspireResource>();
             }
 
@@ -68,20 +69,24 @@ public class AspireApiClient : IDisposable
 
             return resources ?? new List<AspireResource>();
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] HTTP Request Exception: {ex.Message}. Endpoint: {_httpClient.BaseAddress}");
             return new List<AspireResource>();
         }
-        catch (TaskCanceledException)
+        catch (TaskCanceledException ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Request timeout: {ex.Message}. Endpoint: {_httpClient.BaseAddress}");
             return new List<AspireResource>();
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] JSON parse error: {ex.Message}");
             return new List<AspireResource>();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Unexpected error: {ex.Message}");
             return new List<AspireResource>();
         }
     }
@@ -96,6 +101,7 @@ public class AspireApiClient : IDisposable
 
             if (!response.IsSuccessStatusCode)
             {
+                System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Failed to get resource {id}: {response.StatusCode}");
                 return null;
             }
 
@@ -107,20 +113,24 @@ public class AspireApiClient : IDisposable
 
             return resource;
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] HTTP Request Exception for resource {id}: {ex.Message}");
             return null;
         }
-        catch (TaskCanceledException)
+        catch (TaskCanceledException ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Request timeout for resource {id}: {ex.Message}");
             return null;
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] JSON parse error for resource {id}: {ex.Message}");
             return null;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Unexpected error for resource {id}: {ex.Message}");
             return null;
         }
     }

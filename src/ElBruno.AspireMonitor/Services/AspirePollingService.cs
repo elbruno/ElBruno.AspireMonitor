@@ -57,6 +57,7 @@ public class AspirePollingService : IAspirePollingService, IDisposable
         if (_state == PollingServiceState.Polling || _state == PollingServiceState.Connecting)
             return;
 
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Starting polling service. Interval: {_configuration.PollingIntervalMs}ms, Endpoint: {_configuration.AspireEndpoint}");
         State = PollingServiceState.Connecting;
         _reconnectAttempts = 0;
         _pollingTimer.Start();
@@ -117,6 +118,7 @@ public class AspirePollingService : IAspirePollingService, IDisposable
     private void HandleError(string message)
     {
         State = PollingServiceState.Error;
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Error: {message}");
         ErrorOccurred?.Invoke(this, message);
 
         _reconnectAttempts++;

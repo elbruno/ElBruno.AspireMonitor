@@ -16,16 +16,17 @@ public partial class MainWindow : Window
     private MiniMonitor? _miniMonitor;
     private MainViewModel? ViewModel => DataContext as MainViewModel;
     private readonly IConfigurationService? _configService;
+    private System.Drawing.Icon? _currentIcon;
 
-    public MainWindow() : this(null, null, null)
+    public MainWindow() : this(null, null, null, null)
     {
     }
 
-    public MainWindow(IAspirePollingService? pollingService, IConfigurationService? configService, MainViewModel? viewModel = null)
+    public MainWindow(IAspirePollingService? pollingService, IConfigurationService? configService, MainViewModel? viewModel = null, IAspireCommandService? commandService = null)
     {
         InitializeComponent();
         _configService = configService;
-        DataContext = viewModel ?? new MainViewModel(pollingService, configService);
+        DataContext = viewModel ?? new MainViewModel(pollingService, configService, commandService);
         InitializeSystemTray();
         
         if (ViewModel != null)
@@ -63,7 +64,7 @@ public partial class MainWindow : Window
         contextMenu.Items.Add("Exit", null, (s, e) => ExitApplication());
 
         _notifyIcon.ContextMenuStrip = contextMenu;
-        _notifyIcon.DoubleClick += (s, e) => ToggleWindow();
+        _notifyIcon.MouseDoubleClick += (s, e) => ToggleMiniMonitor();
     }
 
     private void UpdateTrayIcon()
@@ -71,43 +72,122 @@ public partial class MainWindow : Window
         if (_notifyIcon == null || ViewModel == null)
             return;
 
-        // Create colored icon based on status
-        var brush = ViewModel.OverallStatusColor as SolidColorBrush;
-        System.Drawing.Color iconColor;
+        // Determine which logo to use based on status
+        string logoPath = GetLogoPathForStatus();
+        
+        // Dispose old icon if it exists
+        if (_currentIcon != null)
+        {
+            try
+            {
+                _currentIcon.Dispose();
+            }
+            catch { }
+        }
+        
+        _currentIcon = CreateIconFromSvgPath(logoPath);
+        _notifyIcon.Icon = _currentIcon;
+        _notifyIcon.Text = $"Aspire Monitor - {ViewModel.ConnectionStatus}";
+    }
 
+    private string GetLogoPathForStatus()
+    {
+        if (!ViewModel!.IsConnected)
+            return "Resources/aspire-logo-gray.svg";
+
+        var brush = ViewModel.OverallStatusColor as SolidColorBrush;
+        if (brush == null)
+            return "Resources/aspire-logo-gray.svg";
+
+        var color = brush.Color;
+        
+        // Match against known status colors
+        var redColor = System.Windows.Media.Color.FromRgb(0xF4, 0x43, 0x36);
+        var yellowColor = System.Windows.Media.Color.FromRgb(0xFF, 0xC1, 0x07);
+        var greenColor = System.Windows.Media.Color.FromRgb(0x4C, 0xAF, 0x50);
+
+        if (color == redColor)
+            return "Resources/aspire-logo-red.svg";
+        if (color == yellowColor)
+            return "Resources/aspire-logo-yellow.svg";
+        if (color == greenColor)
+            return "Resources/aspire-logo-green.svg";
+
+        return "Resources/aspire-logo-gray.svg";
+    }
+
+    private System.Drawing.Icon CreateIconFromSvgPath(string resourcePath)
+    {
+        try
+        {
+            // Try to load from resources
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            using (var stream = assembly.GetManifestResourceStream($"ElBruno.AspireMonitor.{resourcePath.Replace('/', '.')}")
+                ?? assembly.GetManifestResourceStream($"ElBruno.AspireMonitor.Resources.{System.IO.Path.GetFileName(resourcePath)}"))
+            {
+                if (stream != null)
+                {
+                    // For SVG, we'll create a bitmap icon instead
+                    // SVG requires rendering, so we'll use a simple colored circle
+                    return CreateColoredIcon(GetStatusColor());
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] Error loading SVG icon: {ex.Message}");
+        }
+
+        // Fallback to colored circle
+        return CreateColoredIcon(GetStatusColor());
+    }
+
+    private System.Drawing.Color GetStatusColor()
+    {
+        if (!ViewModel!.IsConnected)
+            return System.Drawing.Color.Gray;
+
+        var brush = ViewModel.OverallStatusColor as SolidColorBrush;
         if (brush != null)
         {
             var mediaColor = brush.Color;
-            iconColor = System.Drawing.Color.FromArgb(mediaColor.A, mediaColor.R, mediaColor.G, mediaColor.B);
-        }
-        else
-        {
-            iconColor = System.Drawing.Color.Gray;
+            return System.Drawing.Color.FromArgb(mediaColor.A, mediaColor.R, mediaColor.G, mediaColor.B);
         }
 
-        _notifyIcon.Icon = CreateColoredIcon(iconColor);
-        _notifyIcon.Text = $"Aspire Monitor - {ViewModel.ConnectionStatus}";
+        return System.Drawing.Color.Gray;
     }
 
     private System.Drawing.Icon CreateColoredIcon(System.Drawing.Color color)
     {
         var bitmap = new Bitmap(16, 16);
-        using (var graphics = Graphics.FromImage(bitmap))
+        try
         {
-            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            graphics.Clear(System.Drawing.Color.Transparent);
-            using (var brush = new WinDrawing.SolidBrush(color))
+            using (var graphics = Graphics.FromImage(bitmap))
             {
-                graphics.FillEllipse(brush, 2, 2, 12, 12);
+                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                graphics.Clear(System.Drawing.Color.Transparent);
+                using (var brush = new WinDrawing.SolidBrush(color))
+                {
+                    graphics.FillEllipse(brush, 2, 2, 12, 12);
+                }
+                using (var pen = new WinDrawing.Pen(System.Drawing.Color.White, 1))
+                {
+                    graphics.DrawEllipse(pen, 2, 2, 12, 12);
+                }
             }
-            using (var pen = new WinDrawing.Pen(System.Drawing.Color.White, 1))
-            {
-                graphics.DrawEllipse(pen, 2, 2, 12, 12);
-            }
+            
+            // Create icon from bitmap safely
+            IntPtr hIcon = bitmap.GetHicon();
+            var icon = System.Drawing.Icon.FromHandle(hIcon);
+            
+            // Don't destroy the handle immediately - Icon will own it
+            return icon;
         }
-        
-        IntPtr hIcon = bitmap.GetHicon();
-        return System.Drawing.Icon.FromHandle(hIcon);
+        finally
+        {
+            // Dispose bitmap but keep icon alive
+            bitmap?.Dispose();
+        }
     }
 
     private void ShowWindow()
@@ -280,6 +360,7 @@ public partial class MainWindow : Window
         }
         _miniMonitor?.Close();
         _notifyIcon?.Dispose();
+        _currentIcon?.Dispose();
         base.OnClosed(e);
     }
 }

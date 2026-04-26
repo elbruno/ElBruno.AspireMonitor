@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Mini Monitor"
-        Width="280"
-        Height="140"
+        Width="350"
+        Height="240"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -25,19 +25,23 @@
         <Grid Margin="15">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Top: Status Emoji and Title -->
+            <!-- Row 0: Logo and Title -->
             <StackPanel Grid.Row="0"
                        Orientation="Horizontal"
                        VerticalAlignment="Center"
                        Margin="0,0,0,10">
-                <TextBlock Text="{Binding StatusEmoji}"
-                          FontSize="28"
-                          VerticalAlignment="Center"
-                          Margin="0,0,10,0"/>
+                <!-- Logo Image -->
+                <Image Source="pack://application:,,,/Resources/aspire-logo.svg"
+                      Width="28"
+                      Height="28"
+                      VerticalAlignment="Center"
+                      Margin="0,0,8,0"/>
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Aspire Monitor"
                               FontSize="13"
@@ -49,10 +53,25 @@
                 </StackPanel>
             </StackPanel>
 
-            <!-- Middle: Status Info -->
+            <!-- Row 1: Working Folder -->
             <StackPanel Grid.Row="1"
                        Orientation="Vertical"
-                       VerticalAlignment="Center">
+                       Margin="0,0,0,10">
+                <TextBlock Text="Working Folder:"
+                          FontSize="9"
+                          FontWeight="SemiBold"
+                          Foreground="#666666"
+                          Margin="0,0,0,2"/>
+                <TextBlock Text="{Binding WorkingFolder}"
+                          FontSize="9"
+                          Foreground="#333333"
+                          TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- Row 2: Status Info -->
+            <StackPanel Grid.Row="2"
+                       Orientation="Vertical"
+                       Margin="0,0,0,10">
                 <TextBlock Text="{Binding ResourceCount}"
                           FontSize="11"
                           FontWeight="SemiBold"
@@ -64,25 +83,54 @@
                           TextWrapping="Wrap"/>
             </StackPanel>
 
-            <!-- Bottom: Action Links -->
-            <StackPanel Grid.Row="2"
-                       Orientation="Horizontal"
-                       HorizontalAlignment="Right"
-                       Margin="0,10,0,0">
+            <!-- Row 3: Status Indicator (spacer) -->
+            <StackPanel Grid.Row="3" />
+
+            <!-- Row 4: Action Buttons -->
+            <Grid Grid.Row="4"
+                 Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="▶ Start"
+                       Grid.Column="0"
+                       Height="28"
+                       Padding="0"
+                       FontSize="10"
+                       Margin="0,0,5,0"
+                       Click="Start_Click"
+                       Background="#4CAF50"
+                       Foreground="White"/>
+                
+                <Button Content="⏹ Stop"
+                       Grid.Column="1"
+                       Height="28"
+                       Padding="0"
+                       FontSize="10"
+                       Margin="0,0,5,0"
+                       Click="Stop_Click"
+                       Background="#F44336"
+                       Foreground="White"/>
+                
                 <Button Content="Details"
-                       Width="60"
-                       Height="24"
+                       Grid.Column="2"
+                       Height="28"
                        Padding="0"
                        FontSize="10"
                        Margin="0,0,5,0"
                        Click="OpenDetails_Click"/>
+                
                 <Button Content="Close"
-                       Width="50"
-                       Height="24"
+                       Grid.Column="3"
+                       Height="28"
                        Padding="0"
                        FontSize="10"
                        Click="Close_Click"/>
-            </StackPanel>
+            </Grid>
         </Grid>
     </Border>
 </Window>

@@ -11,6 +11,7 @@ public partial class App : System.Windows.Application
     private IAspirePollingService? _pollingService;
     private IConfigurationService? _configService;
     private AspireApiClient? _apiClient;
+    private IAspireCommandService? _commandService;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -23,10 +24,11 @@ public partial class App : System.Windows.Application
         // Initialize API client and polling service
         _apiClient = new AspireApiClient(configuration);
         _pollingService = new AspirePollingService(_apiClient, configuration);
+        _commandService = new AspireCommandService();
         
         // Create MainViewModel and MainWindow with dependencies
-        var viewModel = new MainViewModel(_pollingService, _configService);
-        var mainWindow = new MainWindow(_pollingService, _configService, viewModel);
+        var viewModel = new MainViewModel(_pollingService, _configService, _commandService);
+        var mainWindow = new MainWindow(_pollingService, _configService, viewModel, _commandService);
         
         // Set as application main window
         MainWindow = mainWindow;
