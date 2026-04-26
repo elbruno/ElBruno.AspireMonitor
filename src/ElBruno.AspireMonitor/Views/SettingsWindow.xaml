@@ -15,6 +15,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header with Logo -->
@@ -80,8 +81,23 @@
                        Margin="0,3,0,0"/>
         </StackPanel>
 
+        <!-- Mini Window Resources -->
+        <StackPanel Grid.Row="4" Margin="0,0,0,15">
+            <TextBlock Text="Mini window resources:" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding MiniWindowResources, UpdateSourceTrigger=PropertyChanged}"
+                     Height="25"
+                     Padding="5,3"/>
+            <TextBlock Text="Comma-separated list of resource names to pin to the mini window (e.g. web, backend, database). Matches by name prefix, case-insensitive." 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
         <!-- Validation Message -->
-        <TextBlock Grid.Row="4"
+        <TextBlock Grid.Row="5"
                    Text="{Binding ValidationMessage}"
                    Foreground="Red"
                    FontSize="11"
@@ -90,7 +106,7 @@
                    Margin="0,0,0,10"/>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="5"
+        <StackPanel Grid.Row="6"
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right"
                     Margin="0,10,0,0">

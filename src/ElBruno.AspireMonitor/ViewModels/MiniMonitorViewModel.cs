@@ -1,10 +1,19 @@
 using System.Windows.Media;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
+using System.Linq;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Helpers;
 
 namespace ElBruno.AspireMonitor.ViewModels;
+
+public class MiniResourceItem
+{
+    public string Name { get; set; } = "";
+    public string? Url { get; set; }
+    public bool HasUrl => !string.IsNullOrWhiteSpace(Url);
+    public string FallbackText { get; set; } = "";
+}
 
 public class MiniMonitorViewModel : ViewModelBase
 {
@@ -16,6 +25,7 @@ public class MiniMonitorViewModel : ViewModelBase
     private System.Windows.Media.Brush _statusForeground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x66, 0x66, 0x66));
     private string _workingFolder = "Not running";
     private DateTime _lastUpdate = DateTime.Now;
+    private ObservableCollection<MiniResourceItem> _pinnedResources = new();
 
     public MiniMonitorViewModel() : this(null)
     {
@@ -28,6 +38,7 @@ public class MiniMonitorViewModel : ViewModelBase
         if (_mainViewModel != null)
         {
             _mainViewModel.PropertyChanged += MainViewModel_PropertyChanged;
+            _mainViewModel.Resources.CollectionChanged += Resources_CollectionChanged;
             UpdateMiniMonitorData();
         }
     }
@@ -83,6 +94,20 @@ public class MiniMonitorViewModel : ViewModelBase
     }
 
     public string WorkingFolderDisplay => PathHumanizer.Humanize(_workingFolder, 35);
+
+    public ObservableCollection<MiniResourceItem> PinnedResources
+    {
+        get => _pinnedResources;
+        set
+        {
+            if (SetProperty(ref _pinnedResources, value))
+            {
+                OnPropertyChanged(nameof(HasPinnedResources));
+            }
+        }
+    }
+
+    public bool HasPinnedResources => _pinnedResources.Count > 0;
 
     public DateTime LastUpdate
     {
@@ -161,11 +186,18 @@ public class MiniMonitorViewModel : ViewModelBase
             e.PropertyName == nameof(MainViewModel.OverallStatusColor) ||
             e.PropertyName == nameof(MainViewModel.ProjectFolder) ||
             e.PropertyName == nameof(MainViewModel.IsConnected) ||
-            e.PropertyName == nameof(MainViewModel.HostUrl))
+            e.PropertyName == nameof(MainViewModel.HostUrl) ||
+            e.PropertyName == nameof(MainViewModel.MiniWindowResourcesSetting))
         {
             System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] Triggering UI update due to {e.PropertyName} change");
             UpdateMiniMonitorData();
         }
+    }
+
+    private void Resources_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] Resources collection changed: {e.Action}");
+        UpdateMiniMonitorData();
     }
 
     private void UpdateMiniMonitorData()
@@ -180,7 +212,7 @@ public class MiniMonitorViewModel : ViewModelBase
         // Update resource count and status. Treat "not connected" as "not running" so the UI
         // recovers immediately when Aspire stops, even if the resources collection wasn't cleared yet.
         int count = _mainViewModel.Resources.Count;
-        bool aspireRunning = _mainViewModel.IsConnected && count > 0;
+        bool aspireRunning = count > 0;
 
         if (!aspireRunning)
         {
@@ -194,6 +226,9 @@ public class MiniMonitorViewModel : ViewModelBase
             StatusBackground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF5, 0xF5, 0xF5)); // Light gray
             StatusBorderColor = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xCC, 0xCC, 0xCC)); // Gray
             StatusForeground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x66, 0x66, 0x66)); // Dark gray
+            // Clear pinned resources when not running
+            PinnedResources.Clear();
+            OnPropertyChanged(nameof(HasPinnedResources));
             System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Status: Not Running");
         }
         else
@@ -203,6 +238,9 @@ public class MiniMonitorViewModel : ViewModelBase
             WorkingFolder = string.IsNullOrEmpty(_mainViewModel.ProjectFolder) 
                 ? "Running..." 
                 : _mainViewModel.ProjectFolder;
+
+            // Update pinned resources based on setting
+            UpdatePinnedResources();
 
             // Update status indicator based on overall health
             var statusBrush = _mainViewModel.OverallStatusColor as SolidColorBrush;
@@ -267,6 +305,56 @@ public class MiniMonitorViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasDashboard));
         
         System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] ResourceCount: {ResourceCount}, StatusEmoji: {StatusEmoji}");
+    }
+
+    private void UpdatePinnedResources()
+    {
+        if (_mainViewModel == null)
+            return;
+
+        PinnedResources.Clear();
+
+        var settingValue = _mainViewModel.MiniWindowResourcesSetting ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(settingValue))
+        {
+            OnPropertyChanged(nameof(HasPinnedResources));
+            return;
+        }
+
+        // Parse tokens: split on comma, trim, lowercase, drop empties
+        var tokens = settingValue
+            .Split(',')
+            .Select(t => t.Trim())
+            .Where(t => !string.IsNullOrEmpty(t))
+            .Select(t => t.ToLowerInvariant())
+            .ToList();
+
+        // For each token, find matching resources (case-insensitive prefix match)
+        foreach (var token in tokens)
+        {
+            var matches = _mainViewModel.Resources
+                .Where(r => r.Name.ToLowerInvariant().StartsWith(token))
+                .ToList();
+
+            foreach (var match in matches)
+            {
+                var item = new MiniResourceItem
+                {
+                    Name = match.Name,
+                    Url = match.Url
+                };
+
+                if (!item.HasUrl)
+                {
+                    // No URL: show Type or fallback
+                    item.FallbackText = match.Type ?? "(no endpoint)";
+                }
+
+                PinnedResources.Add(item);
+            }
+        }
+
+        OnPropertyChanged(nameof(HasPinnedResources));
     }
 
     public string DashboardUrl => _mainViewModel?.HostUrl ?? string.Empty;

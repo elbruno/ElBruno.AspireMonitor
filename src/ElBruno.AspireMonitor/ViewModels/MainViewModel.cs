@@ -19,6 +19,7 @@ public class MainViewModel : ViewModelBase
     private DateTime _lastUpdated = DateTime.Now;
     private ObservableCollection<ResourceViewModel> _resources = new();
     private string _projectFolder = string.Empty;
+    private string _miniWindowResourcesSetting = string.Empty;
     private string _hostUrl = "http://localhost:18888";
     private bool _isExecutingCommand;
     private string _commandStatus = string.Empty;
@@ -51,6 +52,7 @@ public class MainViewModel : ViewModelBase
         {
             var config = _configService.LoadConfiguration();
             ProjectFolder = config.ProjectFolder ?? string.Empty;
+            MiniWindowResourcesSetting = config.MiniWindowResources ?? string.Empty;
         }
         
         if (_pollingService != null)
@@ -174,6 +176,12 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(ProjectFolderDisplay));
             }
         }
+    }
+
+    public string MiniWindowResourcesSetting
+    {
+        get => _miniWindowResourcesSetting;
+        set => SetProperty(ref _miniWindowResourcesSetting, value);
     }
 
     public string ProjectFolderDisplay => PathHumanizer.Humanize(_projectFolder, 50);
@@ -302,7 +310,8 @@ public class MainViewModel : ViewModelBase
                     Status = resource.Status,
                     CpuUsage = resource.Metrics.CpuUsagePercent,
                     MemoryUsage = resource.Metrics.MemoryUsagePercent,
-                    Url = url
+                    Url = url,
+                    Type = resource.Type
                 };
 
                 Resources.Add(vm);

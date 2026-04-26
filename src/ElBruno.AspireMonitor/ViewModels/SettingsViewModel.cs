@@ -10,6 +10,7 @@ public class SettingsViewModel : ViewModelBase
     private int _pollingInterval = 5000;
     private bool _startWithWindows;
     private string _projectFolder = string.Empty;
+    private string _miniWindowResources = string.Empty;
     private string _validationMessage = string.Empty;
 
     public SettingsViewModel(IConfigurationService configService)
@@ -34,6 +35,12 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _projectFolder;
         set => SetProperty(ref _projectFolder, value);
+    }
+
+    public string MiniWindowResources
+    {
+        get => _miniWindowResources;
+        set => SetProperty(ref _miniWindowResources, value);
     }
 
     public string ValidationMessage
@@ -75,7 +82,8 @@ public class SettingsViewModel : ViewModelBase
         {
             PollingIntervalMs = PollingInterval,
             StartWithWindows = StartWithWindows,
-            ProjectFolder = ProjectFolder ?? string.Empty
+            ProjectFolder = ProjectFolder ?? string.Empty,
+            MiniWindowResources = MiniWindowResources ?? string.Empty
         };
 
         _configService.SaveConfiguration(config);
@@ -88,5 +96,6 @@ public class SettingsViewModel : ViewModelBase
         PollingInterval = config.PollingIntervalMs;
         StartWithWindows = config.StartWithWindows;
         ProjectFolder = config.ProjectFolder ?? string.Empty;
+        MiniWindowResources = config.MiniWindowResources ?? string.Empty;
     }
 }

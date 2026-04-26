@@ -392,10 +392,10 @@ public class MiniWindowResourcesTests
     /// Retrieves the PinnedResources collection via reflection.
     /// Returns null if the property doesn't exist yet (Han's code not landed).
     /// </summary>
-    private static dynamic? GetPinnedResourcesCollection(MiniMonitorViewModel viewModel)
+    private static System.Collections.ObjectModel.ObservableCollection<MiniResourceItem>? GetPinnedResourcesCollection(MiniMonitorViewModel viewModel)
     {
         var prop = viewModel.GetType().GetProperty("PinnedResources");
-        return prop?.GetValue(viewModel);
+        return prop?.GetValue(viewModel) as System.Collections.ObjectModel.ObservableCollection<MiniResourceItem>;
     }
 
     /// <summary>

@@ -91,6 +91,7 @@ public partial class MainWindow : Window
                 {
                     var updatedConfig = configService.LoadConfiguration();
                     ViewModel.ProjectFolder = updatedConfig.ProjectFolder ?? string.Empty;
+                    ViewModel.MiniWindowResourcesSetting = updatedConfig.MiniWindowResources ?? string.Empty;
                     // Push the new working directory into the Aspire CLI service
                     // so 'aspire describe' runs from the correct folder.
                     (System.Windows.Application.Current as App)?.UpdateAspireWorkingDirectory(updatedConfig.ProjectFolder);

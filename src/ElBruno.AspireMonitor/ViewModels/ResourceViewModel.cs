@@ -11,6 +11,7 @@ public class ResourceViewModel : ViewModelBase
     private double _cpuUsage;
     private double _memoryUsage;
     private string? _url;
+    private string? _type;
     private bool _isSelected;
 
     public string Name
@@ -99,6 +100,12 @@ public class ResourceViewModel : ViewModelBase
                 OnPropertyChanged(nameof(UrlDisplay));
             }
         }
+    }
+
+    public string? Type
+    {
+        get => _type;
+        set => SetProperty(ref _type, value);
     }
 
     public bool HasUrl => !string.IsNullOrEmpty(Url);

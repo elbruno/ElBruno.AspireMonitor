@@ -28,6 +28,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="1"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="1"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="1"/>
@@ -116,13 +117,43 @@
                 </StackPanel>
             </Border>
 
+            <!-- Pinned Resources (when running and configured) -->
+            <ItemsControl Grid.Row="3"
+                          ItemsSource="{Binding PinnedResources}"
+                          Margin="0,6,0,6"
+                          Visibility="{Binding HasPinnedResources, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="📌" FontSize="10" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="#333333" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <!-- Show hyperlink if resource has URL -->
+                            <TextBlock FontSize="10" VerticalAlignment="Center"
+                                       Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Hyperlink NavigateUri="{Binding Url}"
+                                           RequestNavigate="ResourceLink_RequestNavigate"
+                                           Foreground="#1565C0"
+                                           TextDecorations="None">
+                                    <Run Text="🔗 Open"/>
+                                </Hyperlink>
+                            </TextBlock>
+                            <!-- Show fallback text if no URL -->
+                            <TextBlock Text="{Binding FallbackText}" FontSize="10" 
+                                       Foreground="#999999" FontStyle="Italic" VerticalAlignment="Center"
+                                       Visibility="{Binding HasUrl, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <!-- Divider -->
-            <Border Grid.Row="3"
+            <Border Grid.Row="4"
                     Background="#EEEEEE"
                     Margin="-14,0,-14,0"/>
 
             <!-- Control Buttons -->
-            <Grid Grid.Row="4" Height="40" Margin="0,0,0,6">
+            <Grid Grid.Row="5" Height="40" Margin="0,0,0,6">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Button Content="▶ START"
                             Width="90"
@@ -153,12 +184,12 @@
             </Grid>
 
             <!-- Divider -->
-            <Border Grid.Row="5"
+            <Border Grid.Row="6"
                     Background="#EEEEEE"
                     Margin="-14,0,-14,0"/>
 
             <!-- Footer: Version and Hint -->
-            <Grid Grid.Row="6" Height="16">
+            <Grid Grid.Row="7" Height="16">
                 <TextBlock Text="{Binding AppVersion, StringFormat='v{0}'}"
                            FontSize="8"
                            Foreground="#BBBBBB"

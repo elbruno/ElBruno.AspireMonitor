@@ -60,6 +60,23 @@ public partial class MiniMonitorWindow : Window
         }
     }
 
+    private void ResourceLink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = e.Uri.AbsoluteUri,
+                UseShellExecute = true
+            });
+            e.Handled = true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Failed to open resource URL: {ex.Message}");
+        }
+    }
+
     private void StartAspire_Click(object sender, RoutedEventArgs e)
     {
         var viewModel = DataContext as MiniMonitorViewModel;
