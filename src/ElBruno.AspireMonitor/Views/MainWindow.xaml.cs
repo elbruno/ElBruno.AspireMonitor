@@ -93,53 +93,68 @@ public partial class MainWindow : Window
     private string GetLogoPathForStatus()
     {
         if (!ViewModel!.IsConnected)
-            return "Resources/aspire-logo-gray.svg";
+            return "Resources/aspire_trayicon_norunning.png";
 
         var brush = ViewModel.OverallStatusColor as SolidColorBrush;
         if (brush == null)
-            return "Resources/aspire-logo-gray.svg";
+            return "Resources/aspire_trayicon_norunning.png";
 
         var color = brush.Color;
-        
+
         // Match against known status colors
         var redColor = System.Windows.Media.Color.FromRgb(0xF4, 0x43, 0x36);
         var yellowColor = System.Windows.Media.Color.FromRgb(0xFF, 0xC1, 0x07);
         var greenColor = System.Windows.Media.Color.FromRgb(0x4C, 0xAF, 0x50);
 
         if (color == redColor)
-            return "Resources/aspire-logo-red.svg";
+            return "Resources/aspire_trayicon_error.png";
         if (color == yellowColor)
-            return "Resources/aspire-logo-yellow.svg";
+            return "Resources/aspire_trayicon_warning.png";
         if (color == greenColor)
-            return "Resources/aspire-logo-green.svg";
+            return "Resources/aspire_trayicon_running.png";
 
-        return "Resources/aspire-logo-gray.svg";
+        return "Resources/aspire_trayicon_norunning.png";
     }
 
     private System.Drawing.Icon CreateIconFromSvgPath(string resourcePath)
     {
         try
         {
-            // Try to load from resources
-            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            using (var stream = assembly.GetManifestResourceStream($"ElBruno.AspireMonitor.{resourcePath.Replace('/', '.')}")
-                ?? assembly.GetManifestResourceStream($"ElBruno.AspireMonitor.Resources.{System.IO.Path.GetFileName(resourcePath)}"))
+            var fileName = resourcePath.Replace('/', System.IO.Path.DirectorySeparatorChar);
+            var fullPath = System.IO.Path.Combine(AppContext.BaseDirectory, fileName);
+
+            if (System.IO.File.Exists(fullPath))
             {
-                if (stream != null)
-                {
-                    // For SVG, we'll create a bitmap icon instead
-                    // SVG requires rendering, so we'll use a simple colored circle
-                    return CreateColoredIcon(GetStatusColor());
-                }
+                using var source = new Bitmap(fullPath);
+                return CreateIconFromBitmap(source);
             }
+
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] Tray icon not found at: {fullPath}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Error loading SVG icon: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] Error loading PNG icon '{resourcePath}': {ex.Message}");
         }
 
-        // Fallback to colored circle
+        // Fallback to colored circle if PNG fails to load
         return CreateColoredIcon(GetStatusColor());
+    }
+
+    private static System.Drawing.Icon CreateIconFromBitmap(Bitmap source)
+    {
+        const int size = 32;
+        using var resized = new Bitmap(size, size);
+        using (var graphics = Graphics.FromImage(resized))
+        {
+            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+            graphics.Clear(System.Drawing.Color.Transparent);
+            graphics.DrawImage(source, 0, 0, size, size);
+        }
+
+        IntPtr hIcon = resized.GetHicon();
+        return System.Drawing.Icon.FromHandle(hIcon);
     }
 
     private System.Drawing.Color GetStatusColor()
