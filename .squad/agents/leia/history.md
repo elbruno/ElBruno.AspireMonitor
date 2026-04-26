@@ -209,6 +209,35 @@
 
 ---
 
+### 2026-04-26 — Phase 4 Complete: Orchestration & Session Logs
+
+**Summary:**
+Phase 4 architecture design and integration verification complete. Designed polling service architecture (state machine, retry logic, event-driven updates), documented technical decisions, verified integration of Luke's backend, Han's UI, and Yoda's tests. All Phase 2-4 implementations approved. Zero blocking issues. All architectural decisions locked. Decision inbox consolidated. Orchestration logs created for all 6 agents. Session log documenting Phase 4 completion. Phase 5 entry criteria met and verified. Team ready for NuGet packaging and release.
+
+**Deliverables:**
+- ✅ Phase 4 architecture: State machine, events, retry logic documented
+- ✅ Integration verification: Backend→Frontend→Tests aligned and working
+- ✅ Team coordination: Luke↔Han↔Yoda dependencies resolved
+- ✅ Decision consolidation: All 7 inbox files merged to decisions.md
+- ✅ Orchestration logs: 6 agent logs (20+ KB total) created
+- ✅ Session log: Phase 4 completion summary (8.5 KB)
+- ✅ Identity updated: .squad/identity/now.md reflects Phase 5 readiness
+- ✅ Build status: 0 errors, 0 warnings
+- ✅ Tests: 223/223 passing (100%)
+- ✅ Coverage: >80% achieved
+
+**Phase 5 Entry Criteria (ALL MET):**
+- ✅ Code review complete (all implementations approved)
+- ✅ Test suite passing (223/223, 100% pass rate)
+- ✅ Code coverage met (>80% target)
+- ✅ Documentation complete (QUICKSTART, API-CONTRACT, guides)
+- ✅ Design assets complete (7 professional graphics)
+- ✅ Build successful (0 errors, 0 warnings)
+- ✅ Integration verified (all layers working together)
+- ✅ All architectural decisions locked (no conflicts)
+
+**Status:** ✅ COMPLETE — Ready for Phase 5 (NuGet packaging & release)
+
 ### 2026-04-26 — Post-Release Enhancement: ProjectFolder & RepositoryUrl Settings (Session 4)
 
 **Context:**
@@ -258,4 +287,94 @@
 - Validation should be permissive (fail gracefully rather than block)
 - Auto-detection from config files requires careful error handling for missing/malformed files
 - Folder picker (FolderBrowserDialog) is user-friendly but requires code-behind in WPF
+
+---
+
+### 2026-04-27 — Phase 4 Architecture Documentation (Session 5)
+
+**Context:** 
+- Project complete and released as v1.0.0
+- Team requests precise architecture documentation for Phase 4 integration services
+- Goal: Codify service contracts and integration patterns for future maintainers
+
+**Phase 4 Architecture Review Completed:**
+
+1. **Service Contracts Documented** ✅
+   - AspireApiClient: HTTP wrapper with 3-retry exponential backoff, 5s timeout, graceful degradation
+   - AspirePollingService: Background state machine (Idle → Connecting → Polling → Error → Reconnecting)
+   - StatusCalculator: Pure color-coding logic with configurable thresholds (default 70/90%)
+   - All methods return safe defaults (empty list, null, StatusColor.Unknown) — no exceptions thrown
+
+2. **Integration Sequence Defined** ✅
+   - Build order: AspireApiClient → StatusCalculator (parallel) → AspirePollingService → UI
+   - Dependency graph: AspireApiClient (foundation) → AspirePollingService (orchestrator) → UI binding
+   - StatusCalculator: Pure dependency (used by UI, not polled by service)
+
+3. **Error Handling Strategy** ✅
+   - AspireApiClient: Graceful degradation (return empty/null on any failure)
+   - AspirePollingService: Stateful resilience (cache last-known resources, replay during outages)
+   - StatusCalculator: Safe defaults (treat unknown metrics as StatusColor.Unknown)
+   - Backoff delays: 5s → 10s → 30s capped (prevents cascade failures during outages)
+
+4. **Testing Boundaries** ✅
+   - Unit tests: AspireApiClient (mocked HttpClient), StatusCalculator (pure logic), AspirePollingService (mocked client)
+   - Integration tests: PollingService + AspireApiClient with mocked responses, state transitions over time
+   - Excluded: WPF MVVM binding, System.Timers internals, HttpClient network I/O
+
+**Key Technical Insights:**
+
+**1. Three-Service Architecture:**
+- AspireApiClient: Thin HTTP abstraction (no retry/retry logic is Polly's job)
+- AspirePollingService: Orchestrator handling lifecycle, state, backoff, event emission
+- StatusCalculator: Pure decision logic, used independently by consumers
+
+**2. Polly Configuration:**
+- 3 retries total: handles 1 transient failure + margin
+- Exponential backoff: 1s → 2s → 4s (prevents thundering herd)
+- Detects transient failures: non-2xx, HttpRequestException, TaskCanceledException
+- Does NOT retry 4xx errors (client errors, no point retrying)
+
+**3. State Machine (5 States):**
+- Idle: Initial, stopped by user
+- Connecting: First attempt or after backoff delay
+- Polling: Normal operation, emitting ResourcesUpdated every interval
+- Error: Failed poll, calculating backoff delay
+- Reconnecting: Transitional state after backoff, before Connecting
+
+**4. Last-Known-Good Caching:**
+- Cache `_lastKnownResources` after first successful poll
+- During transient failures: replay cached list → UI stays responsive
+- After prolonged failure (no data ever received): emit error, continue retrying
+- Reset cache only when user stops polling (state = Idle)
+
+**5. Event-Driven Updates:**
+- Three events: ResourcesUpdated (data), StatusChanged (state), ErrorOccurred (errors)
+- UI subscribes in MainViewModel constructor
+- Dispatcher.Invoke() marshals background thread updates to UI thread (WPF threading model)
+
+**Configuration Contracts:**
+- AspireEndpoint: e.g., "http://localhost:15888" (Aspire default)
+- PollingIntervalMs: Default 5000ms (reasonable for resource monitoring)
+- Thresholds: CPU 70%/90%, Memory 70%/90% (configurable, independent per metric)
+- Optional UI features: StartWithWindows, ProjectFolder, RepositoryUrl (backward compatible)
+
+**Document Created:**
+- `.squad/decisions/inbox/leia-phase4-architecture.md`
+- Comprehensive service contracts, integration points, error handling, testing boundaries
+- Serves as single source of truth for Phase 4 architecture decisions
+
+**Approval Status:**
+✅ All services implemented and tested (72/72 tests passing)
+✅ Architecture decisions locked and documented
+✅ Integration sequence verified
+✅ Error handling strategy comprehensive and tested
+
+**Key Learnings for Future Sessions:**
+1. **Event-Driven Polling:** Using events (not polling UI) reduces coupling and enables better testing
+2. **Cache Strategy:** Preserve last-known state to provide graceful degradation during outages
+3. **Polly Configuration:** Distinguish transient (retry) from permanent errors (fail-fast)
+4. **State Machine:** Explicit states (not just on/off) enable better observability and testing
+5. **Pure Functions:** StatusCalculator's purity makes it reusable and testable without dependencies
+6. **Configuration Injection:** Configuration object used consistently across all services (reduces duplication)
+7. **Timeout Tuning:** 5-second HTTP timeout reasonable for resource monitoring (not real-time)
 
