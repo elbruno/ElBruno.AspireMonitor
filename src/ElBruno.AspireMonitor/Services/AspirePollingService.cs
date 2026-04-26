@@ -71,6 +71,7 @@ public class AspirePollingService : IAspirePollingService, IDisposable
 
     public async Task RefreshAsync()
     {
+        System.Diagnostics.Debug.WriteLine("[AspirePollingService] RefreshAsync called");
         await PollResourcesAsync();
     }
 
@@ -95,7 +96,12 @@ public class AspirePollingService : IAspirePollingService, IDisposable
 
         try
         {
+            var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+            System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Polling cycle started. State: {_state}");
+
             var resources = await _apiClient.GetResourcesAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Poll completed. Resources returned: {resources.Count}");
 
             if (resources.Count > 0 || _state == PollingServiceState.Connecting)
             {
@@ -107,19 +113,27 @@ public class AspirePollingService : IAspirePollingService, IDisposable
                     State = PollingServiceState.Polling;
                 }
 
+                foreach (var resource in resources)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Resource: {resource.Name} (Status: {resource.Status}, CPU: {resource.Metrics.CpuUsagePercent:F1}%, Memory: {resource.Metrics.MemoryUsagePercent:F1}%)");
+                }
+
                 ResourcesUpdated?.Invoke(this, resources);
             }
             else if (_lastKnownResources.Count == 0)
             {
+                System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] No resources available and no last-known state");
                 HandleError("No resources available");
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Empty response, using last-known state with {_lastKnownResources.Count} resources");
                 ResourcesUpdated?.Invoke(this, _lastKnownResources);
             }
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Polling exception: {ex.GetType().Name}: {ex.Message}");
             HandleError($"Polling error: {ex.Message}");
         }
     }
@@ -127,16 +141,19 @@ public class AspirePollingService : IAspirePollingService, IDisposable
     private void HandleError(string message)
     {
         State = PollingServiceState.Error;
-        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Error: {message}");
-        ErrorOccurred?.Invoke(this, message);
-
         _reconnectAttempts++;
         var backoffDelay = CalculateBackoffDelay(_reconnectAttempts);
+
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] ERROR: {message}");
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Reconnect attempt #{_reconnectAttempts}, waiting {backoffDelay.TotalSeconds}s before retry");
+        
+        ErrorOccurred?.Invoke(this, message);
 
         Task.Delay(backoffDelay).ContinueWith(_ =>
         {
             if (_state == PollingServiceState.Error)
             {
+                System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Backoff delay complete, transitioning to Reconnecting");
                 State = PollingServiceState.Reconnecting;
                 State = PollingServiceState.Connecting;
             }

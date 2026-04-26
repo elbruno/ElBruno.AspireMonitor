@@ -95,20 +95,31 @@ public class MiniMonitorViewModel : ViewModelBase
                 return "Not connected";
 
             if (!_mainViewModel.IsConnected)
-                return "Disconnected";
+            {
+                var status = _mainViewModel.CurrentStatus;
+                if (status.StartsWith("Error:"))
+                    return status;
+                return "Disconnected - waiting to connect...";
+            }
 
             int resourceCount = _mainViewModel.Resources.Count;
+            if (resourceCount == 0)
+                return "✓ Connected but no resources found";
+
             return $"{resourceCount} resources running";
         }
     }
 
     private void MainViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] MainViewModel property changed: {e.PropertyName}");
+
         if (e.PropertyName == nameof(MainViewModel.Resources) ||
             e.PropertyName == nameof(MainViewModel.OverallStatusColor) ||
             e.PropertyName == nameof(MainViewModel.IsConnected) ||
             e.PropertyName == nameof(MainViewModel.ProjectFolder))
         {
+            System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] Triggering UI update due to {e.PropertyName} change");
             UpdateMiniMonitorData();
         }
     }
@@ -117,6 +128,11 @@ public class MiniMonitorViewModel : ViewModelBase
     {
         if (_mainViewModel == null)
             return;
+
+        System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] UpdateMiniMonitorData called");
+        System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Resources: {_mainViewModel.Resources.Count}");
+        System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   IsConnected: {_mainViewModel.IsConnected}");
+        System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   ProjectFolder: {_mainViewModel.ProjectFolder}");
 
         // Update resource count
         int count = _mainViewModel.Resources.Count;
@@ -135,6 +151,7 @@ public class MiniMonitorViewModel : ViewModelBase
         if (!_mainViewModel.IsConnected)
         {
             StatusEmoji = "❌";
+            System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Status: Disconnected (❌)");
         }
         else
         {
@@ -145,20 +162,34 @@ public class MiniMonitorViewModel : ViewModelBase
                 var greenColor = System.Windows.Media.Color.FromRgb(0x4C, 0xAF, 0x50);
 
                 if (statusBrush.Color == redColor)
+                {
                     StatusEmoji = "🔴";
+                    System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Status: Critical (🔴)");
+                }
                 else if (statusBrush.Color == yellowColor)
+                {
                     StatusEmoji = "🟡";
+                    System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Status: Warning (🟡)");
+                }
                 else if (statusBrush.Color == greenColor)
+                {
                     StatusEmoji = "🟢";
+                    System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Status: Healthy (🟢)");
+                }
                 else
+                {
                     StatusEmoji = "⚪";
+                    System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Status: Unknown (⚪)");
+                }
             }
             else
             {
                 StatusEmoji = "⚪";
+                System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel]   Status: No brush (⚪)");
             }
         }
 
         OnPropertyChanged(nameof(DetailsSummary));
+        System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] ResourceCount: {ResourceCount}, StatusEmoji: {StatusEmoji}");
     }
 }

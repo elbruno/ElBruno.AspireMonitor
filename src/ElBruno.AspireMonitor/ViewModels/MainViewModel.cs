@@ -221,25 +221,32 @@ public class MainViewModel : ViewModelBase
     {
         System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnResourcesUpdated received: {resources.Count} resources");
+
             Resources.Clear();
             foreach (var resource in resources)
             {
                 // Get primary endpoint URL
                 string? url = resource.Endpoints.Count > 0 ? resource.Endpoints[0] : null;
                 
-                Resources.Add(new ResourceViewModel
+                var vm = new ResourceViewModel
                 {
                     Name = resource.Name,
                     Status = resource.Status,
                     CpuUsage = resource.Metrics.CpuUsagePercent,
                     MemoryUsage = resource.Metrics.MemoryUsagePercent,
                     Url = url
-                });
+                };
+
+                Resources.Add(vm);
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel]   Added resource: {resource.Name} (CPU: {resource.Metrics.CpuUsagePercent:F1}%, Mem: {resource.Metrics.MemoryUsagePercent:F1}%)");
             }
             
             LastUpdated = DateTime.Now;
             IsConnected = true;
             OnPropertyChanged(nameof(OverallStatusColor));
+
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] UI updated with {Resources.Count} resources, IsConnected={IsConnected}");
         });
     }
 
@@ -247,6 +254,7 @@ public class MainViewModel : ViewModelBase
     {
         System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnStatusChanged: {status}");
             CurrentStatus = status;
             IsConnected = status == "Connected";
         });
@@ -256,6 +264,7 @@ public class MainViewModel : ViewModelBase
     {
         System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnError: {error}");
             CurrentStatus = $"Error: {error}";
             IsConnected = false;
         });
@@ -263,7 +272,10 @@ public class MainViewModel : ViewModelBase
 
     public void Start()
     {
+        System.Diagnostics.Debug.WriteLine("[MainViewModel] Starting polling...");
         _pollingService?.Start();
+        // Trigger initial refresh to get resources immediately
+        _ = _pollingService?.RefreshAsync();
     }
 
     public void Stop()

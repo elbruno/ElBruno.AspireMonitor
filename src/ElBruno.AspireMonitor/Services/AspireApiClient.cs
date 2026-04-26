@@ -51,42 +51,55 @@ public class AspireApiClient : IDisposable
     {
         try
         {
+            var endpoint = _httpClient.BaseAddress?.ToString() ?? "unknown";
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] GET /api/resources from {endpoint}");
+
             var response = await _retryPolicy.ExecuteAsync(async () =>
                 await _httpClient.GetAsync("/api/resources")
             );
 
             if (!response.IsSuccessStatusCode)
             {
-                System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Failed to get resources: {response.StatusCode}");
+                System.Diagnostics.Debug.WriteLine($"[AspireApiClient] ❌ Failed to get resources: HTTP {(int)response.StatusCode} {response.StatusCode}");
                 return new List<AspireResource>();
             }
 
             var content = await response.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] ✓ Response received, content length: {content.Length} bytes");
+
             var resources = JsonSerializer.Deserialize<List<AspireResource>>(content, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
 
+            var count = resources?.Count ?? 0;
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] ✓ Deserialized {count} resources");
+
             return resources ?? new List<AspireResource>();
         }
         catch (HttpRequestException ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] HTTP Request Exception: {ex.Message}. Endpoint: {_httpClient.BaseAddress}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] ❌ HTTP Request Exception: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient]    Endpoint: {_httpClient.BaseAddress}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient]    InnerException: {ex.InnerException?.Message}");
             return new List<AspireResource>();
         }
         catch (TaskCanceledException ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Request timeout: {ex.Message}. Endpoint: {_httpClient.BaseAddress}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] ❌ Request timeout (5 seconds): {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient]    Endpoint: {_httpClient.BaseAddress}");
             return new List<AspireResource>();
         }
         catch (JsonException ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] JSON parse error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] ❌ JSON parse error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient]    Path: {ex.Path}");
             return new List<AspireResource>();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] Unexpected error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient] ❌ Unexpected error: {ex.GetType().Name}: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AspireApiClient]    StackTrace: {ex.StackTrace}");
             return new List<AspireResource>();
         }
     }
