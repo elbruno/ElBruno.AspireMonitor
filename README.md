@@ -6,16 +6,45 @@
 [![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Real-time Windows system tray monitor for .NET Aspire distributed applications.**
+**A Windows system tray monitor that discovers and displays Aspire running instances and their deployed resources.**
 
-Monitor CPU, memory, and health status of your Aspire resources without leaving your code editor. Get instant visual feedback on resource utilization with color-coded status indicators and clickable URLs—all from a lightweight tray icon.
+Set a working folder → monitor discovers an active Aspire instance → instantly see all deployed services, containers, and databases with clickable URLs. Zero configuration beyond pointing to your Aspire project directory.
+
+## What It Does
+
+ElBruno.AspireMonitor is a lightweight Windows system tray tool that works in two steps:
+
+1. **Set a working folder** — Point the app to your Aspire AppHost project directory
+2. **Auto-discover & monitor** — When `aspire run` is active in that directory, the tray icon turns green and displays:
+   - All deployed services, containers, and databases
+   - Real-time status and health checks
+   - Clickable URLs for each resource
+   - CPU/memory metrics for your resources
+
+**The workflow:** Working Folder → Running Instance Detection → Live Resource Display
+
+Perfect for developers who want instant visibility into what Aspire deployed, without switching to a browser dashboard.
+
+## 🎯 Features
+
+| Feature | Description |
+|---------|-------------|
+| 🟢🟡🟠🔴 **Tray Status Indicator** | Green (running), Yellow (warning), Orange (partial), Red (error) |
+| 🔍 **Automatic Discovery** | Finds running Aspire instances in your working folder |
+| 🖥️ **Resource Visibility** | Lists services, containers, databases with endpoints |
+| 🔗 **Clickable URLs** | Open any resource directly from the app |
+| ⚡ **Real-Time Updates** | Automatic polling every 2 seconds (configurable) |
+| 📊 **Status Metrics** | CPU, memory, health status for each resource |
+| 🪟 **System Tray Integration** | Minimal footprint, always accessible in taskbar |
+| ⚙️ **Single Tray Icon** | One icon for unified monitoring—no clutter |
+| 💼 **Working Folder Display** | Shows your chosen directory (humanized paths) |
 
 ## ⚡ Quick Start
 
 1. **Download** from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest)
 2. **Run** `ElBruno.AspireMonitor.exe`
-3. **Enter** your Aspire endpoint (e.g., `http://localhost:5000`)
-4. **Monitor** resources in real-time from your system tray
+3. **Set working folder** when prompted (point to your Aspire AppHost directory)
+4. **Start monitoring** — Run `aspire run` from that directory; the tray icon will turn green with resources listed
 
 **Or install as a .NET Global Tool:**
 ```bash
@@ -25,23 +54,22 @@ aspire-monitor
 
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
-## 🎯 Features
+## 🟢🟡🟠🔴 System Tray Status
 
-| Feature | Description |
-|---------|-------------|
-| 🟢🟡🔴 **Color-Coded Status** | Visual indicators: Green (<70%), Yellow (70-90%), Red (>90%) |
-| ⚡ **Real-Time Updates** | Automatic polling every 2 seconds (configurable) |
-| 🪟 **System Tray Integration** | Minimal, always-available monitoring in your taskbar |
-| 🔗 **Clickable URLs** | Open resources directly from the app |
-| ⚙️ **Configurable Thresholds** | Set CPU/memory warning and critical points |
-| 🔄 **Auto-Reconnect** | Gracefully handles network interruptions |
-| 📊 **Multi-Resource Monitoring** | Track unlimited Aspire resources |
+The tray icon tells you at a glance:
+
+| Icon | Status | Meaning |
+|------|--------|---------|
+| 🟢 Green | Running | Aspire instance found with resources deployed |
+| 🟡 Yellow | Warning | Instance running but some resources show warnings |
+| 🟠 Orange | Partial | Some resources available, others unavailable |
+| 🔴 Red | Error | Aspire not found or connection error |
 
 ## 📋 Requirements
 
 - **Windows 10 or later** (WPF is Windows-only)
 - **.NET 10 Runtime** ([download](https://dotnet.microsoft.com/en-us/download))
-- **.NET Aspire** installed and running locally or remotely
+- **.NET Aspire** running locally on your machine
 
 ## 🚀 Usage
 
@@ -49,29 +77,32 @@ For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
 Download the latest release from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest) and run `ElBruno.AspireMonitor.exe`.
 
-On first run, you'll be prompted for your Aspire endpoint URL:
+On first run, you'll be prompted for your working folder:
 ```
-Enter Aspire endpoint (e.g., http://localhost:5000): http://localhost:5000
+Enter working folder (path to your Aspire AppHost project):
+C:\Projects\MyAspireApp
 ```
 
 ### System Tray
 
-- **Click icon**: Show/hide resource details
-- **Double-click**: Expand/collapse window
-- **Right-click**: Context menu (Settings, Exit)
-- **Color changes**: Reflects highest resource utilization
+- **Click icon** — Show/hide resource details window
+- **Double-click** — Expand/collapse the main window
+- **Right-click** — Context menu (Settings, Refresh, Exit)
+- **Icon color** — Reflects instance status (🟢 running, 🔴 not found, 🟡 warning)
+
+The app automatically watches your working folder for Aspire instances. When `aspire run` is active, resources appear instantly.
 
 ### Configuration
 
-Edit configuration at:
+Edit your settings at:
 ```
 %APPDATA%\Local\ElBruno\AspireMonitor\config.json
 ```
 
-Example:
+Example (working folder, polling interval, thresholds):
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "workingFolder": "C:\\Projects\\MyAspireApp",
   "pollingIntervalMs": 2000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
@@ -94,29 +125,22 @@ See [Configuration Guide](./docs/configuration.md) for all options.
 
 ## 💡 Use Cases
 
-- **Local Development** — Monitor microservices while coding
-- **Performance Testing** — Watch resource consumption during load tests
-- **Debugging** — Quickly identify which resource is problematic
-- **Teaching** — Demonstrate resource usage concepts to teams
+- **Local Development** — Keep tabs on your microservices while coding
+- **Resource Debugging** — Quickly spot which service is consuming CPU/memory
+- **Status At-a-Glance** — One tray icon shows everything (no browser switching)
+- **Demo Mode** — Impress colleagues with instant visibility into deployed resources
 - **Integration Testing** — Monitor health during automated test runs
 
-## 🏗️ Technology Stack
+## 🏗️ Architecture Highlights
 
-- **.NET 10** — Modern, performant runtime
-- **WPF** — Native Windows UI framework
-- **MVVM** — Clean architecture pattern
-- **xUnit + Moq** — Comprehensive test coverage
-- **MIT License** — Open source, permissive
-
-## 🔍 Architecture Highlights
-
-- **Service-Oriented**: Clean separation between API client, polling service, status calculation, and UI
+- **Service-Oriented**: Clean separation between Aspire API client, discovery, polling, and UI
 - **Polling Model**: Configurable background thread with exponential backoff on failures
 - **MVVM Pattern**: Fully testable business logic, UI-agnostic services
-- **State Machine**: Discrete connection states (Connecting → Connected → Polling → Error → Reconnecting)
-- **Threshold-Based Alerts**: Configurable CPU/memory thresholds determine status color
+- **State Machine**: Discrete states (Idle → Discovering → Connected → Polling → Error → Reconnecting)
+- **Threshold-Based Alerts**: Configurable CPU/memory thresholds determine status colors
+- **Single Tray Icon**: Unified monitoring interface—no confusion from multiple icons
 
-See [Architecture Guide](./docs/architecture.md) for detailed design decisions and component interactions.
+See [Architecture Guide](./docs/architecture.md) for detailed design decisions and data flows.
 
 ## 📦 Installation & Updates
 
@@ -143,16 +167,17 @@ Right-click `ElBruno.AspireMonitor.exe` → **Properties** → **Details** tab
 
 ## 🐛 Troubleshooting
 
-### Can't connect to Aspire?
+### Aspire instance not found?
 
-1. Verify Aspire is running: `http://localhost:5000`
-2. Check configuration file: `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`
+1. Verify Aspire is running: `aspire run` in your working folder
+2. Check the working folder setting in config: `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`
 3. See [Troubleshooting Guide](./docs/troubleshooting.md) for more solutions
 
 ### Tray icon not visible?
 
 - Check Windows notification area (click ▲ in system tray)
 - Verify AspireMonitor is running: `tasklist | findstr aspire`
+- Restart the application and check tray icon placement
 - See [Troubleshooting Guide](./docs/troubleshooting.md)
 
 ## 🤝 Contributing

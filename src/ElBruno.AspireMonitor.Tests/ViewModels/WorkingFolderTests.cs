@@ -260,7 +260,7 @@ public class WorkingFolderTests : IDisposable
         var miniVm = new MiniMonitorViewModel(mainVm);
 
         // Assert
-        miniVm.WorkingFolder.Should().Be("Aspire is not running",
+        miniVm.WorkingFolder.Should().Be("(no working folder set)",
             "when no folder is configured and Aspire is not running, " +
             "a helpful default message should be shown");
     }

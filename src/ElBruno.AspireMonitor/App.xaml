@@ -1,8 +1,7 @@
 <Application x:Class="ElBruno.AspireMonitor.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:infrastructure="clr-namespace:ElBruno.AspireMonitor.Infrastructure"
-             StartupUri="Views/MainWindow.xaml">
+             xmlns:infrastructure="clr-namespace:ElBruno.AspireMonitor.Infrastructure">
     <Application.Resources>
         <!-- Converters -->
         <infrastructure:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>

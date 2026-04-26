@@ -54,9 +54,10 @@
         <TextBlock Grid.Row="1"
                    FontSize="11"
                    Foreground="#555555"
-                   Margin="0,0,0,10">
+                   Margin="0,0,0,10"
+                   ToolTip="{Binding ProjectFolder, Mode=OneWay}">
             <Run Text="📁 Working Folder: "/>
-            <Run Text="{Binding ProjectFolder, Mode=OneWay}"
+            <Run Text="{Binding ProjectFolderDisplay, Mode=OneWay}"
                  FontWeight="Bold"
                  Foreground="#333333"/>
         </TextBlock>

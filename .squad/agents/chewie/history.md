@@ -387,4 +387,17 @@ Phase 4 documentation complete. Three-tier documentation approach implemented: Q
 - ✅ CHANGELOG.md: v1.0.0 release notes with team attribution
 - ✅ Documentation strategy: Explicit retry logic, state machine visualization, JSON examples
 
-**Status:** ✅ COMPLETE — Ready for Phase 5 (NuGet packaging & release)
+
+---
+
+### 2026-04-26 — Session 8: README Refinement (In Flight)
+
+**Assignment:** Refine README.md workflow narrative to reflect working-folder→running-instance→resources flow while Han completed UI polish.
+
+**Expected Deliverables:**
+- Updated README.md with enhanced workflow narrative
+- Cross-links to existing guides (QUICKSTART, API-CONTRACT, Architecture)
+
+**Status:** In flight (parallel with Han's UI polish session). Outcome logged via `.squad/orchestration-log/2026-04-26T19-12-56Z-chewie.md` once session completes.
+
+

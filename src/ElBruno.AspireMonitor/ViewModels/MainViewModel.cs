@@ -5,6 +5,7 @@ using System.Windows.Media;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Services;
 using ElBruno.AspireMonitor.Models;
+using ElBruno.AspireMonitor.Helpers;
 
 namespace ElBruno.AspireMonitor.ViewModels;
 
@@ -164,8 +165,16 @@ public class MainViewModel : ViewModelBase
     public string ProjectFolder
     {
         get => _projectFolder;
-        set => SetProperty(ref _projectFolder, value);
+        set
+        {
+            if (SetProperty(ref _projectFolder, value))
+            {
+                OnPropertyChanged(nameof(ProjectFolderDisplay));
+            }
+        }
     }
+
+    public string ProjectFolderDisplay => PathHumanizer.Humanize(_projectFolder, 50);
 
     public string HostUrl
     {

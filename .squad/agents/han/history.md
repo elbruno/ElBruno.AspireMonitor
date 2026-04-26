@@ -983,6 +983,26 @@ protected override void OnClosed(EventArgs e)
    - 9pt font size to fit 5 lines in 120px height
    - No scrollbars during normal use (HorizontalScrollBarVisibility="Disabled")
 
+---
+
+### 2026-04-26 — Cross-Agent Coordination: Path Humanizer + Tray Icon Ownership
+
+**Note from Scribe (2026-04-26T19:12:56Z):**
+
+Han completed Session 8 work on UI polish (path humanization + tray icon ownership fix). Key takeaways for other agents:
+
+1. **PathHumanizer Helper Available:** New `Helpers/PathHumanizer.cs` provides `TruncatePathForDisplay(path, maxChars)` method using Win32 PathCompactPathEx. If your agent needs path truncation, use this instead of custom logic.
+
+2. **Tray Icon Now App-Owned:** NotifyIcon moved from MainWindow to App.xaml.cs per OllamaMonitor pattern. If you modify App lifecycle or MainWindow instantiation, be aware that tray icon is now process-scoped, not window-scoped.
+
+3. **Logo Files in Resources:** Aspire logo copied to `Resources/aspire-logo.png` for consistency. Both MainWindow and MiniMonitorWindow now display it.
+
+4. **Test Updates:** WorkingFolderTests updated for new placeholder text "(no working folder set)". If adding new folder tests, use this constant.
+
+5. **Build Status:** All 260 tests passing. No breaking changes to API or ViewModel contracts.
+
+---
+
 **MVVM Pattern Applied:**
 
 ```csharp
@@ -1188,4 +1208,56 @@ private void LogCollection_CollectionChanged(...)
 **Fix:** Delete redundant element (kept the better-designed one with logo).
 
 **Prevention:** Always review Grid.Row assignments; use Visual Studio XAML preview to catch overlaps early.
+
+
+### 2026-04-26 — Path Truncation, Logo, and Tray Icon Fix (Session 8)
+
+**Completed:**
+
+1. ✅ **Path Truncation:**
+   - Created `Helpers/PathHumanizer.cs` with Win32 PathCompactPathEx P/Invoke
+   - Fallback to segment-based middle-ellipsis truncation
+   - Added `ProjectFolderDisplay` property to MainViewModel (maxChars: 50)
+   - Added `WorkingFolderDisplay` property to MiniMonitorViewModel (maxChars: 35)
+   - Added ToolTip bindings to both windows for full path on hover
+   - Example: "d:\aitourfy26\...\src\" instead of full 120-char path
+
+2. ✅ **Aspire Logo in Both Windows:**
+   - Copied `images/aspire-logo.png` to `Resources/aspire-logo.png`
+   - Updated MiniMonitorWindow.xaml to use `pack://application:,,,/Resources/aspire-logo.png`
+   - Verified MainWindow.xaml already uses `Resources/aspire-logo-256.png`
+   - Both windows now display the Aspire logo consistently
+
+3. ✅ **Fixed Duplicate Tray Icon:**
+   - **Root Cause:** StartupUri in App.xaml + NotifyIcon in MainWindow.xaml.cs
+   - **OllamaMonitor Pattern:** NotifyIcon owned by App.xaml.cs, NOT by MainWindow
+   - Removed `StartupUri="Views/MainWindow.xaml"` from App.xaml
+   - Moved NotifyIcon creation/disposal from MainWindow.xaml.cs to App.xaml.cs
+   - App.xaml.cs now creates MainWindow explicitly and manages NotifyIcon lifecycle
+   - Verified: Only ONE process, ONE tray icon on launch
+
+**Learnings:**
+
+**Path Truncation Approach:**
+- Win32 PathCompactPathEx is the best solution (zero dependencies, built into Windows)
+- Requires P/Invoke to `shlwapi.dll`, returns "C:\foo\...\baz\file.txt" format
+- Segment-based fallback for non-Windows: split on DirectorySeparatorChar, keep first 1-2 + last 1-2 segments
+- Derived ViewModel properties (`ProjectFolderDisplay`, `WorkingFolderDisplay`) avoid converter complexity
+- Always provide full path in ToolTip for inspection
+
+**Tray Icon Ownership Model (OllamaMonitor Pattern):**
+- **Problem:** MainWindow creates NotifyIcon → every window instantiation creates a new tray icon
+- **Solution:** App.xaml.cs owns NotifyIcon (process-scoped), MainWindow is just a UI view
+- **Pattern:** 
+  1. Remove StartupUri from App.xaml
+  2. Create MainWindow explicitly in App.OnStartup
+  3. Initialize NotifyIcon in App.OnStartup (NOT in MainWindow)
+  4. App.OnExit disposes NotifyIcon
+- **Result:** ONE NotifyIcon per application lifetime, regardless of MainWindow show/hide cycles
+- This mirrors how OllamaMonitor manages its tray icon
+
+**Gotchas:**
+- ViewModel PropertyChanged subscriptions must notify derived properties (e.g., `OnPropertyChanged(nameof(ProjectFolderDisplay))`)
+- XAML binding to derived properties (not the raw backing field)
+- ToolTip always binds to the FULL path, not the truncated display property
 

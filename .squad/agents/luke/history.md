@@ -763,7 +763,22 @@ Always add debug logging to background services and network calls early. Silent 
 - ✅ Null-safe (nullable reference types enabled)
 - ✅ Well-tested (>80% coverage)
 - ✅ Clear error messages
-- ✅ Follows existing patterns (ConfigurationService design)
+
+---
+
+### 2026-04-26 — Cross-Agent Coordination: Path Humanizer + Tray Icon Ownership
+
+**Note from Scribe (2026-04-26T19:12:56Z):**
+
+Han completed Session 8 work on UI polish. Key updates for backend integration:
+
+1. **PathHumanizer Helper Available:** New `Helpers/PathHumanizer.cs` truncates paths for display using Win32 PathCompactPathEx. ViewModel properties `ProjectFolderDisplay` and `WorkingFolderDisplay` use this — if you bind to folder paths in new features, use the *Display properties instead of raw paths.
+
+2. **Tray Icon Now App-Owned:** NotifyIcon moved to App.xaml.cs (process-scoped). If you modify polling service lifecycle or app startup, coordinate with App-level shutdown to avoid orphaned tray icons.
+
+3. **Test Coverage:** WorkingFolderTests now expect "(no working folder set)" placeholder. No API changes to AspirePollingService or AspireApiClient — all 260 tests still passing.
+
+4. **Status:** Ready for Phase 5 (release integration). No blocking issues for polling service or configuration system.
 
 
 

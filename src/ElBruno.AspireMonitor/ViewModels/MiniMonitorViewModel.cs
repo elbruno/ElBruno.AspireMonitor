@@ -2,6 +2,7 @@ using System.Windows.Media;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
 using ElBruno.AspireMonitor.Infrastructure;
+using ElBruno.AspireMonitor.Helpers;
 
 namespace ElBruno.AspireMonitor.ViewModels;
 
@@ -72,8 +73,16 @@ public class MiniMonitorViewModel : ViewModelBase
     public string WorkingFolder
     {
         get => _workingFolder;
-        set => SetProperty(ref _workingFolder, value);
+        set
+        {
+            if (SetProperty(ref _workingFolder, value))
+            {
+                OnPropertyChanged(nameof(WorkingFolderDisplay));
+            }
+        }
     }
+
+    public string WorkingFolderDisplay => PathHumanizer.Humanize(_workingFolder, 35);
 
     public DateTime LastUpdate
     {
