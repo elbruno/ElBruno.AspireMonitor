@@ -8,8 +8,9 @@ public class AspireCommandService : IAspireCommandService
 {
     /// <summary>
     /// Starts Aspire silently (no terminal window) in the specified working folder.
+    /// Optionally streams output lines to a callback for real-time logging.
     /// </summary>
-    public async Task<bool> StartAspireAsync(string workingFolder)
+    public async Task<bool> StartAspireAsync(string workingFolder, Action<string>? logCallback = null)
     {
         try
         {
@@ -40,6 +41,12 @@ public class AspireCommandService : IAspireCommandService
 
                 System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Started aspire silently (PID: {process.Id}) in {workingFolder}");
                 
+                // Stream output asynchronously if callback provided
+                if (logCallback != null)
+                {
+                    _ = StreamProcessOutputAsync(process, logCallback);
+                }
+                
                 // Don't wait for completion - aspire start runs the server in background
                 await Task.Delay(1000);
                 return true;
@@ -54,8 +61,9 @@ public class AspireCommandService : IAspireCommandService
 
     /// <summary>
     /// Stops all running Aspire instances silently.
+    /// Optionally streams output lines to a callback for real-time logging.
     /// </summary>
-    public async Task<bool> StopAspireAsync()
+    public async Task<bool> StopAspireAsync(Action<string>? logCallback = null)
     {
         try
         {
@@ -77,6 +85,12 @@ public class AspireCommandService : IAspireCommandService
                     return false;
                 }
 
+                // Stream output asynchronously if callback provided
+                if (logCallback != null)
+                {
+                    _ = StreamProcessOutputAsync(process, logCallback);
+                }
+
                 await Task.Run(() => process.WaitForExit(10000));
                 System.Diagnostics.Debug.WriteLine("[AspireCommandService] Stopped aspire");
                 return true;
@@ -92,12 +106,13 @@ public class AspireCommandService : IAspireCommandService
     /// <summary>
     /// Gets the Aspire endpoint URL by running 'aspire ps' and parsing the output.
     /// Returns the dashboard URL if found, null otherwise.
+    /// Optionally streams output lines to a callback for real-time logging.
     /// </summary>
-    public async Task<string?> DetectAspireEndpointAsync()
+    public async Task<string?> DetectAspireEndpointAsync(Action<string>? logCallback = null)
     {
         try
         {
-            var output = await RunAspireCommandAsync("ps");
+            var output = await RunAspireCommandAsync("ps", logCallback);
             return ParseEndpointFromAspirePs(output);
         }
         catch (Exception ex)
@@ -109,12 +124,13 @@ public class AspireCommandService : IAspireCommandService
 
     /// <summary>
     /// Gets running Aspire instances information via 'aspire ps' command.
+    /// Optionally streams output lines to a callback for real-time logging.
     /// </summary>
-    public async Task<string> GetRunningInstancesAsync()
+    public async Task<string> GetRunningInstancesAsync(Action<string>? logCallback = null)
     {
         try
         {
-            var output = await RunAspireCommandAsync("ps");
+            var output = await RunAspireCommandAsync("ps", logCallback);
             return string.IsNullOrWhiteSpace(output) ? "No running instances" : output;
         }
         catch (Exception ex)
@@ -126,12 +142,13 @@ public class AspireCommandService : IAspireCommandService
 
     /// <summary>
     /// Gets detailed resource information via 'aspire describe' command.
+    /// Optionally streams output lines to a callback for real-time logging.
     /// </summary>
-    public async Task<string> DescribeResourcesAsync()
+    public async Task<string> DescribeResourcesAsync(Action<string>? logCallback = null)
     {
         try
         {
-            var output = await RunAspireCommandAsync("describe");
+            var output = await RunAspireCommandAsync("describe", logCallback);
             return string.IsNullOrWhiteSpace(output) ? "No resources found" : output;
         }
         catch (Exception ex)
@@ -143,8 +160,9 @@ public class AspireCommandService : IAspireCommandService
 
     /// <summary>
     /// Generic method to run Aspire commands silently and capture output.
+    /// Optionally streams output lines to a callback for real-time logging.
     /// </summary>
-    private async Task<string> RunAspireCommandAsync(string arguments)
+    private async Task<string> RunAspireCommandAsync(string arguments, Action<string>? logCallback = null)
     {
         var processInfo = new ProcessStartInfo
         {
@@ -161,6 +179,12 @@ public class AspireCommandService : IAspireCommandService
             if (process == null)
                 return string.Empty;
 
+            // Stream output asynchronously if callback provided
+            if (logCallback != null)
+            {
+                _ = StreamProcessOutputAsync(process, logCallback);
+            }
+
             var output = await process.StandardOutput.ReadToEndAsync();
             var error = await process.StandardError.ReadToEndAsync();
             
@@ -172,6 +196,48 @@ public class AspireCommandService : IAspireCommandService
             }
 
             return output ?? string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Streams process output line-by-line to a callback for real-time logging.
+    /// Reads from both stdout and stderr simultaneously.
+    /// </summary>
+    private async Task StreamProcessOutputAsync(Process process, Action<string> logCallback)
+    {
+        try
+        {
+            var stdoutTask = ReadStreamAsync(process.StandardOutput, logCallback);
+            var stderrTask = ReadStreamAsync(process.StandardError, logCallback);
+            
+            await Task.WhenAll(stdoutTask, stderrTask);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Error streaming process output: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Reads from a stream line-by-line and invokes callback for each non-empty line.
+    /// </summary>
+    private async Task ReadStreamAsync(StreamReader reader, Action<string> callback)
+    {
+        try
+        {
+            string? line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                line = line.Trim();
+                if (!string.IsNullOrEmpty(line))
+                {
+                    callback(line);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Error reading stream: {ex.Message}");
         }
     }
 

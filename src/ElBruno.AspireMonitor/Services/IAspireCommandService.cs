@@ -2,10 +2,10 @@ namespace ElBruno.AspireMonitor.Services;
 
 public interface IAspireCommandService
 {
-    Task<bool> StartAspireAsync(string workingFolder);
-    Task<bool> StopAspireAsync();
+    Task<bool> StartAspireAsync(string workingFolder, Action<string>? logCallback = null);
+    Task<bool> StopAspireAsync(Action<string>? logCallback = null);
     Task<string> GetStatusAsync();
-    Task<string?> DetectAspireEndpointAsync();
-    Task<string> GetRunningInstancesAsync();
-    Task<string> DescribeResourcesAsync();
+    Task<string?> DetectAspireEndpointAsync(Action<string>? logCallback = null);
+    Task<string> GetRunningInstancesAsync(Action<string>? logCallback = null);
+    Task<string> DescribeResourcesAsync(Action<string>? logCallback = null);
 }

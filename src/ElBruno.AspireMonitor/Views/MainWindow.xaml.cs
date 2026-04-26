@@ -251,11 +251,27 @@ public partial class MainWindow : Window
     {
         if (_miniMonitor == null)
         {
+            var miniMonitorVm = new MiniMonitorViewModel(ViewModel);
             _miniMonitor = new MiniMonitor
             {
-                DataContext = new MiniMonitorViewModel(ViewModel)
+                DataContext = miniMonitorVm
             };
-            _miniMonitor.Closed += (s, e) => _miniMonitor = null;
+            
+            // Set the MiniMonitorViewModel reference in MainViewModel
+            if (ViewModel != null)
+            {
+                ViewModel.MiniMonitorViewModel = miniMonitorVm;
+            }
+            
+            _miniMonitor.Closed += (s, e) => 
+            {
+                // Clear the reference when the MiniMonitor closes
+                if (ViewModel != null)
+                {
+                    ViewModel.MiniMonitorViewModel = null;
+                }
+                _miniMonitor = null;
+            };
             _miniMonitor.Show();
         }
         else if (_miniMonitor.IsVisible)

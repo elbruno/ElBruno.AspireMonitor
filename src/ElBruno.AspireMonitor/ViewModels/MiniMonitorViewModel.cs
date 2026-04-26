@@ -1,5 +1,6 @@
 using System.Windows.Media;
 using System.Windows.Input;
+using System.Collections.ObjectModel;
 using ElBruno.AspireMonitor.Infrastructure;
 
 namespace ElBruno.AspireMonitor.ViewModels;
@@ -11,6 +12,8 @@ public class MiniMonitorViewModel : ViewModelBase
     private string _statusEmoji = "⚪";
     private System.Windows.Media.Brush _statusColor = System.Windows.Media.Brushes.Gray;
     private string _workingFolder = "Not configured";
+    private const int MaxLogLines = 5;
+    private ObservableCollection<string> _logLines = new();
 
     public MiniMonitorViewModel() : this(null)
     {
@@ -56,6 +59,33 @@ public class MiniMonitorViewModel : ViewModelBase
     public ICommand? StartAspireCommand => _mainViewModel?.StartAspireCommand;
 
     public ICommand? StopAspireCommand => _mainViewModel?.StopAspireCommand;
+
+    public ObservableCollection<string> LogLines
+    {
+        get => _logLines;
+        set => SetProperty(ref _logLines, value);
+    }
+
+    public Action<string> LogCallback => AddLogLine;
+
+    public void AddLogLine(string line)
+    {
+        if (string.IsNullOrEmpty(line))
+            return;
+
+        _logLines.Add(line);
+        
+        // Keep only the last 5 lines
+        while (_logLines.Count > MaxLogLines)
+        {
+            _logLines.RemoveAt(0);
+        }
+    }
+
+    public void ClearLog()
+    {
+        _logLines.Clear();
+    }
 
     public string DetailsSummary
     {

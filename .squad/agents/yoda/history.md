@@ -906,4 +906,45 @@ Phase 4 test suite complete. 223 comprehensive tests written and verified (100% 
 - Settings persistence unchanged (ConfigurationService still works)
 - Ready for Phase 4-5 (integration testing + release)
 
+---
+
+### Logo Visibility Investigation (Current Session)
+
+**Issue:** Aspire logo not displaying in MainWindow and MiniMonitor windows
+
+**Root Cause Identified:** WPF's native `Image` control does **not support SVG format**. Only raster formats (PNG, BMP, GIF, TIFF, JPG) are supported. The XAML references are syntactically correct using pack:// protocol, but SVG files cannot render.
+
+**File Evidence:**
+- MiniMonitor.xaml (Line 40): `<Image Source="pack://application:,,,/Resources/aspire-logo.svg" ... />`
+- MainWindow.xaml (Line 44): `<Image Source="pack://application:,,,/Resources/aspire-logo.svg" ... />`
+- Resource files exist and verified: aspire-logo.svg, aspire-logo-yellow.svg, aspire-logo-red.svg, aspire-logo-green.svg, aspire-logo-gray.svg
+- Project .csproj correctly marks resources for output: `<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>`
+
+**Why Not Caught by Tests:**
+- MainWindowUITests.cs (437 lines): No assertions for Image control visibility or ImageSource resolution
+- MiniMonitorUITests.cs (502 lines): No assertions for Image rendering
+- Mock UI classes skip image loading entirely
+- **Test Gap Identified**: Logo rendering tests missing
+
+**Solution Recommended:**
+Convert SVG files to PNG format (32x32 and 28x28 variants). Single-line XAML fix: change file extension from `.svg` to `.png`.
+
+**Architectural Learning:**
+WPF Image control limitations are a common pitfall in desktop UI work. SVG support requires:
+1. Custom renderer (SharpVectors library) → adds 500KB+ dependency
+2. XAML Path conversion → code bloat (100+ lines per logo)
+3. Image format conversion → simplest, zero overhead
+
+**Documentation:** Full analysis in `.squad/decisions/inbox/yoda-logo-visibility.md`
+
+**Test Addition Needed:**
+Add Logo image binding assertions to both UI test suites to catch future ImageSource resolution failures:
+```csharp
+[Fact]
+public void MainWindow_AspireLogoImage_Loads()
+{
+    var window = new MainWindow();
+    // Assert Image.Source is not null and points to valid resource
+}
+```
 

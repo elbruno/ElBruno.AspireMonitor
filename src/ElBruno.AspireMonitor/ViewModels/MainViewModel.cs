@@ -20,6 +20,7 @@ public class MainViewModel : ViewModelBase
     private string _projectFolder = string.Empty;
     private bool _isExecutingCommand;
     private string _commandStatus = string.Empty;
+    private MiniMonitorViewModel? _miniMonitorViewModel;
 
     public MainViewModel() : this(null, null, null)
     {
@@ -171,6 +172,12 @@ public class MainViewModel : ViewModelBase
     public ICommand? StartAspireCommand { get; }
     public ICommand? StopAspireCommand { get; }
 
+    public MiniMonitorViewModel? MiniMonitorViewModel
+    {
+        get => _miniMonitorViewModel;
+        set => _miniMonitorViewModel = value;
+    }
+
     private void RefreshData()
     {
         if (_pollingService != null)
@@ -277,7 +284,10 @@ public class MainViewModel : ViewModelBase
             IsExecutingCommand = true;
             CommandStatus = "🚀 Starting Aspire...";
             
-            var success = await _commandService.StartAspireAsync(ProjectFolder);
+            // Clear logs before starting new command
+            _miniMonitorViewModel?.ClearLog();
+            
+            var success = await _commandService.StartAspireAsync(ProjectFolder, _miniMonitorViewModel?.LogCallback);
             
             if (success)
             {
@@ -285,7 +295,7 @@ public class MainViewModel : ViewModelBase
                 
                 // Wait a moment then detect the endpoint from running Aspire instance
                 await Task.Delay(2000);
-                var endpoint = await _commandService.DetectAspireEndpointAsync();
+                var endpoint = await _commandService.DetectAspireEndpointAsync(_miniMonitorViewModel?.LogCallback);
                 
                 if (!string.IsNullOrWhiteSpace(endpoint))
                 {
@@ -342,7 +352,10 @@ public class MainViewModel : ViewModelBase
             IsExecutingCommand = true;
             CommandStatus = "⏹️ Stopping Aspire...";
             
-            var success = await _commandService.StopAspireAsync();
+            // Clear logs before starting new command
+            _miniMonitorViewModel?.ClearLog();
+            
+            var success = await _commandService.StopAspireAsync(_miniMonitorViewModel?.LogCallback);
             
             if (success)
             {

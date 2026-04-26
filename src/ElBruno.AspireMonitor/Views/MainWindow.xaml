@@ -42,7 +42,7 @@
 
             <!-- Logo Image -->
             <Image Grid.Column="0"
-                   Source="pack://application:,,,/Resources/aspire-logo.svg"
+                   Source="pack://application:,,,/Resources/aspire-logo-256.png"
                    Width="32"
                    Height="32"
                    Margin="0,0,10,0"
