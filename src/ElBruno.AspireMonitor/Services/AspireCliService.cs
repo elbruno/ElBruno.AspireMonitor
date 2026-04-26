@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using ElBruno.AspireMonitor.Models;
@@ -8,7 +9,14 @@ namespace ElBruno.AspireMonitor.Services;
 public class AspireCliService
 {
     private const int CommandTimeoutSeconds = 10;
-    
+
+    /// <summary>
+    /// Working directory used when invoking the Aspire CLI. The CLI auto-discovers
+    /// running AppHost instances via lock files in this directory tree, so it MUST
+    /// match the folder where the user launched 'aspire start'.
+    /// </summary>
+    public string? WorkingDirectory { get; set; }
+
     public async Task<string> ExecuteCommandAsync(string command, string arguments = "", CancellationToken cancellationToken = default)
     {
         try
@@ -24,6 +32,11 @@ public class AspireCliService
                 StandardOutputEncoding = Encoding.UTF8,
                 StandardErrorEncoding = Encoding.UTF8
             };
+
+            if (!string.IsNullOrWhiteSpace(WorkingDirectory) && Directory.Exists(WorkingDirectory))
+            {
+                startInfo.WorkingDirectory = WorkingDirectory;
+            }
 
             using var process = new Process { StartInfo = startInfo };
             var output = new StringBuilder();
@@ -228,6 +241,11 @@ public class AspireCliService
             CreateNoWindow = true,
             StandardOutputEncoding = Encoding.UTF8
         };
+
+        if (!string.IsNullOrWhiteSpace(WorkingDirectory) && Directory.Exists(WorkingDirectory))
+        {
+            startInfo.WorkingDirectory = WorkingDirectory;
+        }
 
         using var process = new Process { StartInfo = startInfo };
         

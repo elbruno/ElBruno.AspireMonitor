@@ -19,6 +19,20 @@ public partial class App : System.Windows.Application
     private IAspirePollingService? _pollingService;
     private IConfigurationService? _configService;
     private AspireCliService? _cliService;
+
+    /// <summary>
+    /// Updates the working directory used by the Aspire CLI. Called when the user
+    /// changes the project folder in Settings so subsequent 'aspire describe' calls
+    /// run from the correct directory.
+    /// </summary>
+    public void UpdateAspireWorkingDirectory(string? workingDirectory)
+    {
+        if (_cliService != null)
+        {
+            _cliService.WorkingDirectory = workingDirectory;
+            System.Diagnostics.Debug.WriteLine($"[App] CLI WorkingDirectory updated: '{workingDirectory}'");
+        }
+    }
     private AspireLiveLogsService? _logsService;
     private IAspireCommandService? _commandService;
     private NotifyIcon? _notifyIcon;
@@ -91,7 +105,11 @@ public partial class App : System.Windows.Application
         
         // Initialize CLI service (NO HTTP)
         System.Diagnostics.Debug.WriteLine("[App] Creating CLI service...");
-        _cliService = new AspireCliService();
+        _cliService = new AspireCliService
+        {
+            WorkingDirectory = configuration.ProjectFolder
+        };
+        System.Diagnostics.Debug.WriteLine($"[App]   CLI WorkingDirectory: '{_cliService.WorkingDirectory}'");
         
         // Initialize live logs service
         System.Diagnostics.Debug.WriteLine("[App] Creating live logs service...");
