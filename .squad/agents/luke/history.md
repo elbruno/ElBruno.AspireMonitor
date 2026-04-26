@@ -71,6 +71,7 @@
 
 1. **CLI Commands:**
    - `aspire ps` — Show running Aspire processes in a specific folder
+   - `aspire ps --format json` — JSON output with dashboardUrl field (includes login token)
    - `aspire describe` — Describe Aspire app (shows host, resources, status)
 
 2. **HTTP API:**
@@ -91,6 +92,13 @@
    - Properties: endpoint URL, polling interval, CPU/memory thresholds
    - CLI commands to set config values
    - Persist across app restarts
+
+5. **Dashboard URL Detection (2025-04-26):**
+   - `aspire ps --format json` returns array with `dashboardUrl` field
+   - dashboardUrl includes full login URL with authentication token: `http://localhost:PORT/login?t=<token>`
+   - Token query parameter (?t=...) is REQUIRED for auto-login — must be preserved
+   - Fallback to text-based regex if JSON unavailable (older CLI versions)
+   - Text regex updated to preserve query strings: `https?://(?:localhost|127\.0\.0\.1):\d+(?:/[^\s]*)?`
 
 ---
 
