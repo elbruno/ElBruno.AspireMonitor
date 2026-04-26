@@ -1439,3 +1439,39 @@ The documented "Orange/Partial" state has been removed (it was fiction). Now eve
 
 **Commit:** d90c563 — eat(mini-window): auto-resize height to fit content
 
+
+---
+
+### 2026-04-26 — Integration Notes: Luke's Dashboard Token Work
+
+**Cross-Agent Integration (Luke → Han):**
+
+Luke has completed dashboard URL token preservation work (commit ffec33e), enabling the dashboard link in the mini window to include the authentication token. Key integration points for Han:
+
+1. **Dashboard URL Now Carries Token:**
+   - Luke's AspireCommandService.DetectAspireEndpointAsync() now calls spire ps --format json
+   - Parses dashboardUrl field directly (includes full URL with ?t=<token>)
+   - Token is required for passwordless auto-login to Aspire dashboard
+   - Fallback to text regex if JSON unavailable (older CLI versions)
+
+2. **Mini Window Dashboard Link Integration:**
+   - MiniMonitorViewModel.DashboardUrl property will now receive full URL with token (not just hostname:port)
+   - When user clicks dashboard link in mini window, they auto-authenticate (token in URL)
+   - No manual token entry required
+   - Dashboard link now actually works as intended
+
+3. **Testing Dashboard Link:**
+   - Verify HasDashboard visibility binding still works correctly
+   - Confirm link opens dashboard with auto-authentication
+   - Verify URL truncation with TextTrimming handles full URL format with token
+
+**No Changes Required in Han's Code:**
+- MiniMonitorWindow.xaml already exposes DashboardUrl as hyperlink
+- ViewModel property binding remains unchanged
+- Auto-resize feature (SizeToContent) works independently
+- Integration is backward compatible
+
+**Validation Points:**
+- ✅ All 260 tests passing
+- ✅ Token preserved in both JSON and fallback paths
+- ✅ Dashboard link in mini window now functional

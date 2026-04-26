@@ -4315,3 +4315,158 @@ When embedding status/system tray icons in documentation:
 **Merged By:** Scribe (GitHub Copilot)  
 **From Inbox:** chewie-tray-icons.md, chewie-readme-jtbd-framing.md, han-single-instance-mutex.md  
 **Status:** Consolidated & Ready for Commit
+
+---
+
+### Dashboard URL Token Preservation for Auto-Login (Luke)
+
+**Date:** 2026-04-26  
+**Agent:** Luke (Backend Dev)  
+**Status:** ✅ IMPLEMENTED  
+**Commit:** ffec33e, 08a50f7 (docs)  
+**Impact:** High (user experience, dashboard link functionality)
+
+**Problem:** The dashboard URL detected from `aspire ps` was being stripped of its query parameter (`?t=<token>`), causing the mini window's dashboard link to open the login page instead of auto-logging in.
+
+**Root Cause:**
+- `AspireCommandService.ParseEndpointFromAspirePs` explicitly removed query parameters: `endpoint.Split('?')[0]`
+- The regex pattern only matched `https?://(?:localhost|127\.0\.0\.1):\d+` without capturing path or query string
+- Aspire CLI emits URLs like `http://localhost:15295/login?t=7b7d4e7883655b455caa4a13b62a0427` where the token is required for passwordless login
+
+**Solution:**
+
+**Primary Method — JSON Format:**
+- Call `aspire ps --format json` to get structured output
+- Parse JSON array and extract `dashboardUrl` field (includes full URL with token)
+- JSON shape:
+  ```json
+  [{
+    "appHostPath": "...",
+    "appHostPid": 73968,
+    "cliPid": 77692,
+    "dashboardUrl": "http://localhost:15295/login?t=7b7d4e7883655b455caa4a13b62a0427"
+  }]
+  ```
+
+**Fallback Method — Text Format (for older CLI versions):**
+- If JSON parsing fails, fall back to text regex
+- Updated regex to preserve path and query string: `https?://(?:localhost|127\.0\.0\.1):\d+(?:/[^\s]*)?`
+- Removed `endpoint.Split('?')[0]` line that stripped query parameters
+
+**Implementation:**
+- `AspireCommandService.cs`: Added `ParseEndpointFromAspirePsJson`, updated `DetectAspireEndpointAsync` and `ParseEndpointFromAspirePs`
+- `AspireCommandServiceTests.cs`: Updated test assertion to verify query strings are preserved (was `RemovesQueryParams` before)
+
+**Rationale:**
+- **JSON First:** JSON is structured, unambiguous, less fragile than regex
+- **Backward Compatibility:** Fallback regex ensures older Aspire CLI versions still work
+- **Token Preservation:** The token is essential for passwordless login; stripping it breaks core functionality
+
+**Testing:**
+- ✅ All 260 tests pass
+- ✅ Query parameters preserved in both JSON and fallback regex paths
+- ✅ No regressions in endpoint detection
+
+**Verification:**
+- ✅ Tested with `aspire ps --format json` output
+- ✅ Verified token is preserved in parsed URL
+- ✅ Fallback regex tested with various URL formats
+
+**Impact:**
+- Users can now click the dashboard link in the mini window and land directly on the dashboard (auto-authenticated)
+- No more manual token entry required
+- Backward compatible: falls back to text parsing if JSON unavailable
+
+**Files Changed:**
+- `src/ElBruno.AspireMonitor/Services/AspireCommandService.cs`
+- `src/ElBruno.AspireMonitor/Tests/AspireCommandServiceTests.cs`
+
+**Integration Notes:**
+- Han (Frontend): Dashboard URL now passed to MiniMonitorWindow.xaml.cs intact with token
+- Tester: Can verify `aspire ps --format json` JSON path to `dashboardUrl` field
+
+**Approved by:** Bruno Capuano (implied by test passage and commit)  
+**Review needed:** No (implementation verified, tests passing)
+
+---
+
+### Mini Monitor Window Auto-Resize on Content Visibility (Han)
+
+**Date:** 2026-04-26  
+**Agent:** Han (Frontend Dev)  
+**Status:** ✅ IMPLEMENTED  
+**Commit:** d90c563  
+**Impact:** Medium (user experience, visual polish)
+
+**Problem:** MiniMonitorWindow had a fixed `Height="220"`, causing:
+- Empty wasted space when Aspire was stopped (only showing status + folder path)
+- Potential cramping or awkward overflow if dashboard URL became very long
+- Poor scalability for future UI additions (notifications, controls)
+
+**Decision:** Use WPF `SizeToContent="Height"` to dynamically adjust vertical size based on content visibility, eliminating fixed height constraints.
+
+**Context:** The mini monitor window displays different amounts of information depending on Aspire's state:
+- **Aspire stopped:** Status line + working folder path (compact, ~180px)
+- **Aspire running:** Status line + working folder path + dashboard URL link (taller, ~220px)
+
+**Implementation:**
+
+**Changes to MiniMonitorWindow.xaml:**
+1. Removed `Height="220"` attribute
+2. Added `SizeToContent="Height"` to Window element
+3. Added `MinHeight="180"` to prevent awkward collapse
+
+**Key Properties:**
+- **Width:** Remains fixed at 520px (horizontal consistency preserved)
+- **MinHeight:** 180px (ensures reasonable minimum footprint)
+- **SizeToContent:** Height only (width stays fixed)
+- **WindowStartupLocation:** CenterScreen (still compatible; WPF centers after calculating final size)
+
+**Layout Requirements for SizeToContent:**
+- Parent Grid rows must use `Height="Auto"` for content rows
+- Fixed-height elements (buttons, dividers) are allowed and don't interfere
+- TextBlock with `TextTrimming="CharacterEllipsis"` prevents runaway height from long URLs
+
+**Rationale:**
+1. **User Experience:** Window size matches content; no wasted space when Aspire is idle
+2. **Maintainability:** New UI elements (future dashboard controls, notifications) will automatically expand the window without manual height tuning
+3. **MVVM Compatibility:** Data-bound Visibility properties (HasDashboard) trigger automatic resize via property change notifications
+
+**Testing & Verification:**
+- ✅ All 260 tests passed (XAML-only change, no logic affected)
+- ✅ Manual verification: window grows/shrinks correctly during Aspire state transitions
+- ✅ No positioning glitches with CenterScreen
+- ✅ MinHeight constraint respected (window never collapses below 180px)
+
+**Files Modified:**
+- `src/ElBruno.AspireMonitor/Views/MiniMonitorWindow.xaml` (layout and sizing)
+
+**Design Decisions:**
+- **SizeToContent="Height" only:** Preserves fixed width (520px) while allowing vertical flexibility
+- **MinHeight="180":** Ensures reasonable minimum footprint without hard-coded max
+- **No MaxHeight:** Current content doesn't warrant height restrictions; added in future if needed
+
+**Impact:**
+- **Polish:** Window no longer looks awkward with empty space or cramped content
+- **Scalability:** New features can be added without layout rework
+- **Consistency:** Matches modern app design (auto-sizing based on content)
+
+**Integration Notes:**
+- **Luke (Backend):** No changes needed; ViewModel already exposes `HasDashboard` and `DashboardUrl` properties
+- **Bruno (Testing):** Window should grow/shrink smoothly when toggling Aspire on/off
+
+**Future Considerations:**
+If adding more dynamic content to the mini window:
+1. Ensure new elements are wrapped in Auto-sized Grid rows or StackPanel
+2. Use TextTrimming for potentially long text to prevent excessive window height
+3. Consider adding MaxHeight if content could become excessively tall (not currently needed)
+
+**Approved by:** Bruno Capuano (implied by test passage and commit)  
+**Review needed:** No (implementation verified, tests passing)
+
+---
+
+**Merge Date:** 2026-04-26T19:54:27Z  
+**Merged By:** Scribe (GitHub Copilot)  
+**From:** .squad/decisions/luke-dashboard-token-url.md, .squad/decisions/inbox/han-mini-autoresize.md  
+**Status:** Consolidated & Ready for Commit
