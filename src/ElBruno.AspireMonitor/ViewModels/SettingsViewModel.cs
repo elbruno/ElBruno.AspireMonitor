@@ -14,6 +14,7 @@ public class SettingsViewModel : ViewModelBase
     private int _memoryThresholdCritical = 90;
     private bool _startWithWindows;
     private string _projectFolder = string.Empty;
+    private string _aspireEndpoint = "http://localhost:18888";
     private string _validationMessage = string.Empty;
 
     public SettingsViewModel(IConfigurationService configService)
@@ -61,7 +62,19 @@ public class SettingsViewModel : ViewModelBase
     public string ProjectFolder
     {
         get => _projectFolder;
-        set => SetProperty(ref _projectFolder, value);
+        set
+        {
+            if (SetProperty(ref _projectFolder, value))
+            {
+                DetectAspireEndpointFromFolder();
+            }
+        }
+    }
+
+    public string AspireEndpoint
+    {
+        get => _aspireEndpoint;
+        set => SetProperty(ref _aspireEndpoint, value);
     }
 
     public string ValidationMessage
@@ -73,6 +86,19 @@ public class SettingsViewModel : ViewModelBase
     public bool Validate()
     {
         ValidationMessage = string.Empty;
+
+        // Validate Aspire endpoint
+        if (string.IsNullOrWhiteSpace(AspireEndpoint))
+        {
+            ValidationMessage = "Aspire Endpoint cannot be empty.";
+            return false;
+        }
+
+        if (!Uri.TryCreate(AspireEndpoint, UriKind.Absolute, out _))
+        {
+            ValidationMessage = "Aspire Endpoint must be a valid URL.";
+            return false;
+        }
 
         // Validate polling interval
         if (PollingInterval < 1000 || PollingInterval > 60000)
@@ -138,6 +164,7 @@ public class SettingsViewModel : ViewModelBase
 
         var config = new Models.Configuration
         {
+            AspireEndpoint = AspireEndpoint ?? "http://localhost:18888",
             PollingIntervalMs = PollingInterval,
             CpuThresholdWarning = CpuThresholdWarning,
             CpuThresholdCritical = CpuThresholdCritical,
@@ -154,6 +181,7 @@ public class SettingsViewModel : ViewModelBase
     {
         var config = _configService.LoadConfiguration();
         
+        AspireEndpoint = config.AspireEndpoint ?? "http://localhost:18888";
         PollingInterval = config.PollingIntervalMs;
         CpuThresholdWarning = config.CpuThresholdWarning;
         CpuThresholdCritical = config.CpuThresholdCritical;
@@ -171,7 +199,7 @@ public class SettingsViewModel : ViewModelBase
         var detectedEndpoint = Models.AppConfiguration.DetectAspireEndpoint(ProjectFolder);
         if (!string.IsNullOrWhiteSpace(detectedEndpoint))
         {
-            // Endpoint is auto-detected and used internally, no need to store
+            AspireEndpoint = detectedEndpoint;
         }
     }
 }

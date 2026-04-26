@@ -281,8 +281,27 @@ public class MainViewModel : ViewModelBase
             
             if (success)
             {
-                CommandStatus = "✅ Aspire started successfully";
-                System.Diagnostics.Debug.WriteLine("[MainViewModel] Aspire started successfully");
+                CommandStatus = "🔍 Detecting Aspire endpoint...";
+                
+                // Wait a moment then detect the endpoint from running Aspire instance
+                await Task.Delay(2000);
+                var endpoint = await _commandService.DetectAspireEndpointAsync();
+                
+                if (!string.IsNullOrWhiteSpace(endpoint))
+                {
+                    // Update the API client endpoint
+                    HostUrl = endpoint;
+                    CommandStatus = "✅ Aspire started successfully";
+                    System.Diagnostics.Debug.WriteLine($"[MainViewModel] Aspire started with endpoint: {endpoint}");
+                    
+                    // Trigger refresh to immediately connect
+                    _pollingService?.RefreshAsync();
+                }
+                else
+                {
+                    CommandStatus = "⚠️ Aspire started but endpoint not detected";
+                    System.Diagnostics.Debug.WriteLine("[MainViewModel] Aspire started but could not detect endpoint");
+                }
             }
             else
             {
