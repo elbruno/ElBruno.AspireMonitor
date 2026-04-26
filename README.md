@@ -29,7 +29,7 @@ Perfect for developers who want instant visibility into what Aspire deployed, wi
 
 | Feature | Description |
 |---------|-------------|
-| 🟢🟡🟠🔴 **Tray Status Indicator** | Green (running), Yellow (warning), Orange (partial), Red (error) |
+| 🖼️ **Tray Status Indicator** | Green (running), Yellow (warning), Red (error), Gray (not running) |
 | 🔍 **Automatic Discovery** | Finds running Aspire instances in your working folder |
 | 🖥️ **Resource Visibility** | Lists services, containers, databases with endpoints |
 | 🔗 **Clickable URLs** | Open any resource directly from the app |
@@ -54,16 +54,16 @@ aspire-monitor
 
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
-## 🟢🟡🟠🔴 System Tray Status
+## 🖼️ System Tray Status
 
 The tray icon tells you at a glance:
 
 | Icon | Status | Meaning |
 |------|--------|---------|
-| 🟢 Green | Running | Aspire instance found with resources deployed |
-| 🟡 Yellow | Warning | Instance running but some resources show warnings |
-| 🟠 Orange | Partial | Some resources available, others unavailable |
-| 🔴 Red | Error | Aspire not found or connection error |
+| <img src="./images/aspire_trayicon_running.png" width="24" alt="Running"> | Running | Aspire instance found; all resources healthy |
+| <img src="./images/aspire_trayicon_warning.png" width="24" alt="Warning"> | Warning | Aspire running; one or more resources in warning state |
+| <img src="./images/aspire_trayicon_error.png" width="24" alt="Error"> | Error | Lost connection to Aspire or polling failed; auto-reconnect in progress |
+| <img src="./images/aspire_trayicon_norunning.png" width="24" alt="Not Running"> | Not Running | No Aspire instance found in the configured working folder |
 
 ## 📋 Requirements
 
@@ -88,7 +88,7 @@ C:\Projects\MyAspireApp
 - **Click icon** — Show/hide resource details window
 - **Double-click** — Expand/collapse the main window
 - **Right-click** — Context menu (Settings, Refresh, Exit)
-- **Icon color** — Reflects instance status (🟢 running, 🔴 not found, 🟡 warning)
+- **Icon status** — Reflects instance status (green=running, yellow=warning, red=error, gray=not running)
 
 The app automatically watches your working folder for Aspire instances. When `aspire run` is active, resources appear instantly.
 
