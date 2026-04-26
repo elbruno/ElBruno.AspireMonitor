@@ -136,10 +136,10 @@ public class ProjectFolderRepositoryUrlIntegrationTests : IDisposable
         var configService = new ConfigurationService(_configFilePath);
         var loadedConfig = configService.LoadConfiguration();
 
-        // Assert
+        // Assert - Missing fields deserialize to empty string (defaults)
         loadedConfig.AspireEndpoint.Should().Be("http://localhost:18888");
-        loadedConfig.ProjectFolder.Should().BeNull();
-        loadedConfig.RepositoryUrl.Should().BeNull();
+        loadedConfig.ProjectFolder.Should().Be(string.Empty);
+        loadedConfig.RepositoryUrl.Should().Be(string.Empty);
     }
 
     [Fact]
@@ -165,9 +165,9 @@ public class ProjectFolderRepositoryUrlIntegrationTests : IDisposable
         var configService = new ConfigurationService(_configFilePath);
         var loadedConfig = configService.LoadConfiguration();
 
-        // Assert
+        // Assert - Missing RepositoryUrl deserializes to empty string
         loadedConfig.ProjectFolder.Should().Be(projectPath);
-        loadedConfig.RepositoryUrl.Should().BeNull();
+        loadedConfig.RepositoryUrl.Should().Be(string.Empty);
     }
 
     [Fact]
@@ -403,10 +403,10 @@ public class ProjectFolderRepositoryUrlIntegrationTests : IDisposable
         var configService = new ConfigurationService(_configFilePath);
         var loadedConfig = configService.LoadConfiguration();
 
-        // Assert
+        // Assert - Corrupted JSON fallback to defaults (empty strings)
         loadedConfig.AspireEndpoint.Should().Be("http://localhost:15888"); // Default
-        loadedConfig.ProjectFolder.Should().BeNull();
-        loadedConfig.RepositoryUrl.Should().BeNull();
+        loadedConfig.ProjectFolder.Should().Be(string.Empty);
+        loadedConfig.RepositoryUrl.Should().Be(string.Empty);
     }
 
     [Fact]

@@ -299,8 +299,8 @@ public class ProjectFolderValidationTests : IDisposable
         var configService = new ConfigurationService(_configFilePath);
         var loadedConfig = configService.LoadConfiguration();
 
-        // Assert
-        loadedConfig.ProjectFolder.Should().BeNull();
+        // Assert - Missing field deserializes to empty string (default value)
+        loadedConfig.ProjectFolder.Should().Be(string.Empty);
         loadedConfig.AspireEndpoint.Should().Be("http://localhost:18888");
     }
 

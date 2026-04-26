@@ -359,8 +359,8 @@ public class RepositoryUrlValidationTests : IDisposable
         var configService = new ConfigurationService(_configFilePath);
         var loadedConfig = configService.LoadConfiguration();
 
-        // Assert
-        loadedConfig.RepositoryUrl.Should().BeNull();
+        // Assert - Missing field deserializes to empty string (default value)
+        loadedConfig.RepositoryUrl.Should().Be(string.Empty);
         loadedConfig.AspireEndpoint.Should().Be("http://localhost:18888");
     }
 

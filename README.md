@@ -12,16 +12,18 @@ Monitor CPU, memory, and health status of your Aspire resources without leaving 
 
 ## ⚡ Quick Start
 
+1. **Download** from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest)
+2. **Run** `ElBruno.AspireMonitor.exe`
+3. **Enter** your Aspire endpoint (e.g., `http://localhost:5000`)
+4. **Monitor** resources in real-time from your system tray
+
+**Or install as a .NET Global Tool:**
 ```bash
-# Install via NuGet
-dotnet tool install --global dotnet-serve
-# Download latest release from GitHub
-# Extract and run ElBruno.AspireMonitor.exe
+dotnet tool install --global ElBruno.AspireMonitor
+aspire-monitor
 ```
 
-**Or download directly:** [Latest Release](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest)
-
-Then access your Aspire endpoint (default: `http://localhost:5000`) and start monitoring.
+For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
 ## 🎯 Features
 
@@ -82,7 +84,9 @@ See [Configuration Guide](./docs/configuration.md) for all options.
 
 ## 📚 Documentation
 
+- **[Quick Start Guide](./docs/QUICKSTART.md)** — Get up and running in 5 minutes
 - **[Architecture Guide](./docs/architecture.md)** — System design, components, data flow
+- **[API Contract & Services](./docs/API-CONTRACT.md)** — Service layer, data contracts, retry logic
 - **[Configuration Guide](./docs/configuration.md)** — Setup, CLI, advanced options
 - **[Development Guide](./docs/development-guide.md)** — Building from source, debugging
 - **[Publishing Guide](./docs/publishing.md)** — NuGet publishing, versioning, releases

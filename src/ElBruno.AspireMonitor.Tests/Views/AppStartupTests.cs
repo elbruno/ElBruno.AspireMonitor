@@ -648,9 +648,30 @@ public class AppStartupTests
 
     private class MockMainWindowForStartup
     {
-        public Visibility Visibility { get; set; } = Visibility.Hidden;
+        private Visibility _visibility = Visibility.Hidden;
+        private WindowState _windowState = WindowState.Normal;
+        
+        public Visibility Visibility 
+        { 
+            get => _visibility;
+            set => _visibility = value;
+        }
+        
         public bool ShowInTaskbar { get; set; } = false;
-        public WindowState WindowState { get; set; } = WindowState.Normal;
+        
+        public WindowState WindowState 
+        { 
+            get => _windowState;
+            set
+            {
+                _windowState = value;
+                // Simulate WPF behavior: minimize hides to tray
+                if (value == WindowState.Minimized)
+                {
+                    HideWindow();
+                }
+            }
+        }
         private Dictionary<string, bool> _buttons = new()
         {
             { "Refresh", true },
