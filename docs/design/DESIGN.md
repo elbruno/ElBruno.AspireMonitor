@@ -177,24 +177,28 @@ These colors are:
 
 ## Asset Locations
 
-All design assets are stored in the **repository root** for easy access:
+All design assets are stored in the **`images/`** folder:
 
 ```
-C:\src\ElBruno.AspireMonitor\
+D:\elbruno\ElBruno.AspireMonitor\images\
 ├── aspire-monitor-icon-256.png                      (NuGet primary)
 ├── aspire-monitor-icon-128.png                      (NuGet fallback)
 ├── aspire-monitor-blog.png                          (Blog header)
 ├── aspire-monitor-linkedin.png                      (Social media)
 ├── aspire-monitor-twitter.png                       (Social media)
 ├── aspire-monitor-dashboard-blog-hero-*.png         (High-res hero)
-├── aspire-monitor-distributed-application-*.png    (Architecture viz)
-└── DESIGN.md                                        (This file)
+├── aspire-monitor-distributed-application-*.png     (Architecture viz)
+├── linkedin-professional-social-media-banner-*.png  (LinkedIn banner)
+├── modern-application-monitoring-icon-*.png         (Monitoring icon)
+├── modern-nuget-package-logo-*.png                  (NuGet logo variant)
+└── GENERATION_GUIDE.md                              (Generation instructions)
 ```
 
 **Naming Convention:**
 - Format: `aspire-monitor-{type}-{size}.png`
 - Examples: `aspire-monitor-icon-256.png`, `aspire-monitor-blog.png`
 - Lowercase, hyphens for separation
+- All images are in the `images/` folder at the repository root
 
 ---
 
