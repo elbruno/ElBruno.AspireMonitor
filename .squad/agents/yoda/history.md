@@ -948,3 +948,44 @@ public void MainWindow_AspireLogoImage_Loads()
 }
 ```
 
+
+## 2026-04-26: Mini Window Pinned Resources Tests
+
+### Context
+Han is implementing the configurable mini window resource list feature in parallel. I wrote forward-compatible tests targeting the planned API surface.
+
+### Tests Added
+Created MiniWindowResourcesTests.cs with 13 test cases:
+
+**Parser Tests (4 tests - all passing):**
+- Empty string → 0 tokens
+- Simple list → trimmed tokens
+- Extra commas/whitespace → filtered
+- Case preservation in token list
+
+**PinnedResources Tests (9 tests - awaiting implementation):**
+- Matching resource with URL → HasUrl=true
+- Matching resource without URL → HasUrl=false, shows Type fallback
+- Missing token → skip silently
+- Multiple tokens → preserve user order (not Aspire enumeration order)
+- Replica matching → show all replicas for a token
+- Case-insensitive matching → ""WEB"" matches ""web-xyz""
+- Aspire stops → PinnedResources cleared
+- HasPinnedResources reflects collection count
+- Live update when settings change
+
+### Learnings
+1. **Reflection-based testing pattern**: Used reflection to access properties/methods that don't exist yet, with null checks. Tests gracefully skip when the API isn't present.
+2. **Process locking**: Must kill running ElBruno.AspireMonitor.exe by PID (not name) before build, as it locks bin output.
+3. **FluentAssertions syntax**: .Equal() takes params array, not a collection + message. Use .Equal(item1, item2, item3) not .Equal(collection, ""message"").
+4. **Protected method access**: OnPropertyChanged is protected on ViewModelBase; use reflection with BindingFlags.Instance | BindingFlags.NonPublic to invoke in tests.
+
+### Test Status
+- **Passing: 4/13** (parser tests)
+- **Awaiting implementation: 9/13** (PinnedResources tests)
+
+Once Han's implementation lands, run:
+```powershell
+dotnet test --filter ""FullyQualifiedName~MiniWindowResourcesTests""
+```
+
