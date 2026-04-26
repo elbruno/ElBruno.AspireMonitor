@@ -1,0 +1,140 @@
+<Window x:Class="ElBruno.AspireMonitor.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings" 
+        Height="550" 
+        Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Aspire Endpoint -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="Aspire Endpoint:" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding AspireEndpoint, UpdateSourceTrigger=PropertyChanged}"
+                     Height="25"
+                     Padding="5,3"/>
+            <TextBlock Text="Example: http://localhost:15888" 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+
+        <!-- Polling Interval -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,15">
+            <TextBlock Text="Polling Interval (ms):" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding PollingInterval, UpdateSourceTrigger=PropertyChanged}"
+                     Height="25"
+                     Padding="5,3"/>
+            <TextBlock Text="How often to check Aspire status (recommended: 5000-10000)" 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+
+        <!-- CPU Warning Threshold -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,10">
+            <TextBlock Text="CPU Warning Threshold (%):" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding CpuThresholdWarning, UpdateSourceTrigger=PropertyChanged}"
+                     Height="25"
+                     Padding="5,3"/>
+            <TextBlock Text="Yellow alert when CPU usage exceeds this (0-100)" 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+
+        <!-- CPU Critical Threshold -->
+        <StackPanel Grid.Row="3" Margin="0,0,0,10">
+            <TextBlock Text="CPU Critical Threshold (%):" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding CpuThresholdCritical, UpdateSourceTrigger=PropertyChanged}"
+                     Height="25"
+                     Padding="5,3"/>
+            <TextBlock Text="Red alert when CPU usage exceeds this (0-100)" 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+
+        <!-- Memory Warning Threshold -->
+        <StackPanel Grid.Row="4" Margin="0,0,0,10">
+            <TextBlock Text="Memory Warning Threshold (%):" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding MemoryThresholdWarning, UpdateSourceTrigger=PropertyChanged}"
+                     Height="25"
+                     Padding="5,3"/>
+            <TextBlock Text="Yellow alert when memory usage exceeds this (0-100)" 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+
+        <!-- Memory Critical Threshold -->
+        <StackPanel Grid.Row="5" Margin="0,0,0,10">
+            <TextBlock Text="Memory Critical Threshold (%):" 
+                       FontWeight="SemiBold" 
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding MemoryThresholdCritical, UpdateSourceTrigger=PropertyChanged}"
+                     Height="25"
+                     Padding="5,3"/>
+            <TextBlock Text="Red alert when memory usage exceeds this (0-100)" 
+                       FontSize="10" 
+                       Foreground="#666666" 
+                       Margin="0,3,0,0"/>
+        </StackPanel>
+
+        <!-- Start with Windows -->
+        <CheckBox Grid.Row="6"
+                  Content="Start with Windows"
+                  IsChecked="{Binding StartWithWindows}"
+                  Margin="0,0,0,15"/>
+
+        <!-- Validation Message -->
+        <TextBlock Grid.Row="7"
+                   Text="{Binding ValidationMessage}"
+                   Foreground="Red"
+                   FontSize="11"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Top"
+                   Margin="0,0,0,10"/>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="8"
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,10,0,0">
+            <Button Content="OK" 
+                    Width="80" 
+                    Height="30"
+                    Margin="0,0,10,0"
+                    Click="OK_Click"
+                    IsDefault="True"/>
+            <Button Content="Cancel" 
+                    Width="80" 
+                    Height="30"
+                    Click="Cancel_Click"
+                    IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>

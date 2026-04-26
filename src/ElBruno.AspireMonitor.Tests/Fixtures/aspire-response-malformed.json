@@ -1,0 +1,20 @@
+{
+  "resources": [
+    {
+      "name": "incomplete-service",
+      "resourceType": "Container",
+      "state": "Running",
+      "properties": {}
+    },
+    {
+      "name": "null-metrics-service",
+      "resourceType": "Container",
+      "state": "Running",
+      "properties": {
+        "cpuUsage": null,
+        "memoryUsage": null,
+        "memoryLimit": 1073741824
+      }
+    }
+  ]
+}

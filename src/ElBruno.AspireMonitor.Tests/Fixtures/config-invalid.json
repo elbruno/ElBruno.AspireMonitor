@@ -1,0 +1,6 @@
+{
+  "aspireApiUrl": "not-a-valid-url",
+  "pollingIntervalSeconds": -5,
+  "cpuThresholdYellow": 150,
+  "memoryThresholdRed": -10
+}

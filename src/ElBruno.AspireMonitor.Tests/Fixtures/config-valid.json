@@ -1,0 +1,10 @@
+{
+  "aspireApiUrl": "http://localhost:18888",
+  "pollingIntervalSeconds": 5,
+  "cpuThresholdYellow": 70,
+  "cpuThresholdRed": 90,
+  "memoryThresholdYellow": 70,
+  "memoryThresholdRed": 90,
+  "enableNotifications": true,
+  "showSystemTray": true
+}

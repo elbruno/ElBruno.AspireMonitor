@@ -1,0 +1,38 @@
+{
+  "resources": [
+    {
+      "name": "overloaded-service",
+      "resourceType": "Container",
+      "state": "Running",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "environment": [],
+      "endpoints": [
+        {
+          "endpointUrl": "http://localhost:5000"
+        }
+      ],
+      "properties": {
+        "cpuUsage": 95.7,
+        "memoryUsage": 2000000000,
+        "memoryLimit": 2147483648
+      }
+    },
+    {
+      "name": "warning-service",
+      "resourceType": "Container",
+      "state": "Running",
+      "createdAt": "2024-01-15T10:00:05Z",
+      "environment": [],
+      "endpoints": [
+        {
+          "endpointUrl": "http://localhost:5001"
+        }
+      ],
+      "properties": {
+        "cpuUsage": 75.3,
+        "memoryUsage": 900000000,
+        "memoryLimit": 1073741824
+      }
+    }
+  ]
+}

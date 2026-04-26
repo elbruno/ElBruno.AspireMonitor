@@ -1,0 +1,66 @@
+{
+  "resources": [
+    {
+      "name": "api-service",
+      "resourceType": "Container",
+      "state": "Running",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "environment": [
+        {
+          "name": "ASPNETCORE_ENVIRONMENT",
+          "value": "Development"
+        }
+      ],
+      "endpoints": [
+        {
+          "endpointUrl": "http://localhost:5000",
+          "proxyUrl": "http://localhost:18000"
+        }
+      ],
+      "properties": {
+        "cpuUsage": 45.5,
+        "memoryUsage": 512000000,
+        "memoryLimit": 2147483648
+      }
+    },
+    {
+      "name": "postgres-db",
+      "resourceType": "Container",
+      "state": "Running",
+      "createdAt": "2024-01-15T10:00:05Z",
+      "environment": [
+        {
+          "name": "POSTGRES_PASSWORD",
+          "value": "****"
+        }
+      ],
+      "endpoints": [
+        {
+          "endpointUrl": "postgresql://localhost:5432"
+        }
+      ],
+      "properties": {
+        "cpuUsage": 15.2,
+        "memoryUsage": 256000000,
+        "memoryLimit": 1073741824
+      }
+    },
+    {
+      "name": "redis-cache",
+      "resourceType": "Container",
+      "state": "Running",
+      "createdAt": "2024-01-15T10:00:10Z",
+      "environment": [],
+      "endpoints": [
+        {
+          "endpointUrl": "redis://localhost:6379"
+        }
+      ],
+      "properties": {
+        "cpuUsage": 5.8,
+        "memoryUsage": 102400000,
+        "memoryLimit": 536870912
+      }
+    }
+  ]
+}
