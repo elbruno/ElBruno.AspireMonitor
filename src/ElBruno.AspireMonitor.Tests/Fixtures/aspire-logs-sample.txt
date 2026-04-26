@@ -1,0 +1,6 @@
+[2024-05-01 10:00:00] INFO: Application starting
+[2024-05-01 10:00:01] INFO: Database connection established
+[2024-05-01 10:00:02] DEBUG: Processing request #1
+[2024-05-01 10:00:03] WARN: High memory usage detected
+[2024-05-01 10:00:04] ERROR: Connection timeout
+[2024-05-01 10:00:05] INFO: Retrying connection...

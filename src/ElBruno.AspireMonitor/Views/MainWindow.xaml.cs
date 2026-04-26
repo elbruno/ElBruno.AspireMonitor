@@ -13,7 +13,7 @@ namespace ElBruno.AspireMonitor.Views;
 public partial class MainWindow : Window
 {
     private NotifyIcon? _notifyIcon;
-    private MiniMonitor? _miniMonitor;
+    private MiniMonitorWindow? _miniMonitorWindow;
     private MainViewModel? ViewModel => DataContext as MainViewModel;
     private readonly IConfigurationService? _configService;
     private System.Drawing.Icon? _currentIcon;
@@ -213,7 +213,7 @@ public partial class MainWindow : Window
     private void ExitApplication()
     {
         ViewModel?.Stop();
-        _miniMonitor?.Close();
+        _miniMonitorWindow?.Close();
         _notifyIcon?.Dispose();
         System.Windows.Application.Current.Shutdown();
     }
@@ -249,10 +249,10 @@ public partial class MainWindow : Window
 
     private void ToggleMiniMonitor()
     {
-        if (_miniMonitor == null)
+        if (_miniMonitorWindow == null)
         {
             var miniMonitorVm = new MiniMonitorViewModel(ViewModel);
-            _miniMonitor = new MiniMonitor
+            _miniMonitorWindow = new MiniMonitorWindow
             {
                 DataContext = miniMonitorVm
             };
@@ -263,25 +263,25 @@ public partial class MainWindow : Window
                 ViewModel.MiniMonitorViewModel = miniMonitorVm;
             }
             
-            _miniMonitor.Closed += (s, e) => 
+            _miniMonitorWindow.Closed += (s, e) => 
             {
-                // Clear the reference when the MiniMonitor closes
+                // Clear the reference when the MiniMonitorWindow closes
                 if (ViewModel != null)
                 {
                     ViewModel.MiniMonitorViewModel = null;
                 }
-                _miniMonitor = null;
+                _miniMonitorWindow = null;
             };
-            _miniMonitor.Show();
+            _miniMonitorWindow.Show();
         }
-        else if (_miniMonitor.IsVisible)
+        else if (_miniMonitorWindow.IsVisible)
         {
-            _miniMonitor.Hide();
+            _miniMonitorWindow.Hide();
         }
         else
         {
-            _miniMonitor.Show();
-            _miniMonitor.Activate();
+            _miniMonitorWindow.Show();
+            _miniMonitorWindow.Activate();
         }
     }
 
@@ -367,6 +367,20 @@ public partial class MainWindow : Window
         ToggleMiniMonitor();
     }
 
+    private void Resource_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Border border && 
+            border.DataContext is ResourceViewModel resource)
+        {
+            ViewModel?.SelectResource(resource);
+        }
+    }
+
+    private void ClearLogs_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.ClearLogs();
+    }
+
     protected override void OnClosed(EventArgs e)
     {
         if (ViewModel != null)
@@ -374,7 +388,7 @@ public partial class MainWindow : Window
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
             ViewModel.Stop();
         }
-        _miniMonitor?.Close();
+        _miniMonitorWindow?.Close();
         _notifyIcon?.Dispose();
         _currentIcon?.Dispose();
         base.OnClosed(e);

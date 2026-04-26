@@ -1,0 +1,164 @@
+<Window x:Class="ElBruno.AspireMonitor.Views.MiniMonitorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Aspire Monitor"
+        Width="520"
+        Height="200"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterScreen"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    
+    <Border CornerRadius="10"
+            Background="#FFFFFF"
+            BorderBrush="#DDDDDD"
+            BorderThickness="1"
+            Opacity="0.97"
+            Effect="{StaticResource DropShadowEffect}">
+        <Grid Margin="14,12,14,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header: Logo and Title with Close Button -->
+            <Grid Grid.Row="0" Height="24">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="Resources/aspire-logo-128.png"
+                           Width="18"
+                           Height="18"
+                           VerticalAlignment="Center"
+                           Margin="0,0,6,0"/>
+                    <TextBlock Text="Aspire Monitor"
+                               FontSize="13"
+                               FontWeight="Bold"
+                               Foreground="#222222"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Content="✕"
+                        Width="20"
+                        Height="20"
+                        FontSize="11"
+                        Padding="0"
+                        HorizontalAlignment="Right"
+                        Click="Close_Click"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#999999"
+                        Cursor="Hand"/>
+            </Grid>
+
+            <!-- Divider -->
+            <Border Grid.Row="1"
+                    Background="#EEEEEE"
+                    Margin="-14,4,-14,4"/>
+
+            <!-- Status Card -->
+            <Border Grid.Row="2"
+                    Background="{Binding StatusBackground}"
+                    BorderBrush="{Binding StatusBorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="5"
+                    Padding="12,10"
+                    Margin="0,0,0,6"
+                    Cursor="Hand"
+                    MouseLeftButtonDown="OpenDetails_Click">
+                <StackPanel Orientation="Vertical">
+                    <!-- Main Status Line -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <TextBlock Text="{Binding StatusEmoji}"
+                                   FontSize="18"
+                                   Margin="0,0,10,0"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding StatusLine}"
+                                   FontSize="12"
+                                   Foreground="{Binding StatusForeground}"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   Width="280"/>
+                        <TextBlock Text="{Binding LastUpdateText}"
+                                   FontSize="9"
+                                   Foreground="{Binding StatusForeground}"
+                                   Opacity="0.75"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right"/>
+                    </StackPanel>
+                    <!-- Working Folder -->
+                    <TextBlock Text="{Binding WorkingFolder, StringFormat='📁 {0}'}"
+                               FontSize="9"
+                               Foreground="{Binding StatusForeground}"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding WorkingFolder}"
+                               Opacity="0.85"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Divider -->
+            <Border Grid.Row="3"
+                    Background="#EEEEEE"
+                    Margin="-14,0,-14,0"/>
+
+            <!-- Control Buttons -->
+            <Grid Grid.Row="4" Height="40" Margin="0,0,0,6">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Button Content="▶ START"
+                            Width="90"
+                            Height="32"
+                            FontSize="11"
+                            FontWeight="Bold"
+                            Click="StartAspire_Click"
+                            Background="#4CAF50"
+                            Foreground="#FFFFFF"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Padding="0"
+                            Margin="0,0,10,0"
+                            IsEnabled="{Binding CanStartAspire}"/>
+                    <Button Content="⏹ STOP"
+                            Width="90"
+                            Height="32"
+                            FontSize="11"
+                            FontWeight="Bold"
+                            Click="StopAspire_Click"
+                            Background="#F44336"
+                            Foreground="#FFFFFF"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Padding="0"
+                            IsEnabled="{Binding CanStopAspire}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Divider -->
+            <Border Grid.Row="5"
+                    Background="#EEEEEE"
+                    Margin="-14,0,-14,0"/>
+
+            <!-- Footer: Version and Hint -->
+            <Grid Grid.Row="6" Height="16">
+                <TextBlock Text="{Binding AppVersion, StringFormat='v{0}'}"
+                           FontSize="8"
+                           Foreground="#BBBBBB"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="Double-click for details"
+                           FontSize="8"
+                           Foreground="#5DADE2"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

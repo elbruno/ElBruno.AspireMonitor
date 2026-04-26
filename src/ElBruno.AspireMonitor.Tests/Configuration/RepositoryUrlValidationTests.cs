@@ -511,18 +511,18 @@ public class RepositoryUrlValidationTests : IDisposable
 /// </summary>
 internal class MockConfigurationService : IConfigurationService
 {
-    private Models.Configuration _config = new Models.Configuration();
+    private ElBruno.AspireMonitor.Models.Configuration _config = new ElBruno.AspireMonitor.Models.Configuration();
 
-    public Models.Configuration LoadConfiguration() => _config;
+    public ElBruno.AspireMonitor.Models.Configuration LoadConfiguration() => _config;
 
-    public void SaveConfiguration(Models.Configuration configuration)
+    public void SaveConfiguration(ElBruno.AspireMonitor.Models.Configuration configuration)
     {
         _config = configuration;
     }
 
-    public Models.Configuration GetConfiguration() => _config;
+    public ElBruno.AspireMonitor.Models.Configuration GetConfiguration() => _config;
 
-    public void UpdateConfiguration(Models.Configuration configuration)
+    public void UpdateConfiguration(ElBruno.AspireMonitor.Models.Configuration configuration)
     {
         _config = configuration;
     }

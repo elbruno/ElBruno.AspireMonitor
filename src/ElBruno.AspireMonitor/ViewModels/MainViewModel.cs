@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
 using ElBruno.AspireMonitor.Infrastructure;
@@ -12,7 +13,6 @@ public class MainViewModel : ViewModelBase
     private readonly IAspirePollingService? _pollingService;
     private readonly IConfigurationService? _configService;
     private readonly IAspireCommandService? _commandService;
-    private string _hostUrl = "http://localhost:18888";
     private string _currentStatus = "Disconnected";
     private bool _isConnected;
     private DateTime _lastUpdated = DateTime.Now;
@@ -21,6 +21,10 @@ public class MainViewModel : ViewModelBase
     private bool _isExecutingCommand;
     private string _commandStatus = string.Empty;
     private MiniMonitorViewModel? _miniMonitorViewModel;
+    private ResourceViewModel? _selectedResource;
+    private ObservableCollection<string> _logLines = new();
+    private bool _isLogPaused;
+    private const int MaxLogLines = 50;
 
     public MainViewModel() : this(null, null, null)
     {
@@ -58,12 +62,6 @@ public class MainViewModel : ViewModelBase
 
     public string AppVersionTitle => $"Aspire Monitor {AppVersion}";
 
-    public string HostUrl
-    {
-        get => _hostUrl;
-        set => SetProperty(ref _hostUrl, value);
-    }
-
     public string CurrentStatus
     {
         get => _currentStatus;
@@ -72,6 +70,8 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _currentStatus, value))
             {
                 OnPropertyChanged(nameof(ConnectionStatus));
+                OnPropertyChanged(nameof(ErrorTitle));
+                OnPropertyChanged(nameof(ErrorMessage));
                 OnPropertyChanged(nameof(OverallStatusColor));
             }
         }
@@ -85,12 +85,30 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _isConnected, value))
             {
                 OnPropertyChanged(nameof(ConnectionStatus));
+                OnPropertyChanged(nameof(ErrorTitle));
+                OnPropertyChanged(nameof(ErrorMessage));
                 OnPropertyChanged(nameof(OverallStatusColor));
             }
         }
     }
 
     public string ConnectionStatus => CurrentStatus;
+
+    public string ErrorTitle => IsConnected ? "" : "Aspire Not Connected";
+
+    public string ErrorMessage
+    {
+        get
+        {
+            if (IsConnected)
+                return "";
+
+            if (CurrentStatus.Contains("Error"))
+                return $"{CurrentStatus}. Retrying...";
+
+            return "No Aspire instance found. Start Aspire with: aspire start";
+        }
+    }
 
     public System.Windows.Media.Brush OverallStatusColor
     {
@@ -178,6 +196,37 @@ public class MainViewModel : ViewModelBase
         set => _miniMonitorViewModel = value;
     }
 
+    public ResourceViewModel? SelectedResource
+    {
+        get => _selectedResource;
+        set
+        {
+            if (SetProperty(ref _selectedResource, value))
+            {
+                OnPropertyChanged(nameof(LogHeader));
+                LoadResourceLogs();
+            }
+        }
+    }
+
+    public ObservableCollection<string> LogLines
+    {
+        get => _logLines;
+        set => SetProperty(ref _logLines, value);
+    }
+
+    public bool IsLogPaused
+    {
+        get => _isLogPaused;
+        set => SetProperty(ref _isLogPaused, value);
+    }
+
+    public string LogHeader => SelectedResource != null 
+        ? $"Logs - {SelectedResource.Name}" 
+        : "Logs - Select a resource";
+
+    public string LogStatus => $"{LogLines.Count} lines | {(IsLogPaused ? "Paused" : "Live")}";
+
     private void RefreshData()
     {
         if (_pollingService != null)
@@ -247,6 +296,16 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(OverallStatusColor));
 
             System.Diagnostics.Debug.WriteLine($"[MainViewModel] UI updated with {Resources.Count} resources, IsConnected={IsConnected}");
+
+            // If a resource is selected, update its logs
+            if (SelectedResource != null)
+            {
+                var updatedResource = Resources.FirstOrDefault(r => r.Name == SelectedResource.Name);
+                if (updatedResource != null)
+                {
+                    SelectedResource = updatedResource;
+                }
+            }
         });
     }
 
@@ -311,9 +370,6 @@ public class MainViewModel : ViewModelBase
                 
                 if (!string.IsNullOrWhiteSpace(endpoint))
                 {
-                    // Update the API client endpoint
-                    HostUrl = endpoint;
-                    
                     // CRITICAL: Update the polling service's API client endpoint before refreshing
                     if (_pollingService is AspirePollingService pollingService)
                     {
@@ -437,5 +493,72 @@ public class MainViewModel : ViewModelBase
         });
 
         IsConnected = true;
+    }
+
+    public void SelectResource(ResourceViewModel resource)
+    {
+        // Deselect all resources first
+        foreach (var r in Resources)
+        {
+            r.IsSelected = false;
+        }
+
+        // Select the clicked resource
+        resource.IsSelected = true;
+        SelectedResource = resource;
+    }
+
+    public void ClearLogs()
+    {
+        LogLines.Clear();
+        OnPropertyChanged(nameof(LogStatus));
+    }
+
+    private void LoadResourceLogs()
+    {
+        if (SelectedResource == null)
+        {
+            LogLines.Clear();
+            OnPropertyChanged(nameof(LogStatus));
+            return;
+        }
+
+        // Clear current logs
+        LogLines.Clear();
+
+        // Add initial log entry
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] Monitoring logs for: {SelectedResource.Name}");
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] Status: {SelectedResource.Status}");
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] CPU: {SelectedResource.CpuUsageText}, Memory: {SelectedResource.MemoryUsageText}");
+        
+        if (SelectedResource.HasUrl)
+        {
+            AddLogLine($"[{DateTime.Now:HH:mm:ss}] Endpoint: {SelectedResource.Url}");
+        }
+
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] ---");
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] NOTE: Live log streaming from Aspire CLI will be implemented in Phase 2");
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] For now, this panel shows resource status updates");
+
+        OnPropertyChanged(nameof(LogStatus));
+    }
+
+    private void AddLogLine(string line)
+    {
+        if (IsLogPaused)
+            return;
+
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        {
+            LogLines.Add(line);
+
+            // Keep only the last 50 lines
+            while (LogLines.Count > MaxLogLines)
+            {
+                LogLines.RemoveAt(0);
+            }
+
+            OnPropertyChanged(nameof(LogStatus));
+        });
     }
 }

@@ -65,16 +65,23 @@
                 Padding="10"
                 Margin="0,0,0,10"
                 Visibility="{Binding IsConnected, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="⚠️" 
-                           FontSize="16" 
-                           Margin="0,0,10,0"
-                           VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding ConnectionStatus}" 
-                           FontSize="12" 
-                           FontWeight="SemiBold"
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                    <TextBlock Text="⚠️" 
+                               FontSize="16" 
+                               Margin="0,0,10,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ErrorTitle}" 
+                               FontSize="12" 
+                               FontWeight="Bold"
+                               Foreground="#E65100"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ErrorMessage}" 
+                           FontSize="11" 
                            Foreground="#E65100"
-                           VerticalAlignment="Center"/>
+                           TextWrapping="Wrap"
+                           Margin="26,0,0,0"/>
             </StackPanel>
         </Border>
 
@@ -185,80 +192,193 @@
             </Grid>
         </Border>
 
-        <!-- Middle Section: Resource List -->
-        <ScrollViewer Grid.Row="2"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding Resources}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="#EEEEEE" 
-                                BorderThickness="0,0,0,1" 
-                                Padding="10,8"
-                                Margin="0,2">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+        <!-- Middle Section: Split View (Resources + Logs) -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="300"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="3*" MinWidth="400"/>
+            </Grid.ColumnDefinitions>
 
-                                <!-- Status Indicator -->
-                                <Ellipse Grid.Column="0"
-                                         Style="{StaticResource StatusIndicator}"
-                                         Fill="{Binding StatusColor}"
-                                         VerticalAlignment="Center"/>
+            <!-- Left Panel: Resource Grid -->
+            <Border Grid.Column="0"
+                    BorderBrush="#EEEEEE"
+                    BorderThickness="0,0,1,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                                <!-- Resource Name -->
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding Name}"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           VerticalAlignment="Center"
-                                           Margin="5,0,10,0"/>
+                    <!-- Resource Header -->
+                    <Border Grid.Row="0"
+                            Background="#F5F5F5"
+                            BorderBrush="#EEEEEE"
+                            BorderThickness="0,0,0,1"
+                            Padding="10,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="" Width="12" Margin="5,0"/>
+                            <TextBlock Grid.Column="1" Text="Name" FontWeight="Bold" FontSize="11" Foreground="#666666"/>
+                            <TextBlock Grid.Column="2" Text="State" FontWeight="Bold" FontSize="11" Foreground="#666666"/>
+                            <TextBlock Grid.Column="3" Text="CPU" FontWeight="Bold" FontSize="11" Foreground="#666666"/>
+                            <TextBlock Grid.Column="4" Text="Memory" FontWeight="Bold" FontSize="11" Foreground="#666666"/>
+                        </Grid>
+                    </Border>
 
-                                <!-- CPU Usage -->
-                                <StackPanel Grid.Column="2" 
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,10,0">
-                                    <TextBlock Text="CPU: " 
-                                               FontSize="11" 
-                                               Foreground="#666666"/>
-                                    <TextBlock Text="{Binding CpuUsageText}" 
-                                               FontSize="11" 
-                                               FontWeight="Bold"/>
-                                </StackPanel>
+                    <!-- Resource List -->
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Resources}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#EEEEEE" 
+                                            BorderThickness="0,0,0,1" 
+                                            Padding="10,8"
+                                            Background="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Background}"
+                                            MouseLeftButtonDown="Resource_Click"
+                                            Cursor="Hand">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="80"/>
+                                            </Grid.ColumnDefinitions>
 
-                                <!-- Memory Usage -->
-                                <StackPanel Grid.Column="3" 
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,10,0">
-                                    <TextBlock Text="MEM: " 
-                                               FontSize="11" 
-                                               Foreground="#666666"/>
-                                    <TextBlock Text="{Binding MemoryUsageText}" 
-                                               FontSize="11" 
-                                               FontWeight="Bold"/>
-                                </StackPanel>
+                                            <!-- Status Indicator -->
+                                            <Ellipse Grid.Column="0"
+                                                     Style="{StaticResource StatusIndicator}"
+                                                     Fill="{Binding StatusColor}"
+                                                     VerticalAlignment="Center"/>
 
-                                <!-- URL (Clickable if available) -->
-                                <TextBlock Grid.Column="4"
-                                           Style="{StaticResource ClickableUrl}"
-                                           Text="{Binding UrlDisplay}"
-                                           FontSize="11"
-                                           VerticalAlignment="Center"
-                                           MouseLeftButtonDown="ResourceUrl_Click"
-                                           Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                                            <!-- Resource Name -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0,10,0">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontSize="13"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Url}"
+                                                           FontSize="9"
+                                                           Foreground="#2196F3"
+                                                           TextDecorations="Underline"
+                                                           Cursor="Hand"
+                                                           MouseLeftButtonDown="ResourceUrl_Click"
+                                                           Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                            </StackPanel>
+
+                                            <!-- State -->
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding StatusText}"
+                                                       FontSize="11"
+                                                       VerticalAlignment="Center"/>
+
+                                            <!-- CPU Usage -->
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{Binding CpuUsageText}"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"/>
+
+                                            <!-- Memory Usage -->
+                                            <TextBlock Grid.Column="4"
+                                                       Text="{Binding MemoryUsageText}"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1"
+                          Width="3"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch"
+                          Background="#CCCCCC"/>
+
+            <!-- Right Panel: Live Logs -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Log Header -->
+                <Border Grid.Row="0"
+                        Background="#F5F5F5"
+                        BorderBrush="#EEEEEE"
+                        BorderThickness="0,0,0,1"
+                        Padding="10,8">
+                    <Grid>
+                        <TextBlock Text="{Binding LogHeader}"
+                                   FontWeight="Bold"
+                                   FontSize="11"
+                                   Foreground="#666666"
+                                   VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <CheckBox Content="Pause"
+                                      IsChecked="{Binding IsLogPaused}"
+                                      FontSize="10"
+                                      Margin="0,0,10,0"/>
+                            <Button Content="Clear"
+                                    Width="60"
+                                    Height="22"
+                                    FontSize="10"
+                                    Click="ClearLogs_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Log Viewer -->
+                <Border Grid.Row="1"
+                        Background="#1E1E1E"
+                        BorderBrush="#333333"
+                        BorderThickness="1">
+                    <ScrollViewer x:Name="LogScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding LogLines}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"
+                                               FontFamily="Consolas, Courier New"
+                                               FontSize="10"
+                                               Foreground="#E0E0E0"
+                                               Padding="8,2"
+                                               TextWrapping="NoWrap"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Log Status Bar -->
+                <Border Grid.Row="2"
+                        Background="#F5F5F5"
+                        BorderBrush="#EEEEEE"
+                        BorderThickness="0,1,0,0"
+                        Padding="10,5">
+                    <TextBlock Text="{Binding LogStatus}"
+                               FontSize="9"
+                               Foreground="#666666"/>
+                </Border>
+            </Grid>
+        </Grid>
 
         <!-- Bottom Section: Control Buttons -->
         <Border Grid.Row="3" 

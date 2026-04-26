@@ -14,13 +14,13 @@ public enum PollingServiceState
 
 public class AspirePollingService : IAspirePollingService, IDisposable
 {
-    private readonly AspireApiClient _apiClient;
-    private readonly Configuration _configuration;
+    private readonly AspireCliService _cliService;
     private readonly System.Timers.Timer _pollingTimer;
     private PollingServiceState _state;
     private List<AspireResource> _lastKnownResources;
     private int _reconnectAttempts;
     private bool _disposed;
+    private readonly int _pollingIntervalMs;
 
     public event EventHandler<List<AspireResource>>? ResourcesUpdated;
     public event EventHandler<string>? StatusChanged;
@@ -39,15 +39,15 @@ public class AspirePollingService : IAspirePollingService, IDisposable
         }
     }
 
-    public AspirePollingService(AspireApiClient apiClient, Configuration configuration)
+    public AspirePollingService(AspireCliService cliService, int pollingIntervalMs = 2000)
     {
-        _apiClient = apiClient;
-        _configuration = configuration;
+        _cliService = cliService;
+        _pollingIntervalMs = pollingIntervalMs;
         _state = PollingServiceState.Idle;
         _lastKnownResources = new List<AspireResource>();
         _reconnectAttempts = 0;
 
-        _pollingTimer = new System.Timers.Timer(_configuration.PollingIntervalMs);
+        _pollingTimer = new System.Timers.Timer(_pollingIntervalMs);
         _pollingTimer.Elapsed += OnPollingTimerElapsed;
         _pollingTimer.AutoReset = true;
     }
@@ -57,7 +57,7 @@ public class AspirePollingService : IAspirePollingService, IDisposable
         if (_state == PollingServiceState.Polling || _state == PollingServiceState.Connecting)
             return;
 
-        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Starting polling service. Interval: {_configuration.PollingIntervalMs}ms, Endpoint: {_configuration.AspireEndpoint}");
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Starting polling service. Interval: {_pollingIntervalMs}ms");
         State = PollingServiceState.Connecting;
         _reconnectAttempts = 0;
         _pollingTimer.Start();
@@ -77,11 +77,7 @@ public class AspirePollingService : IAspirePollingService, IDisposable
 
     public void UpdateEndpoint(string newEndpoint)
     {
-        if (!string.IsNullOrWhiteSpace(newEndpoint))
-        {
-            _apiClient.UpdateEndpoint(newEndpoint);
-            System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Endpoint updated to: {newEndpoint}");
-        }
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] UpdateEndpoint called with: {newEndpoint} (CLI-based, endpoint not used)");
     }
 
     private async void OnPollingTimerElapsed(object? sender, ElapsedEventArgs e)
@@ -99,8 +95,16 @@ public class AspirePollingService : IAspirePollingService, IDisposable
             var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
             System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Polling cycle started. State: {_state}");
 
-            var resources = await _apiClient.GetResourcesAsync();
+            var resourceCollection = await _cliService.ParseResourcesFromDescribeJsonAsync();
 
+            if (!string.IsNullOrEmpty(resourceCollection.ErrorMessage))
+            {
+                System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Error: {resourceCollection.ErrorMessage}");
+                HandleError(resourceCollection.ErrorMessage);
+                return;
+            }
+
+            var resources = resourceCollection.Resources;
             System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Poll completed. Resources returned: {resources.Count}");
 
             if (resources.Count > 0 || _state == PollingServiceState.Connecting)
@@ -123,7 +127,7 @@ public class AspirePollingService : IAspirePollingService, IDisposable
             else if (_lastKnownResources.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] No resources available and no last-known state");
-                HandleError("No resources available");
+                HandleError("No Aspire resources detected");
             }
             else
             {
