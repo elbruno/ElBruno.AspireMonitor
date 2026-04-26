@@ -705,3 +705,32 @@ Phase 4 backend implementation verified and complete. All three core services (A
 - ✅ Documentation: API-CONTRACT.md fully documents service layer
 
 **Status:** ✅ COMPLETE — Ready for Phase 5 (NuGet packaging & release)
+
+## Learnings
+
+### NuGet Package Creation (Phase 5 - 2026-04-26)
+
+**NuGet Packaging Process:**
+- Configured .csproj with comprehensive package metadata (PackageId, Version, Authors, Description, Tags, License, Repository info)
+- Added symbol package support (IncludeSymbols, SymbolPackageFormat=snupkg) for debugging
+- Used `dotnet pack -c Release` to generate .nupkg from .csproj metadata
+- Package includes: DLL, README.md, icon, runtime config, and dependency declarations
+
+**Key Package Metadata:**
+- Package ID: ElBruno.AspireMonitor v1.0.0
+- Target Framework: net10.0-windows7.0 (WPF/Windows Forms app)
+- Dependencies: Microsoft.Extensions.Http 9.0.0, Polly 8.5.0
+- License: MIT expression (NuGet-hosted license URL)
+- Includes icon and README for NuGet.org display
+
+**Package Verification:**
+- Extracted .nupkg (ZIP archive) to verify contents
+- Confirmed DLL, docs, icon, and nuspec metadata present
+- Generated SHA256 checksum for package integrity verification
+- Package size: ~36 KB (compact, production-ready)
+
+**Next Steps for Publishing:**
+- Test package locally: `dotnet add package ElBruno.AspireMonitor --source C:\src\ElBruno.AspireMonitor\nupkg`
+- Publish to NuGet.org: `dotnet nuget push .\nupkg\ElBruno.AspireMonitor.1.0.0.nupkg --api-key <KEY> --source https://api.nuget.org/v3/index.json`
+- Requires NuGet.org API key (obtained from nuget.org account settings)
+

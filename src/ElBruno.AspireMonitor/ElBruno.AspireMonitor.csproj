@@ -42,6 +42,10 @@
     
     <!-- Icon -->
     <PackageIcon>aspire-monitor-icon-128.png</PackageIcon>
+    
+    <!-- Symbols for debugging -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">

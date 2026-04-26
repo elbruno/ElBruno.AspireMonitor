@@ -378,3 +378,106 @@ Phase 4 architecture design and integration verification complete. Designed poll
 6. **Configuration Injection:** Configuration object used consistently across all services (reduces duplication)
 7. **Timeout Tuning:** 5-second HTTP timeout reasonable for resource monitoring (not real-time)
 
+---
+
+### 2026-04-26 — Phase 5 Complete: v1.0.0 Release Coordination (Session 6)
+
+**Context:**
+- Phase 4 complete and pushed to main
+- All services, UI, tests, docs, and design assets finalized
+- Ready for v1.0.0 public release
+
+**Phase 5 Deliverables Completed:**
+
+1. **Version Verification** ✅
+   - Version strings confirmed at 1.0.0 in .csproj
+   - AssemblyVersion: 1.0.0.0
+   - FileVersion: 1.0.0.0
+   - PackageId: ElBruno.AspireMonitor
+   - Authors: Bruno Capuano
+
+2. **Build & Test Verification** ✅
+   - Build: PASSED (0 errors, 15 nullable warnings in test code only)
+   - Tests: 223/223 passing (100%)
+   - Configuration: Release
+   - NuGet Package: ElBruno.AspireMonitor.1.0.0.nupkg created and verified
+
+3. **Documentation Verification** ✅
+   - CHANGELOG.md: v1.0.0 section complete (corrected release date to 2026-04-26)
+   - README.md: Accurate installation instructions, features, links
+   - 7 comprehensive guides in docs/
+   - 3 promotional templates ready
+
+4. **Git Status Verification** ✅
+   - Working tree clean
+   - All Phase 4 work committed
+   - Branch: main, up-to-date with origin/main
+   - No uncommitted changes
+
+5. **Release Manifest Created** ✅
+   - File: `.squad/decisions/inbox/leia-v1.0.0-release.md`
+   - Comprehensive release plan with:
+     - Version information (1.0.0)
+     - Release features (core monitoring, UI, configuration, architecture)
+     - Quality assurance (223 tests, >80% coverage, 0 errors)
+     - Documentation summary (10 files)
+     - Breaking changes (none — stable API baseline)
+     - Known limitations (Windows-only, polling model, .NET 10 required)
+     - Release sequence (git tag → GitHub Release → NuGet publish → social)
+     - Team contributions and sign-offs
+
+**Key Release Coordination Learnings:**
+
+1. **Semantic Versioning Strategy:**
+   - v1.0.0 establishes stable API baseline
+   - MAJOR (2.x): Breaking changes
+   - MINOR (1.x): New features, backward-compatible
+   - PATCH (1.0.x): Bug fixes only
+
+2. **Release Gate Criteria:**
+   - All tests passing (223/223)
+   - Build successful in Release mode
+   - Documentation complete and reviewed
+   - Version strings synchronized across all files
+   - Git working tree clean (no uncommitted changes)
+   - NuGet package builds successfully
+
+3. **Release Sequence Best Practices:**
+   - Create git tag first: `git tag v1.0.0`
+   - Push tag to trigger GitHub Actions: `git push origin v1.0.0`
+   - GitHub Release with CHANGELOG content
+   - Attach NuGet package to release
+   - Publish to NuGet.org (manual or OIDC)
+   - Social announcement after NuGet verification
+
+4. **Breaking Changes Policy:**
+   - v1.0.0 is the stable baseline — no breaking changes
+   - All public APIs frozen at this version
+   - Future breaking changes require MAJOR version bump
+
+5. **Known Limitations Documentation:**
+   - Document platform constraints (Windows-only for WPF)
+   - Document architectural decisions (polling vs. push)
+   - Document runtime requirements (.NET 10)
+   - Transparency builds trust with users
+
+6. **Release Manifest Structure:**
+   - Version info (semver, dates, package names)
+   - Features (grouped by category: monitoring, UI, config, architecture)
+   - Quality metrics (tests, coverage, build status)
+   - Documentation inventory (guides, templates, assets)
+   - Breaking changes (or lack thereof)
+   - Known limitations (be honest)
+   - Release sequence (step-by-step)
+   - Team contributions (credit all)
+   - Final approval and sign-offs
+
+**Status:** ✅ COMPLETE — v1.0.0 approved and ready for public release
+
+**Next Steps (User Action Required):**
+1. Create git tag: `git tag v1.0.0`
+2. Push tag: `git push origin v1.0.0`
+3. Create GitHub Release
+4. Publish to NuGet.org
+5. Post social announcements (LinkedIn, Twitter, Blog)
+
