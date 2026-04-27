@@ -1,98 +1,28 @@
-## Twitter/X Posts
+# Twitter / X Posts — AspireMonitor v1.4.0
 
-### Main Launch (280 chars) 🚀
+### Main Launch
 
-🚀 Just shipped: AspireMonitor for Aspire!
+🚀 AspireMonitor v1.4.0 is out — a Windows tray app for your Aspire AppHost.
 
-Live system tray monitoring—no more dashboard-switching.
-
-🟢 Green: Running
-🟡 Yellow: Partial
-🔴 Red: Stopped
-
-Install: `dotnet tool install --global ElBruno.AspireMonitor`
-Launch: `aspiremon`
-
-GitHub: github.com/elbruno/ElBruno.AspireMonitor
-NuGet: nuget.org/packages/ElBruno.AspireMonitor
-
-#aspire #dotnet #opensource
-
----
-
-### Feature Highlight #1: Real-Time Updates (280 chars)
-
-⚡ AspireMonitor: Live Aspire monitoring in your system tray
-
-• Checks resources live
-• Color-coded status: 🟢🟡🔴
-• Clickable resource URLs
-• Auto-reconnect on failures
-
-Zero dependencies. Open source. Windows-native.
-
-nuget.org/packages/ElBruno.AspireMonitor
-
-#aspire #dotnet
-
----
-
-### Feature Highlight #2: Color Coding (280 chars)
-
-🎨 AspireMonitor status colors:
-
-🟢 All resources running = Healthy
-🟡 Some unavailable = Warning
-🔴 None running = Stopped
-
-Know your app's status at a glance. No browser tab required.
-
-Get it: github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet #monitoring
-
----
-
-### Feature Highlight #3: Configuration (280 chars)
-
-⚙️ AspireMonitor: Fully configurable
-
-Pin the resources you care about, set working folder, filter by resource prefix.
-
-One simple JSON config file. No wizards. No bloat.
-
-Install: `dotnet tool install --global ElBruno.AspireMonitor`
-Launch: `aspiremon`
-
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet
-
----
-
-### Developer-Focused (280 chars)
-
-Built AspireMonitor for Aspire developers monitoring distributed apps locally.
-
-MVVM architecture. Async/await. xUnit tests. OIDC publishing to NuGet.
-
-Open source, MIT license. Contributions welcome!
-
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet #opensource
-
----
-
-### Quick Install (280 chars)
-
-One command to get live Aspire monitoring in your Windows system tray:
+📌 Pin the resources you care about
+🔗 Full URLs in the mini window
+▶️ Start / Stop your AppHost from the tray (Start stays disabled with a live countdown until resources show up)
 
 `dotnet tool install --global ElBruno.AspireMonitor`
 
-Then launch: `aspiremon`
+github.com/elbruno/ElBruno.AspireMonitor
 
-Boom. Live resource status in your taskbar.
+#aspire #dotnet
+
+---
+
+### Mini Window
+
+🪟 Small thing, big quality-of-life win in AspireMonitor v1.4:
+
+Set `MiniWindowResources: "web, store, gateway"` in settings → get a compact panel pinned to your screen with exactly those three resources and their live URLs.
+
+Prefix match, case-insensitive. Aspire replica suffixes (`web-xggqzmyn`) just work.
 
 github.com/elbruno/ElBruno.AspireMonitor
 
@@ -100,49 +30,101 @@ github.com/elbruno/ElBruno.AspireMonitor
 
 ---
 
-### Problem/Solution Format (280 chars)
+### Start / Stop Fix
 
-Problem: Aspire dashboards are great but require browser tabs.
+🛠 v1.4 fixed the two things that bugged me most about the previous AspireMonitor build:
 
-Solution: AspireMonitor—system tray app with 🟢🟡🔴 status indicators.
+▶️ Start used to re-enable ~60s before resources actually appeared. Now: stays disabled with `⏳ Starting Aspire... (12 / 90s)`.
+⏹ Stop didn't stop. Now it does. And disables itself during shutdown.
 
-Know your app's status without leaving your code editor.
+Small UX polish. Big difference.
 
-Get it: nuget.org/packages/ElBruno.AspireMonitor
+github.com/elbruno/ElBruno.AspireMonitor
 
 #aspire #dotnet
 
 ---
 
-### Community Call-to-Action (280 chars)
+### Real URLs
 
-🚀 AspireMonitor v1.0 is live!
+🔗 Tiny but satisfying v1.4 change in AspireMonitor:
 
-Monitoring Aspire resources in your system tray.
+Pinned resources used to render as a generic "🔗 Open" link.
+Useless when you have three pinned web services.
 
-Try it, give feedback, contribute!
+Now you see the actual URL inline (`http://localhost:5021`).
 
-GitHub: github.com/elbruno/ElBruno.AspireMonitor
+You can tell them apart. Crazy concept.
 
-What feature would you like to see next?
+github.com/elbruno/ElBruno.AspireMonitor
+
+#aspire #dotnet
+
+---
+
+### Settings
+
+⚙️ AspireMonitor's entire config surface fits on a Tweet:
+
+```json
+{
+  "WorkingFolder": "...AppHost",
+  "AspireHostUrl": "http://localhost:18888",
+  "PollingIntervalMs": 2000,
+  "MiniWindowResources": "web, store, gateway"
+}
+```
+
+Four fields. No wizard. Live reload.
+
+`dotnet tool install --global ElBruno.AspireMonitor`
+
+#aspire #dotnet
+
+---
+
+### One-liner Install
+
+⚡ One command to monitor your Aspire AppHost from the Windows tray:
+
+`dotnet tool install --global ElBruno.AspireMonitor`
+
+Then: `aspiremon`
+
+github.com/elbruno/ElBruno.AspireMonitor
 
 #aspire #dotnet #opensource
 
 ---
 
-### Technical Deep-Dive (280 chars)
+### Architecture
 
-📐 AspireMonitor tech:
+📐 AspireMonitor v1.4 stack:
 
-✅ .NET 10 WPF
-✅ MVVM architecture
-✅ Async polling with CLI
-✅ Exponential backoff retry
-✅ Resource status evaluation
-✅ System tray integration
-✅ JSON configuration
+✅ .NET 10 + WPF
+✅ MVVM, xUnit + Moq
+✅ Polls `aspire describe --format json` (no third-party SDK)
+✅ Distributed as a .NET global tool
+✅ NuGet trusted publishing (OIDC, no long-lived keys)
 
-Open source & MIT licensed.
+Open source, MIT.
+
+github.com/elbruno/ElBruno.AspireMonitor
+
+#aspire #dotnet #opensource
+
+---
+
+### Engagement
+
+🗳 Aspire devs — what's the most useful thing I could add to AspireMonitor next?
+
+🔁 Multi-AppHost switcher
+🔔 Toast notifications when pins go down
+🍎 Cross-platform tray (Avalonia)
+📜 Per-resource log viewer
+
+Reply or vote 👇 — roadmap follows what you'd actually use.
 
 github.com/elbruno/ElBruno.AspireMonitor
 
@@ -150,116 +132,14 @@ github.com/elbruno/ElBruno.AspireMonitor
 
 ---
 
-### Tutorial/Getting Started (280 chars)
+### Threading Strategy
 
-Start monitoring your Aspire apps in 30 seconds:
+Suggested order for a launch week:
+- Day 1 — Main Launch
+- Day 2 — Mini Window
+- Day 3 — Start / Stop Fix
+- Day 4 — Real URLs
+- Day 5 — Settings + Install one-liner
+- Week 2 — Architecture, Engagement
 
-1. `dotnet tool install --global ElBruno.AspireMonitor`
-2. `aspiremon`
-3. Set working folder (path to your Aspire AppHost project)
-4. Watch live status in system tray 🟢🟡🔴
-
-Full docs: github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet
-
----
-
-### Engagement Variant (280 chars)
-
-🎯 AspireMonitor question for Aspire devs:
-
-When monitoring microservices, do you prefer:
-
-A) Browser dashboard tab (always visible)
-B) System tray icon (quick check, minimal distraction)
-
-Built AspireMonitor for team B. What about you?
-
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire
-
----
-
-### Performance/Lightweight Angle (280 chars)
-
-💚 AspireMonitor: Lightweight Aspire monitoring
-
-• No heavy frameworks
-• No external dependencies  
-• Minimal memory footprint
-• Native Windows WPF
-• Fast startup, live updates
-
-Just you, your Aspire apps, and one small icon.
-
-nuget.org/packages/ElBruno.AspireMonitor
-
-#aspire #dotnet #performance
-
----
-
-## Threading Strategy
-
-Recommended posting schedule (adjust for your timezone):
-
-**Day 1:**
-- 9am: Main launch (🚀 Just shipped...)
-- 6pm: Quick install tutorial
-
-**Day 2:**
-- 10am: Feature highlight #1 (Real-time updates)
-- 3pm: Feature highlight #2 (Color coding)
-
-**Day 3:**
-- 9am: Developer-focused technical post
-- 6pm: Community call-to-action
-
-**Week 2-4:**
-- Bi-weekly: Other variants (engagement, deep-dive, etc.)
-- Share user feedback/testimonials if any
-
----
-
-## Engagement Tips
-
-✅ **Do:**
-- Reply to comments in first hour
-- Thank people who retweet/like
-- Share to Bluesky & LinkedIn (cross-post)
-- Link to blog post & GitHub
-- Use relevant hashtags
-
-❌ **Don't:**
-- Post too frequently (max 1-2x per day)
-- Sales-y language (this is community-first)
-- Ignore feedback
-- Go silent after launch
-
----
-
-## Hashtag Reference
-
-Core hashtags:
-- `#aspire` — .NET Aspire community
-- `#dotnet` — .NET developer community
-- `#opensource` — Open source projects
-- `#monitoring` — Monitoring/observability
-- `#windows` — Windows-specific tools
-
-Optional:
-- `#development`
-- `#microservices`
-- `#developer-tools`
-- `#github`
-- `#nugget` (NuGet package)
-
----
-
-## Link References
-
-- **GitHub:** https://github.com/elbruno/ElBruno.AspireMonitor
-- **NuGet:** https://www.nuget.org/packages/ElBruno.AspireMonitor
-- **Blog Post:** Link to your blog post where published
-- **Documentation:** https://github.com/elbruno/ElBruno.AspireMonitor/tree/main/docs
+> 📸 Add a screenshot to each tweet before posting (mini window + settings dialog get the most engagement).

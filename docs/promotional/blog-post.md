@@ -1,170 +1,174 @@
-# Blog Post: Introducing AspireMonitor
+# Blog Post: AspireMonitor v1.4.0
 
 ## Title
 
-**Introducing AspireMonitor: Real-Time Aspire Monitoring in Your System Tray**
+**AspireMonitor v1.4.0 — Pin the Aspire resources you actually care about, right in your Windows tray**
 
 ---
 
 ## Headline
 
-For developers building distributed applications with Aspire, staying aware of your services is critical—but checking dashboards constantly breaks focus. **AspireMonitor** puts live Aspire resource status directly in your Windows system tray, giving you instant visibility into what's running without leaving your code editor.
+If you build distributed apps with Aspire, you already know the dashboard is great — but bouncing to a browser tab every time you want to know "is my API up?" is friction. **AspireMonitor** lives in your Windows system tray and gives you a one-click view of your Aspire AppHost: the resources that are running, the URLs that go to them, and a Start/Stop button so you can spin the whole thing up or shut it down without leaving your keyboard.
+
+v1.4.0 is the version where this finally feels good for daily use: a pin-and-go mini window, full URLs (no more guessing what "Open" points to), and a Start button that stays disabled while Aspire is actually starting up.
 
 ---
 
-## Why This Matters
+![AspireMonitor mini window](./screenshots/mini-window.png)
 
-Aspire has revolutionized distributed application development by giving developers a unified, intuitive way to orchestrate microservices, databases, and caches locally. But Aspire's excellent dashboard lives in a browser tab—one more thing to context-switch to when you need to check service status or reachability.
+The mini window above is the feature most people end up living in: pinned resources with their real URLs, plus Start / Stop and dashboard buttons. The main window (full resource list) is below.
 
-**AspireMonitor solves this problem.** A lightweight Windows system tray icon gives you live status at a glance:
-- 🟢 **Green**: All resources running
-- 🟡 **Yellow**: Some resources unavailable or partial
-- 🔴 **Red**: No resources running
+![AspireMonitor main window](./screenshots/main-window.png)
+
+## What it does (in one screen)
+
+AspireMonitor is a small WPF tray app. You point it at the folder that contains your Aspire AppHost project, and from then on you get:
+
+- A **tray icon** — click it to bring up the main window, right-click for menu, double-click to toggle.
+- A **main window** — full list of resources discovered by `aspire describe`, with status, type, and clickable endpoints.
+- A **mini window** — a compact, always-handy panel showing exactly the resources you pinned (and only those), each with its real URL.
+- A **Start / Stop** pair of buttons — runs `aspire run` / sends the right shutdown sequence to your AppHost.
+- A **dashboard link** — one click to open the Aspire dashboard in your browser when you actually do want it.
+
+That's it. No agents, no daemons, no Docker images. Just a tray app that talks to the Aspire CLI in your working folder.
 
 ---
 
-## Key Features
+## What's new in v1.4.0
 
-### ⚡ Live Status Updates
+### 📌 Pinned resources in the mini window
 
-AspireMonitor checks your running Aspire resources and updates instantly. No manual refreshes. No lag. Just live data.
+Open Settings, type a comma-separated list like `web, dataservice, store`, and the mini window will pin those resources for you. Each pinned row shows the resource's real URL (not a generic "Open" link), so you can see at a glance what `web` actually resolves to — `http://localhost:5021`, the deployed gateway, whatever it is.
 
-### 🚦 Color-Coded Status
+Resources without an endpoint (databases, queues, plain containers) still show up as text rows so you know they're configured — they just don't render as a link.
 
-At a glance, know if your Aspire infrastructure is running:
-- Green icon? All resources running.
-- Yellow icon? Some resources down or unreachable.
-- Red icon? No resources running.
+Matching is **case-insensitive prefix match**, which is what you want with Aspire because it suffixes replicas (`web-xggqzmyn`). Type `web`, get `web-xggqzmyn`. Type `WEB`, same result.
 
-### 🔗 Clickable URLs
+### ▶️ Start / Stop that actually behave
 
-Right-click any resource in the expanded view and open it directly—no copy/paste, no hunting through logs.
+Two things were broken before v1.4.0:
+- Stop didn't stop. Now it does, and the button disables itself while the shutdown is in flight.
+- Start would re-enable itself the moment Aspire's gateway came up, which is way before resources are actually visible. So you'd click Start, the button would un-grey, you'd think "great", and then nothing would show up for another 60+ seconds.
 
-### 📌 Pin Your Resources
+Now Start stays disabled with a live countdown (`⏳ Starting Aspire... (12 / 90s)`) until resources actually appear, with a soft warning if the 90-second budget runs out. You can walk away, come back, and the UI will reflect reality.
 
-Focus on the resources that matter. Configure a comma-separated list of resources to pin in your mini window, and AspireMonitor highlights just those with live status and clickable URLs:
+### 🔗 Real URLs, not "Open"
+
+Pinned resources used to render as a tidy little 🔗 Open link. Tidy — but useless when you have three pinned web resources and want to know which one is which. Now you see the actual URL inline.
+
+### 🛡 Pinned-resource validation
+
+If you pin `store` in your settings but no resource matches when the mini window opens, AspireMonitor doesn't crash — it logs the missing match and renders the pins it could resolve. Earlier builds had a path where two unmatched pins could prevent the mini window from opening at all; that's fixed.
+
+---
+
+## Settings, in detail
+
+You configure AspireMonitor either from the in-app Settings dialog or by editing the JSON config directly:
+
+![AspireMonitor settings dialog](./screenshots/settings-dialog.png)
+
+```
+%APPDATA%\Local\ElBruno\AspireMonitor\config.json
+```
+
+Real-world example:
 
 ```json
 {
-  "workingFolder": "C:\\Projects\\MyAspireApp",
-  "MiniWindowResources": "api,frontend,db"
+  "WorkingFolder": "C:\\Projects\\OpenClawNet\\src\\OpenClawNet.AppHost",
+  "AspireHostUrl": "http://localhost:18888",
+  "PollingIntervalMs": 2000,
+  "MiniWindowResources": "web, store, gateway"
 }
 ```
 
-### 🪟 System Tray Integration
+What each field does:
 
-Minimize it, forget about it. AspireMonitor runs in the background, never interrupting your workflow. Click the icon anytime to see resource details. Double-click to expand/collapse.
-
-### 🔄 Auto-Reconnect
-
-Network hiccup? Aspire restarted? AspireMonitor automatically reconnects with exponential backoff—no manual intervention needed.
-
----
-
-## Getting Started
-
-### Installation
-
-```bash
-dotnet tool install --global ElBruno.AspireMonitor
-```
-
-### Run It
-
-```bash
-aspiremon
-```
-
-That's it. The first time you run it, you'll be prompted for your working folder (point to your Aspire AppHost project directory).
-
-### Configure (Optional)
-
-Edit `%APPDATA%\Local\ElBruno\AspireMonitor\config.json` to set your working folder and pin resources. Restart the app and you're done.
+| Field | Purpose |
+|---|---|
+| `WorkingFolder` | Folder containing your Aspire `*.AppHost.csproj`. AspireMonitor runs `aspire describe` from here. |
+| `AspireHostUrl` | URL of the Aspire dashboard. Default is `http://localhost:18888`; override if you've moved it. |
+| `PollingIntervalMs` | How often to refresh the resource list. Default `2000`. |
+| `MiniWindowResources` | Comma-separated list of resource name prefixes to pin to the mini window. Empty = mini window only shows the dashboard link. |
 
 ---
 
-## Perfect For
+## The mini window
 
-- **Local Development**: Keep tabs on your microservices without leaving your editor
-- **Debugging**: Quickly check which resources are running or down
-- **Teaching**: Show students your Aspire setup at a glance
-- **Quick Checks**: Verify all services are up before running tests or committing code
+The mini window is the feature most people end up living in. It's small, sticks to a corner of your screen, and shows:
 
----
+- The Aspire dashboard link
+- Each pinned resource (in the order you typed them in settings) with its current URL
+- The Start / Stop buttons with the countdown when starting
 
-## How It Works (Architecture)
-
-AspireMonitor uses a simple, elegant architecture:
-
-1. **AspireCliClient** — Calls `aspire describe --format json` against your Aspire AppHost
-2. **PollingService** — Runs background checks at configurable interval
-3. **ResourceStatusEvaluator** — Determines resource health (running/partial/stopped)
-4. **MainViewModel** — MVVM binding to WPF
-5. **WPF UI** — Lightweight notification window + system tray + mini window with pinned resources
-
-No external dependencies. No bloat. Just you, your Aspire apps, and one small green icon. Or yellow. Or red.
+It's `SizeToContent="Height"` so it auto-grows for the number of pins you have — no scrollbar, no wasted space.
 
 ---
 
-## Technology Stack
+## How it works under the hood
 
-- **.NET 10** — Modern, performant runtime
-- **WPF** — Native Windows integration
-- **MVVM** — Clean architecture for testability
-- **MIT License** — Open source, do what you want with it
+There's no magic and no third-party Aspire SDK dependency. The pipeline:
 
----
+1. **`AspireCliService`** shells out to `aspire describe --format json` against your working folder
+2. **`AspirePollingService`** reschedules that call on a configurable interval and parses results into `AspireResource` records (name, type, status, URLs)
+3. **`MainViewModel`** holds the resource collection and the Start/Stop commands
+4. **`MiniMonitorViewModel`** filters the collection against `MiniWindowResources` (prefix match, case-insensitive) and exposes a `PinnedResources` collection
+5. **WPF** binds it all to the tray icon, main window, mini window, and settings dialog
 
-## Open Source & Extensible
-
-AspireMonitor is on GitHub with MIT license. Want to add features? Contribute. Want to run it on macOS? Fork it and port it. The codebase is small, clean, and well-documented.
-
-**GitHub:** [github.com/elbruno/ElBruno.AspireMonitor](https://github.com/elbruno/ElBruno.AspireMonitor)
+Every piece of business logic lives in `src/ElBruno.AspireMonitor/` with xUnit + Moq tests in `src/ElBruno.AspireMonitor.Tests/`.
 
 ---
 
-## What's Next?
-
-v1.3.0 ships as a .NET global tool, making installation and updates seamless via `dotnet tool` commands. Future roadmap includes:
-
-- **Multi-Instance**: Monitor multiple Aspire apps simultaneously
-- **Cross-Platform**: macOS and Linux support (WPF → WinUI/Avalonia)
-- **Web Companion**: Companion dashboard for remote monitoring
-- **Custom Views**: More flexible resource filtering and grouping
-
----
-
-## Try It Today
-
-AspireMonitor v1.3.0 is production-ready and available on NuGet:
+## Install
 
 ```bash
 dotnet tool install --global ElBruno.AspireMonitor
 aspiremon
 ```
 
-**Update to latest:**
+Update from a previous version:
+
 ```bash
 dotnet tool update --global ElBruno.AspireMonitor
 ```
 
-**Requirements:** Windows 10+, .NET 10 Runtime
-
-Feedback welcome! Found a bug? Have a feature idea? [Open an issue on GitHub](https://github.com/elbruno/ElBruno.AspireMonitor/issues).
+**Requirements:** Windows 10/11, [.NET 10 Runtime](https://dotnet.microsoft.com/en-us/download), Aspire CLI on your `PATH`.
 
 ---
 
-## About the Author
+## Roadmap
 
-**Bruno Capuano** ([@elbruno](https://github.com/elbruno)) is a Microsoft AI MVP and GitHub Star based in Barcelona. He builds open-source tools for .NET developers and shares his work via his blog ([elbruno.com](https://elbruno.com)) and YouTube. When not coding, he's probably thinking about how to make developer tools faster and more intuitive.
+What I want to land next:
 
-**Connect:**
-- GitHub: [@elbruno](https://github.com/elbruno)
-- Blog: [elbruno.com](https://elbruno.com)
-- LinkedIn: [/in/elbruno](https://linkedin.com/in/elbruno)
-- Twitter: [@elbruno](https://twitter.com/elbruno)
-- YouTube: [@elbruno](https://youtube.com/@elbruno)
+- **Multi-AppHost support** — switch between projects without restarting the tool
+- **Per-resource quick actions** — restart, view logs, copy URL from a context menu
+- **Cross-platform tray** — port the UI shell off WPF onto something macOS/Linux friendly (Avalonia is the leading candidate)
+- **Notifications** — desktop toast when a pinned resource goes down or comes back
+
+If any of these sound useful, [open an issue](https://github.com/elbruno/ElBruno.AspireMonitor/issues) and tell me which ones you'd actually use — I'll prioritize accordingly.
 
 ---
 
-**Happy monitoring!** 🚀
+## Try it
+
+```bash
+dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
+```
+
+- **GitHub:** [github.com/elbruno/ElBruno.AspireMonitor](https://github.com/elbruno/ElBruno.AspireMonitor)
+- **NuGet:** [nuget.org/packages/ElBruno.AspireMonitor](https://www.nuget.org/packages/ElBruno.AspireMonitor)
+- **Issues / feedback:** [GitHub Issues](https://github.com/elbruno/ElBruno.AspireMonitor/issues)
+
+MIT licensed, contributions welcome.
+
+---
+
+## About the author
+
+**Bruno Capuano** ([@elbruno](https://github.com/elbruno)) — Microsoft AI MVP and GitHub Star. Builds open-source tools for .NET developers; blogs at [elbruno.com](https://elbruno.com).
+
+---
+
+> 📸 **Screenshots:** main window, mini window, and settings dialog are all included.

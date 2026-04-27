@@ -6,38 +6,32 @@
 [![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**A Windows system tray monitor that discovers and displays Aspire running instances and their deployed resources.**
+**A Windows system tray monitor for Aspire distributed applications.**
 
-Set a working folder → monitor discovers an active Aspire instance → instantly see all deployed services, containers, and databases with clickable URLs. Zero configuration beyond pointing to your Aspire project directory.
+Point it at your Aspire AppHost folder, pin the resources you care about, and get a compact mini window with live URLs and Start/Stop controls — without leaving the tray.
 
 ## What It Does
 
-ElBruno.AspireMonitor is a lightweight Windows system tray tool that works in two steps:
+ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 
-1. **Set a working folder** — Point the app to your Aspire AppHost project directory
-2. **Auto-discover & monitor** — When `aspire run` is active in that directory, the tray icon turns green and displays:
-   - All deployed services, containers, and databases
-   - Real-time status and health checks
-   - Clickable URLs for each resource
-   - CPU/memory metrics for your resources
+1. **Watches a working folder** — point it at the directory containing your Aspire `*.AppHost.csproj`
+2. **Discovers resources** — shells out to `aspire describe --format json` and parses the result
+3. **Surfaces what matters** — lists every resource in the main window, and pins your chosen ones (with their real URLs) in a compact mini window
+4. **Drives your AppHost** — Start / Stop buttons run `aspire run` and shut it down cleanly, with a live countdown while Aspire spins up
 
-**The workflow:** Working Folder → Running Instance Detection → Live Resource Display
-
-Perfect for developers who want instant visibility into what Aspire deployed, without switching to a browser dashboard.
+No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI.
 
 ## 🎯 Features
 
 | Feature | Description |
 |---------|-------------|
-| 🖼️ **Tray Status Indicator** | Green (running), Yellow (warning), Red (error), Gray (not running) |
-| 🔍 **Automatic Discovery** | Finds running Aspire instances in your working folder |
-| 🖥️ **Resource Visibility** | Lists services, containers, databases with endpoints |
-| 🔗 **Clickable URLs** | Open any resource directly from the app |
-| ⚡ **Real-Time Updates** | Automatic polling every 2 seconds (configurable) |
-| 📊 **Status Metrics** | CPU, memory, health status for each resource |
-| 🪟 **System Tray Integration** | Minimal footprint, always accessible in taskbar |
-| ⚙️ **Single Tray Icon** | One icon for unified monitoring—no clutter |
-| 💼 **Working Folder Display** | Shows your chosen directory (humanized paths) |
+| 🪟 **Tray + main window + mini window** | Click the tray icon for the full resource list; the mini window pins just what you care about |
+| 📌 **Pinned resources** | Comma-separated `MiniWindowResources` setting pins resources by name prefix (case-insensitive — `web` matches Aspire's `web-xggqzmyn` replicas) |
+| 🔗 **Full URLs inline** | Pinned resources show their actual endpoint (`http://localhost:5021`), not a generic "Open" link |
+| ▶️ **Start / Stop controls** | Run or stop your AppHost from the tray. Start stays disabled with a live countdown (`⏳ Starting Aspire... (12 / 90s)`) until resources actually appear |
+| 🛡 **Pinned-resource validation** | Missing pins are skipped, not crashes — the mini window opens with whatever resolved |
+| ⚙️ **Live config reload** | Changes in Settings apply without restarting the app |
+| 🔄 **Configurable polling** | Default 2 second interval, override in config |
 
 ## ⚡ Quick Start
 
@@ -64,17 +58,6 @@ The tool is Windows-only (the underlying app is WPF). Requires the [.NET 10 Runt
 
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
-## 🖼️ System Tray Status
-
-The tray icon tells you at a glance:
-
-| Icon | Status | Meaning |
-|------|--------|---------|
-| <img src="./images/aspire_trayicon_running.png" width="24" alt="Running"> | Running | Aspire instance found; all resources healthy |
-| <img src="./images/aspire_trayicon_warning.png" width="24" alt="Warning"> | Warning | Aspire running; one or more resources in warning state |
-| <img src="./images/aspire_trayicon_error.png" width="24" alt="Error"> | Error | Lost connection to Aspire or polling failed; auto-reconnect in progress |
-| <img src="./images/aspire_trayicon_norunning.png" width="24" alt="Not Running"> | Not Running | No Aspire instance found in the configured working folder |
-
 ## 📋 Requirements
 
 - **Windows 10 or later** (WPF is Windows-only)
@@ -100,31 +83,35 @@ C:\Projects\MyAspireApp
 
 ### System Tray
 
-- **Click icon** — Show/hide resource details window
-- **Double-click** — Expand/collapse the main window
-- **Right-click** — Context menu (Settings, Refresh, Exit)
-- **Icon status** — Reflects instance status (green=running, yellow=warning, red=error, gray=not running)
+- **Click icon** — show/hide the main window
+- **Double-click** — toggle the main window
+- **Right-click** — context menu (Settings, Mini window, Exit)
 
-The app automatically watches your working folder for Aspire instances. When `aspire run` is active, resources appear instantly.
+The app watches your working folder. When `aspire run` is active, resources appear automatically.
 
 ### Configuration
 
-Edit your settings at:
+Open the in-app **Settings** dialog, or edit:
 ```
 %APPDATA%\Local\ElBruno\AspireMonitor\config.json
 ```
 
-Example (working folder, polling interval, thresholds):
+Example:
 ```json
 {
-  "workingFolder": "C:\\Projects\\MyAspireApp",
-  "pollingIntervalMs": 2000,
-  "cpuThresholdWarning": 70,
-  "cpuThresholdCritical": 90,
-  "memoryThresholdWarning": 70,
-  "memoryThresholdCritical": 90
+  "WorkingFolder": "C:\\Projects\\MyApp\\src\\MyApp.AppHost",
+  "AspireHostUrl": "http://localhost:18888",
+  "PollingIntervalMs": 2000,
+  "MiniWindowResources": "web, store, gateway"
 }
 ```
+
+| Field | Purpose |
+|---|---|
+| `WorkingFolder` | Folder containing your Aspire `*.AppHost.csproj` |
+| `AspireHostUrl` | Aspire dashboard URL (default `http://localhost:18888`) |
+| `PollingIntervalMs` | Resource refresh interval (default 2000) |
+| `MiniWindowResources` | Comma-separated list of resource name prefixes to pin to the mini window. Empty = mini window only shows the dashboard link. Case-insensitive prefix match (e.g. `web` matches `web-xggqzmyn`) |
 
 See [Configuration Guide](./docs/configuration.md) for all options.
 
@@ -140,20 +127,17 @@ See [Configuration Guide](./docs/configuration.md) for all options.
 
 ## 💡 Use Cases
 
-- **Local Development** — Keep tabs on your microservices while coding
-- **Resource Debugging** — Quickly spot which service is consuming CPU/memory
-- **Status At-a-Glance** — One tray icon shows everything (no browser switching)
-- **Demo Mode** — Impress colleagues with instant visibility into deployed resources
-- **Integration Testing** — Monitor health during automated test runs
+- **Local Development** — keep your AppHost one click away while coding
+- **Quick Status Checks** — pin the two or three resources you actually hit and see their live URLs without opening the dashboard
+- **Demos** — Start / Stop from the tray during walkthroughs
+- **Multi-window setups** — the mini window stays out of the way and resizes itself
 
 ## 🏗️ Architecture Highlights
 
-- **Service-Oriented**: Clean separation between Aspire API client, discovery, polling, and UI
-- **Polling Model**: Configurable background thread with exponential backoff on failures
-- **MVVM Pattern**: Fully testable business logic, UI-agnostic services
-- **State Machine**: Discrete states (Idle → Discovering → Connected → Polling → Error → Reconnecting)
-- **Threshold-Based Alerts**: Configurable CPU/memory thresholds determine status colors
-- **Single Tray Icon**: Unified monitoring interface—no confusion from multiple icons
+- **Service-Oriented** — `AspireCliService` (process I/O) → `AspirePollingService` (interval) → `MainViewModel` → views
+- **MVVM** — testable view models, thin XAML, all business logic covered by xUnit + Moq
+- **Live config reload** — settings changes flow through without restarting
+- **Pinned-resource matcher** — case-insensitive prefix match against `aspire describe` output, with graceful handling of missing pins
 
 See [Architecture Guide](./docs/architecture.md) for detailed design decisions and data flows.
 
@@ -230,6 +214,6 @@ Microsoft AI MVP | GitHub Star
 
 ---
 
-**Built with ❤️ for the .NET Aspire community**
+**Built with ❤️ for the Aspire community**
 
 Questions? [Open an issue](https://github.com/elbruno/ElBruno.AspireMonitor/issues) or reach out on [GitHub Discussions](https://github.com/elbruno/ElBruno.AspireMonitor/discussions).
