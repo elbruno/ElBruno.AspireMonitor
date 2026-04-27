@@ -1055,3 +1055,33 @@ Model properties (CpuUsageText, MemoryUsageText) remain in ResourceViewModel for
 - Future work: if metrics data becomes available, re-add to UI with minimal changes
 
 **Reference:** Commit cd41186, Decision consolidated in .squad/decisions.md
+
+---
+
+## Cross-Agent Note: Pinned Resource Validation Pattern (2026-04-27)
+
+**From:** Han (Frontend Dev) via Scribe  
+**Subject:** 3-state validation pattern defined (may impact future backend logic)
+
+Han implemented 3-state validation model for MiniMonitor pinned resources. This pattern distinguishes between:
+1. **Found** — Resource matched, has URL
+2. **FoundNoUrl** — Resource matched, no URL available
+3. **Missing** — Configured token but resource not in snapshot
+
+**Pattern Details:**
+- Uses PinnedResourceStatus enum on MiniResourceItem
+- Case-insensitive token matching with original casing display
+- Deduplication by lowercase
+- Works with MainViewModel.Resources collection (no backend changes needed)
+
+**Potential Future Overlap for Luke:**
+If backend later adds:
+- Remote resource discovery (different Aspire instances)
+- Advanced resource filtering or grouping
+- Resource availability prediction
+
+...the 3-state validation pattern may extend to these scenarios. This pattern is now canonical for resource validation across the mini window.
+
+**Current Impact:** None — Backend continues unchanged. Frontend-only enhancement.
+
+**Reference:** .squad/decisions.md → Validation & Quality Decisions; .squad/agents/han/history.md

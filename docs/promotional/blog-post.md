@@ -46,7 +46,8 @@ Default thresholds work for most, but your app is unique. Set CPU/memory warning
 
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "workingFolder": "C:\\Projects\\MyAspireApp",
+  "pollingIntervalMs": 2000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,
@@ -69,16 +70,16 @@ Network hiccup? Aspire restarted? AspireMonitor automatically reconnects with ex
 ### Installation
 
 ```bash
-Download from GitHub Releases
+dotnet tool install --global ElBruno.AspireMonitor
 ```
 
 ### Run It
 
 ```bash
-
+aspiremon
 ```
 
-That's it. The first time you run it, you'll be prompted for your Aspire endpoint URL (default: `http://localhost:5000`).
+That's it. The first time you run it, you'll be prompted for your working folder (point to your Aspire AppHost project directory).
 
 ### Configure (Optional)
 
@@ -129,21 +130,30 @@ AspireMonitor is on GitHub with MIT license. Want to add features? Contribute. W
 
 ## What's Next?
 
-- **Remote Monitoring**: Connect to Aspire instances on different machines
+v1.3.0 ships as a .NET global tool, making installation and updates seamless via `dotnet tool` commands. Future roadmap includes:
+
 - **Multi-Instance**: Monitor multiple Aspire apps simultaneously
 - **Advanced Metrics**: Historical trends and threshold-based alerts
+- **Cross-Platform**: macOS and Linux support
 - **Web Dashboard**: Companion web UI for more detailed analysis
 
 ---
 
 ## Try It Today
 
-AspireMonitor is production-ready and available on NuGet:
+AspireMonitor v1.3.0 is production-ready and available on NuGet:
 
 ```bash
-Download from GitHub Releases
-
+dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
 ```
+
+**Update to latest:**
+```bash
+dotnet tool update --global ElBruno.AspireMonitor
+```
+
+**Requirements:** Windows 10+, .NET 10 Runtime
 
 Feedback welcome! Found a bug? Have a feature idea? [Open an issue on GitHub](https://github.com/elbruno/ElBruno.AspireMonitor/issues).
 

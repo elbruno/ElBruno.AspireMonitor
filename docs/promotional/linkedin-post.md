@@ -13,8 +13,8 @@ Monitoring .NET Aspire microservices shouldn't mean constant dashboard-switching
 
 **Get started:**
 ```bash
-Download from GitHub Releases
-
+dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
 ```
 
 Open source (MIT), zero dependencies, built with .NET 10 + WPF.
@@ -26,7 +26,7 @@ Perfect for local development, performance testing, and debugging resource-heavy
 
 Feedback welcome! 🚀
 
-#aspire #dotnet #distributed-systems #opensouce #monitoring #windows #developers
+#aspire #dotnet #distributed-systems #opensource #monitoring #windows #developers
 
 ---
 
@@ -36,8 +36,10 @@ Feedback welcome! 🚀
 
 One-liner to install:
 ```bash
-Download from GitHub Releases
+dotnet tool install --global ElBruno.AspireMonitor
 ```
+
+Then launch with: `aspiremon`
 
 Get real-time CPU/memory monitoring of your Aspire resources in your Windows system tray. No dashboards. No browser tabs. Just one icon that tells you everything.
 
@@ -49,7 +51,7 @@ Built for developers who want to focus on code, not monitoring dashboards.
 
 MIT licensed, open source, GitHub: elbruno/ElBruno.AspireMonitor
 
-#aspire #dotnet #devtools #opensouce
+#aspire #dotnet #devtools #opensource
 
 ---
 
@@ -70,13 +72,14 @@ Tired of switching tabs to check if your microservices are eating CPU? Here's wh
 Works with:
 - Local Aspire development
 - Docker-based Aspire
-- Remote Aspire instances (via URL)
+- Working folder-based discovery
 
-Try it: `Download from GitHub Releases`
+Install: `dotnet tool install --global ElBruno.AspireMonitor`
+Launch: `aspiremon`
 
 GitHub: elbruno/ElBruno.AspireMonitor (MIT, contributions welcome!)
 
-#aspire #dotnet #opensouce #monitoring #developers
+#aspire #dotnet #opensource #monitoring #developers
 
 ---
 
@@ -102,7 +105,7 @@ Solution: AspireMonitor—a system tray app that shows real-time resource status
 
 **Open to PRs and feedback:** github.com/elbruno/ElBruno.AspireMonitor
 
-#aspire #dotnet #opensouce #architecture #windows
+#aspire #dotnet #opensource #architecture #windows
 
 ---
 
@@ -126,8 +129,8 @@ A lightweight, open-source monitoring tool for .NET Aspire distributed applicati
 
 **Try it:**
 ```bash
-Download from GitHub Releases
-
+dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
 ```
 
 Built with .NET 10, WPF, and ❤️ for the Aspire community.
@@ -140,7 +143,7 @@ Thanks to everyone who contributed feedback during development. Your input made 
 
 What feature would you like to see next?
 
-#aspire #dotnet #opensouce #launch #developers #monitoring
+#aspire #dotnet #opensource #launch #developers #monitoring
 
 ---
 
@@ -150,8 +153,8 @@ What feature would you like to see next?
 
 Real-time monitoring for your .NET Aspire apps—no more dashboard-switching.
 
-**Install:** `Download from GitHub Releases`
-**Run:** `ElBruno.AspireMonitor`
+**Install:** `dotnet tool install --global ElBruno.AspireMonitor`
+**Run:** `aspiremon`
 
 Features:
 - 🟢🟡🔴 Color-coded status indicators
@@ -166,7 +169,7 @@ Feedback, feature requests, and contributions welcome.
 
 GitHub: github.com/elbruno/ElBruno.AspireMonitor
 
-#aspire #dotnet #opensouce #monitoring
+#aspire #dotnet #opensource #monitoring
 
 ---
 
@@ -184,4 +187,4 @@ Each post above can be:
 - Mix technical and casual posts
 - Link back to blog post and GitHub
 - Include relevant emojis (easier to scan in feed)
-- Tag relevant communities: #aspire #dotnet #opensouce
+- Tag relevant communities: #aspire #dotnet #opensource

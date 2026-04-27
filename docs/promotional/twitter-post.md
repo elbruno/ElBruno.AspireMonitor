@@ -10,12 +10,13 @@ Real-time system tray monitoring—no more dashboard-switching.
 🟡 Yellow: Warning  
 🔴 Red: Critical
 
-Install: `Download from GitHub Releases`
+Install: `dotnet tool install --global ElBruno.AspireMonitor`
+Launch: `aspiremon`
 
 GitHub: github.com/elbruno/ElBruno.AspireMonitor
 NuGet: nuget.org/packages/ElBruno.AspireMonitor
 
-#aspire #dotnet #opensouce
+#aspire #dotnet #opensource
 
 ---
 
@@ -60,7 +61,8 @@ Set custom CPU/memory thresholds, adjust polling interval, monitor remote Aspire
 
 One simple JSON config file. No wizards. No bloat.
 
-Try it: `Download from GitHub Releases`
+Install: `dotnet tool install --global ElBruno.AspireMonitor`
+Launch: `aspiremon`
 
 github.com/elbruno/ElBruno.AspireMonitor
 
@@ -78,7 +80,7 @@ Open source, MIT license. Contributions welcome!
 
 github.com/elbruno/ElBruno.AspireMonitor
 
-#aspire #dotnet #opensouce
+#aspire #dotnet #opensource
 
 ---
 
@@ -86,9 +88,9 @@ github.com/elbruno/ElBruno.AspireMonitor
 
 One command to get real-time Aspire monitoring in your Windows system tray:
 
-`Download from GitHub Releases`
+`dotnet tool install --global ElBruno.AspireMonitor`
 
-Then run: `ElBruno.AspireMonitor`
+Then launch: `aspiremon`
 
 Boom. Real-time resource metrics in your taskbar.
 
@@ -124,7 +126,7 @@ GitHub: github.com/elbruno/ElBruno.AspireMonitor
 
 What feature would you like to see next?
 
-#aspire #dotnet #opensouce
+#aspire #dotnet #opensource
 
 ---
 
@@ -152,9 +154,9 @@ github.com/elbruno/ElBruno.AspireMonitor
 
 Start monitoring your Aspire apps in 30 seconds:
 
-1. `Download from GitHub Releases`
-2. `ElBruno.AspireMonitor`
-3. Enter Aspire endpoint: `http://localhost:5000`
+1. `dotnet tool install --global ElBruno.AspireMonitor`
+2. `aspiremon`
+3. Set working folder (path to your Aspire AppHost project)
 4. Watch real-time metrics in system tray 🟢🟡🔴
 
 Full docs: github.com/elbruno/ElBruno.AspireMonitor
@@ -242,7 +244,7 @@ Recommended posting schedule (adjust for your timezone):
 Core hashtags:
 - `#aspire` — .NET Aspire community
 - `#dotnet` — .NET developer community
-- `#opensouce` — Open source projects
+- `#opensource` — Open source projects
 - `#monitoring` — Monitoring/observability
 - `#windows` — Windows-specific tools
 

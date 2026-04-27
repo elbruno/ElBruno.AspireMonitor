@@ -146,7 +146,12 @@ public class MiniWindowResourcesTests
         
         if (pinnedResources != null)
         {
-            pinnedResources.Should().BeEmpty("token 'missing' does not match any resource; should skip silently");
+            pinnedResources.Should().HaveCount(1, "token 'missing' does not match any resource; should add a missing entry");
+            
+            var item = pinnedResources[0];
+            GetPropertyValue<string>(item, "Name").Should().Be("missing");
+            GetPropertyValue<bool>(item, "IsMissing").Should().BeTrue("resource should be marked as missing");
+            GetPropertyValue<string>(item, "FallbackText").Should().Be("not found");
         }
     }
 
@@ -354,6 +359,181 @@ public class MiniWindowResourcesTests
             // For now, we document the expected behavior
             pinnedResources.Count.Should().BeGreaterOrEqualTo(1,
                 "PinnedResources should refresh when MiniWindowResourcesSetting changes (live update)");
+        }
+    }
+
+    #endregion
+
+    #region Validation Strategy Tests
+
+    [Fact]
+    public void PinnedResources_MixOfFoundAndMissing_ShowsBoth()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("web, missing, backend");
+        var mainVm = new MainViewModel(null, configService.Object, null);
+        
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "web-app",
+            Url = "http://localhost:5000",
+            Status = ResourceStatus.Running
+        });
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "backend-svc",
+            Url = "http://localhost:5001",
+            Status = ResourceStatus.Running
+        });
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var pinnedResources = GetPinnedResourcesCollection(miniVm);
+        
+        if (pinnedResources != null)
+        {
+            pinnedResources.Should().HaveCount(3, "should show 2 found + 1 missing");
+            
+            // First: web (found)
+            GetPropertyValue<string>(pinnedResources[0], "Name").Should().Be("web-app");
+            GetPropertyValue<bool>(pinnedResources[0], "IsMissing").Should().BeFalse();
+            
+            // Second: missing (not found)
+            GetPropertyValue<string>(pinnedResources[1], "Name").Should().Be("missing");
+            GetPropertyValue<bool>(pinnedResources[1], "IsMissing").Should().BeTrue();
+            GetPropertyValue<string>(pinnedResources[1], "FallbackText").Should().Be("not found");
+            
+            // Third: backend (found)
+            GetPropertyValue<string>(pinnedResources[2], "Name").Should().Be("backend-svc");
+            GetPropertyValue<bool>(pinnedResources[2], "IsMissing").Should().BeFalse();
+        }
+    }
+
+    [Fact]
+    public void PinnedResources_OriginalCasingPreserved_ForMissingEntry()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("WebAPI, MissingService");
+        var mainVm = new MainViewModel(null, configService.Object, null);
+        
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "webapi-deployment",
+            Status = ResourceStatus.Running
+        });
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var pinnedResources = GetPinnedResourcesCollection(miniVm);
+        
+        if (pinnedResources != null)
+        {
+            pinnedResources.Should().HaveCount(2);
+            
+            // Missing entry preserves original casing from user setting
+            GetPropertyValue<string>(pinnedResources[1], "Name").Should().Be("MissingService",
+                "original token casing should be preserved for missing entries");
+        }
+    }
+
+    [Fact]
+    public void PinnedResources_DuplicateTokens_DeduplicatedCaseInsensitive()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("web, WEB, Web");
+        var mainVm = new MainViewModel(null, configService.Object, null);
+        
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "web-app",
+            Status = ResourceStatus.Running
+        });
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var pinnedResources = GetPinnedResourcesCollection(miniVm);
+        
+        if (pinnedResources != null)
+        {
+            pinnedResources.Should().HaveCount(1, "duplicate tokens should be deduplicated");
+        }
+    }
+
+    [Fact]
+    public void PinnedResources_AspireNotRunning_NoMissingEntries()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("web, missing");
+        var mainVm = new MainViewModel(null, configService.Object, null);
+        
+        // Aspire not running (no resources)
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var pinnedResources = GetPinnedResourcesCollection(miniVm);
+        
+        if (pinnedResources != null)
+        {
+            pinnedResources.Should().BeEmpty(
+                "when Aspire isn't running, don't show missing entries because we have nothing to compare against");
+        }
+    }
+
+    [Fact]
+    public void PinnedResources_StatusEnum_CorrectlyAssigned()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("hasurl, nourl, missing");
+        var mainVm = new MainViewModel(null, configService.Object, null);
+        
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "hasurl-svc",
+            Url = "http://localhost:5000",
+            Status = ResourceStatus.Running
+        });
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "nourl-svc",
+            Url = null,
+            Type = "Container",
+            Status = ResourceStatus.Running
+        });
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var pinnedResources = GetPinnedResourcesCollection(miniVm);
+        
+        if (pinnedResources != null)
+        {
+            pinnedResources.Should().HaveCount(3);
+            
+            // Check status enum values via reflection
+            var statusProp = pinnedResources[0].GetType().GetProperty("Status");
+            if (statusProp != null)
+            {
+                // First: Found (has URL)
+                var status0 = statusProp.GetValue(pinnedResources[0]);
+                status0.ToString().Should().Be("Found");
+                
+                // Second: FoundNoUrl
+                var status1 = statusProp.GetValue(pinnedResources[1]);
+                status1.ToString().Should().Be("FoundNoUrl");
+                
+                // Third: Missing
+                var status2 = statusProp.GetValue(pinnedResources[2]);
+                status2.ToString().Should().Be("Missing");
+            }
         }
     }
 

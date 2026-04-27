@@ -4911,3 +4911,320 @@ When packaging work begins, `.csproj` configuration should include:
 **Merged By:** Scribe (GitHub Copilot)  
 **From:** .squad/decisions/inbox/copilot-directive-nuget-tool-name.md  
 **Status:** Consolidated & Ready for Commit
+
+---
+
+## Messaging & Promotional Decisions (ACTIVE)
+
+### Canonical v1.3.0 Install & Config Messaging
+
+**Date:** 2026-04-26  
+**Author:** Chewie (DevRel/Docs)  
+**Status:** PROPOSED → APPROVED (2026-04-27)  
+**Impact:** Documentation, Promotional Content, User Onboarding
+
+#### Context
+
+v1.3.0 introduces two major changes to AspireMonitor's distribution and configuration model:
+
+1. **Distribution:** Shifted from executable download (GitHub Releases) to .NET global tool (NuGet)
+2. **Configuration:** Shifted from endpoint URL (`aspireEndpoint`) to working folder path (`workingFolder`)
+
+#### Decision
+
+**Canonical Install Instructions (always use in promotional content):**
+
+```bash
+dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
+```
+
+**Canonical Configuration Messaging:**
+
+```json
+{
+  "workingFolder": "C:\\Projects\\MyAspireApp",
+  "pollingIntervalMs": 2000
+}
+```
+
+**Never use:**
+- `aspireEndpoint: "http://localhost:5000"` (obsolete)
+- "Download from GitHub Releases" (outdated distribution method)
+
+#### Rationale
+
+- **Consistency:** All promo content now uses identical commands and config examples
+- **Accuracy:** Reflects actual v1.3.0 behavior
+- **Discoverability:** Users searching for install instructions find consistent guidance
+
+#### Consequences
+
+- ✅ Eliminates confusion from mixed instructions
+- ✅ Simpler upgrade path (`dotnet tool update` vs manual download)
+- ⚠️ GitHub Releases executable still exists but de-emphasized
+
+**Merged Date:** 2026-04-27T02:09:34Z  
+**Merged By:** Scribe (GitHub Copilot)  
+**From:** .squad/decisions/inbox/chewie-promo-v1.3.0-refresh.md  
+**Status:** Approved & Implemented
+
+---
+
+## Validation & Quality Decisions (ACTIVE)
+
+### Pinned Resource Validation Strategy
+
+**Author:** Han (Frontend Dev)  
+**Date:** 2026-04-26  
+**Status:** PROPOSED → APPROVED & IMPLEMENTED (2026-04-27)  
+**Affects:** MiniMonitorViewModel, MiniMonitorWindow.xaml, MiniResourceItem
+
+#### Context
+
+The mini window "pinned resources" feature was silently dropping configured tokens that didn't match live Aspire snapshots (due to typo, renamed resource, or not deployed). Users had no indication their configuration was broken.
+
+#### Decision
+
+Implement **3-state validation model** for pinned resources:
+
+**State Model:**
+```csharp
+public enum PinnedResourceStatus
+{
+    Found,        // Resource matched and has URL
+    FoundNoUrl,   // Resource matched but no URL
+    Missing       // Configured token but not in snapshot
+}
+```
+
+**Behavior for Each Token:**
+1. **✅ Found** → Show with clickable link (existing)
+2. **⚠️ FoundNoUrl** → Show with type/fallback (existing)
+3. **❌ Missing** → NEW:
+   - Icon: `⚠` (warning)
+   - Name: Gray + strikethrough
+   - FallbackText: "not found" (red)
+   - Tooltip: "Configured in settings but not present in running Aspire app"
+
+#### Implementation Details
+
+- **Token Parsing:** Original casing preserved for UX; lowercase for matching
+- **Deduplication:** Group by lowercase to prevent "web, WEB, Web" duplicates
+- **Edge Case:** If Aspire not running, clear all pins (can't validate without live snapshot)
+
+#### Testing
+
+- 18/18 mini window tests passing (6 new, 1 updated)
+- Coverage: mixed states, casing preservation, deduplication, edge cases
+- All 273 project tests passing
+
+#### Team Coordination
+
+- **Luke (Backend):** No changes needed (uses existing Resources collection)
+- **Lando (Design):** May refine icon color/styling in future
+- **Yoda (Testing):** Tests written and validated
+- **Chewie (Docs):** Document "Invalid pins shown with ⚠ icon"
+
+#### Rationale
+
+1. **Visual Accountability:** Users see broken pins immediately
+2. **No Silent Failures:** All tokens accounted for
+3. **Helpful Feedback:** Tooltip explains why pins aren't clickable
+4. **Casing Preservation:** Users see what they typed
+5. **Consistent Model:** Missing entries use same MiniResourceItem type
+
+**Merged Date:** 2026-04-27T02:09:34Z  
+**Merged By:** Scribe (GitHub Copilot)  
+**From:** .squad/decisions/inbox/han-pinned-resource-validation.md  
+**Status:** Approved & Implemented
+
+---
+
+## Roadmap & Strategic Decisions (AWAITING BRUNO)
+
+### Future Improvements: Decisions Needed
+
+**Author:** Leia (Lead Architect)  
+**Date:** 2026-04-27  
+**Reference:** `docs/FUTURE-IMPROVEMENTS.md` (20 improvements across 5 themes)  
+**Status:** AWAITING BRUNO APPROVAL ON 6 DECISIONS
+
+#### Decision 1: Cross-Platform Support
+
+**Question:** Stay Windows-only, or invest in macOS/Linux via Avalonia?
+
+**Options:**
+- A. **Windows-only** — Focus on depth (observability, UX polish)
+- B. **macOS first** — Expand to 30% more developers
+- C. **Full cross-platform** — 40% reach expansion
+
+**Trade-offs:**
+- A: Simpler maintenance
+- B/C: XL effort (2-3 weeks), new framework learning, Avalonia maturity concerns
+
+**Recommendation:** Defer to v2.0 unless strong community demand
+
+**Decision:** _________________  
+**Date:** _________________
+
+#### Decision 2: Remote vs Local-Only Monitoring
+
+**Question:** Support monitoring Aspire instances on remote machines/containers/VMs?
+
+**Options:**
+- A. **Local-only** — Keep working-folder detection
+- B. **Remote support** — Add `remoteEndpoint` config option
+
+**Trade-offs:**
+- A: Simpler, "local dev tool" positioning
+- B: Medium effort, repositions as lightweight observability companion
+
+**Recommendation:** YES — remote monitoring is high-value; HTTP client already exists
+
+**Decision:** _________________  
+**Date:** _________________
+
+#### Decision 3: Telemetry / Anonymous Usage Stats
+
+**Question:** Collect anonymous usage telemetry (opt-in)?
+
+**Options:**
+- A. **No telemetry** — Privacy-first
+- B. **Opt-in telemetry** — Basic usage patterns
+
+**Trade-offs:**
+- A: User trust, GDPR-compliant
+- B: Data-driven prioritization, but privacy concerns
+
+**Recommendation:** NO initially — add opt-in later only if needed
+
+**Decision:** _________________  
+**Date:** _________________
+
+#### Decision 4: Code Signing Certificate
+
+**Question:** Invest in EV code signing certificate (~$400/year)?
+
+**Options:**
+- A. **No signing** — Accept SmartScreen warnings
+- B. **Standard cert** (~$100/year) — Partial trust
+- C. **EV cert** (~$400/year) — Immediate SmartScreen trust
+
+**Trade-offs:**
+- A: Free, scares new users
+- B: Moderate cost, partial trust
+- C: Higher cost, professional credibility
+
+**Recommendation:** YES (EV) — Critical for distribution credibility
+
+**Decision:** _________________  
+**Date:** _________________
+
+#### Decision 5: Package Manager Distribution
+
+**Question:** Commit to maintaining winget/Chocolatey/scoop manifests?
+
+**Options:**
+- A. **NuGet only** — Current state
+- B. **Add winget** — Windows-native
+- C. **Full coverage** — winget + Chocolatey + scoop
+
+**Trade-offs:**
+- A: No extra maintenance
+- B/C: Extra release step, but massive discoverability boost; can automate in CI
+
+**Recommendation:** YES (full coverage) — Automate in CI
+
+**Decision:** _________________  
+**Date:** _________________
+
+#### Decision 6: OTLP/Prometheus Integration
+
+**Question:** Expose metrics for external observability stacks?
+
+**Options:**
+- A. **No integration** — Keep simple, standalone
+- B. **Optional OTLP/Prometheus** — Feature-flagged, opt-in
+
+**Trade-offs:**
+- A: Simpler, smaller package
+- B: Adds dependency surface, appeals to enterprise/DevOps
+
+**Recommendation:** Defer — Keep simple; defer unless enterprise users request
+
+**Decision:** _________________  
+**Date:** _________________
+
+#### Decision Summary
+
+| # | Decision | Recommendation | Impact |
+|---|----------|----------------|--------|
+| 1 | Cross-platform | Defer to v2.0 | Strategic direction |
+| 2 | Remote monitoring | YES | Product scope expansion |
+| 3 | Telemetry | NO (initially) | Privacy/trust |
+| 4 | Code signing | YES (EV) | Distribution credibility |
+| 5 | Package managers | YES (all 3) | Discoverability |
+| 6 | OTLP/Prometheus | Defer | Complexity reduction |
+
+**Merged Date:** 2026-04-27T02:09:34Z  
+**Merged By:** Scribe (GitHub Copilot)  
+**From:** .squad/decisions/inbox/leia-future-improvements-decisions-needed.md  
+**Status:** Awaiting Bruno Approval
+
+---
+
+## Security & Publishing Decisions (ACTIVE)
+
+### NuGet Trusted Publishing with OIDC
+
+**Date:** 2026-04-27  
+**Author:** Leia (Lead)  
+**Status:** ✅ IMPLEMENTED (awaiting Bruno setup)
+
+#### Context
+
+ElBruno.AspireMonitor v1.2.0 is released but not published to NuGet.org. Existing `publish-nuget.yml` uses traditional `NUGET_API_KEY` secret (security risk).
+
+#### Decision
+
+**Migrate to OIDC trusted publishing** using `NuGet/login@v1` action (pattern from ElBruno.LocalLLMs).
+
+#### Implementation
+
+**Workflow:** `.github/workflows/publish-nuget.yml`
+- Runner: `windows-latest` (WPF requirement)
+- Environment: `release` (trusted publishing scope)
+- Permissions: `id-token: write, contents: read`
+- Secret: `NUGET_USER` (username, NOT API key)
+- Action: `NuGet/login@v1` (OIDC token → temp API key)
+- Test: All 273 tests pass before pack/push
+
+#### Manual Setup (Bruno)
+
+1. **Add Secret:** `gh secret set NUGET_USER --body "<nuget-username>"`
+2. **Configure NuGet.org:** https://www.nuget.org/account/trusted-publishing
+   - Repository: `elbruno/ElBruno.AspireMonitor`
+   - Workflow: `publish-nuget.yml`
+   - Environment: `release`
+3. **Trigger Publish:** `gh workflow run publish-nuget.yml -f version=1.2.0`
+4. **Monitor:** `gh run list --workflow=publish-nuget.yml`
+
+#### Benefits
+
+✅ No long-lived API keys stored  
+✅ Temporary key per workflow run  
+✅ Audit trail tied to releases  
+✅ Matches ElBruno.LocalLLMs pattern
+
+**Status:** ✅ Implemented — awaiting Bruno setup
+
+**Merged Date:** 2026-04-27T02:09:34Z  
+**Merged By:** Scribe (GitHub Copilot)  
+**From:** .squad/decisions/inbox/leia-nuget-trusted-publishing.md  
+**Status:** Implemented & Pending Bruno Action
+
+---
+
+**Last Updated:** 2026-04-27 (Decisions Merged: Promo, Validation, Roadmap, NuGet Publishing)  
+**Next Steps:** Bruno reviews/approves 6 strategic decisions; team proceeds with implementation

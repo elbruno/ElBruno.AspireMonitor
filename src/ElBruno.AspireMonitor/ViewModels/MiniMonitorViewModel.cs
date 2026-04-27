@@ -7,12 +7,21 @@ using ElBruno.AspireMonitor.Helpers;
 
 namespace ElBruno.AspireMonitor.ViewModels;
 
+public enum PinnedResourceStatus
+{
+    Found,
+    FoundNoUrl,
+    Missing
+}
+
 public class MiniResourceItem
 {
     public string Name { get; set; } = "";
     public string? Url { get; set; }
     public bool HasUrl => !string.IsNullOrWhiteSpace(Url);
     public string FallbackText { get; set; } = "";
+    public PinnedResourceStatus Status { get; set; } = PinnedResourceStatus.Found;
+    public bool IsMissing => Status == PinnedResourceStatus.Missing;
 }
 
 public class MiniMonitorViewModel : ViewModelBase
@@ -321,36 +330,68 @@ public class MiniMonitorViewModel : ViewModelBase
             return;
         }
 
-        // Parse tokens: split on comma, trim, lowercase, drop empties
-        var tokens = settingValue
+        // Don't show missing entries when Aspire isn't running
+        int resourceCount = _mainViewModel.Resources.Count;
+        if (resourceCount == 0)
+        {
+            OnPropertyChanged(nameof(HasPinnedResources));
+            return;
+        }
+
+        // Parse tokens: split on comma, trim, drop empties, dedupe (case-insensitive)
+        var tokenPairs = settingValue
             .Split(',')
             .Select(t => t.Trim())
             .Where(t => !string.IsNullOrEmpty(t))
-            .Select(t => t.ToLowerInvariant())
+            .Select(t => new { Original = t, Lower = t.ToLowerInvariant() })
+            .GroupBy(pair => pair.Lower)
+            .Select(g => g.First())
             .ToList();
 
         // For each token, find matching resources (case-insensitive prefix match)
-        foreach (var token in tokens)
+        foreach (var tokenPair in tokenPairs)
         {
             var matches = _mainViewModel.Resources
-                .Where(r => r.Name.ToLowerInvariant().StartsWith(token))
+                .Where(r => r.Name.ToLowerInvariant().StartsWith(tokenPair.Lower))
                 .ToList();
 
-            foreach (var match in matches)
+            if (matches.Count > 0)
             {
-                var item = new MiniResourceItem
+                // Found one or more matching resources
+                foreach (var match in matches)
                 {
-                    Name = match.Name,
-                    Url = match.Url
+                    var item = new MiniResourceItem
+                    {
+                        Name = match.Name,
+                        Url = match.Url
+                    };
+
+                    if (!item.HasUrl)
+                    {
+                        // No URL: show Type or fallback
+                        item.FallbackText = match.Type ?? "(no endpoint)";
+                        item.Status = PinnedResourceStatus.FoundNoUrl;
+                    }
+                    else
+                    {
+                        item.Status = PinnedResourceStatus.Found;
+                    }
+
+                    PinnedResources.Add(item);
+                }
+            }
+            else
+            {
+                // No matching resource found - add a "missing" entry
+                var missingItem = new MiniResourceItem
+                {
+                    Name = tokenPair.Original,
+                    Url = null,
+                    FallbackText = "not found",
+                    Status = PinnedResourceStatus.Missing
                 };
 
-                if (!item.HasUrl)
-                {
-                    // No URL: show Type or fallback
-                    item.FallbackText = match.Type ?? "(no endpoint)";
-                }
-
-                PinnedResources.Add(item);
+                PinnedResources.Add(missingItem);
             }
         }
 

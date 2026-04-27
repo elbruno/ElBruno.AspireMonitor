@@ -125,9 +125,48 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                            <TextBlock Text="📌" FontSize="10" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <!-- Pin icon for found resources, warning icon for missing -->
+                            <TextBlock FontSize="10" Margin="0,0,6,0" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="📌"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMissing}" Value="True">
+                                                <Setter Property="Text" Value="⚠"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <!-- Resource name -->
                             <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" 
-                                       Foreground="#333333" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                       VerticalAlignment="Center" Margin="0,0,8,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#333333"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMissing}" Value="True">
+                                                <Setter Property="Foreground" Value="#999999"/>
+                                                <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <TextBlock.ToolTip>
+                                    <TextBlock>
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{Binding Name}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsMissing}" Value="True">
+                                                        <Setter Property="Text" Value="Configured in settings but not present in the running Aspire app"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
                             <!-- Show hyperlink if resource has URL -->
                             <TextBlock FontSize="10" VerticalAlignment="Center"
                                        Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -140,8 +179,19 @@
                             </TextBlock>
                             <!-- Show fallback text if no URL -->
                             <TextBlock Text="{Binding FallbackText}" FontSize="10" 
-                                       Foreground="#999999" FontStyle="Italic" VerticalAlignment="Center"
-                                       Visibility="{Binding HasUrl, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                       FontStyle="Italic" VerticalAlignment="Center"
+                                       Visibility="{Binding HasUrl, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#999999"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMissing}" Value="True">
+                                                <Setter Property="Foreground" Value="#CC0000"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

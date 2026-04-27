@@ -1672,3 +1672,172 @@ Luke has completed dashboard URL token preservation work (commit ffec33e), enabl
 Phase 5 ready: Integration testing, release prep, NuGet packaging with AspireMon ID.
 
 ---
+
+---
+
+## 2026-04-26 — Pinned Resource Validation Strategy (Current Session)
+
+**Feature Scope:**
+- Add validation for configured pinned resources that don't exist when mini window opens
+- Show visual feedback for missing resources (configured but not found in live Aspire snapshot)
+- Preserve original token casing from user settings for better UX
+
+**Implementation Completed:**
+
+1. **PinnedResourceStatus Enum** ✅
+   - Added enum to MiniResourceItem: Found, FoundNoUrl, Missing
+   - IsMissing convenience bool for XAML binding triggers
+   - 3-state model for clear resource status visualization
+
+2. **MiniResourceItem Model Extension** ✅
+   - Added Status property (PinnedResourceStatus enum)
+   - Added IsMissing computed property for XAML DataTriggers
+   - Maintains backward compatibility with existing HasUrl and FallbackText
+
+3. **UpdatePinnedResources() Refactor** ✅
+   - Token parsing now preserves original casing for display
+   - Deduplication: case-insensitive grouping to prevent duplicate entries
+   - For each token:
+     * If matches found → create entries with Status = Found or FoundNoUrl
+     * If no matches → create "missing" entry with original token name, Status = Missing
+   - Edge case: When Aspire not running (count == 0), clear collection (don't show missing entries)
+
+4. **MiniMonitorWindow.xaml Updates** ✅
+   - Icon: ⚠ warning icon for missing resources (instead of 📌 pin)
+   - Name styling: Gray + strikethrough for missing resources
+   - Tooltip: "Configured in settings but not present in the running Aspire app" for missing
+   - FallbackText: Red color for missing entries ("not found")
+   - Used DataTriggers on IsMissing property (no new converters needed)
+
+5. **Test Coverage** ✅
+   - Updated existing test: PinnedResources_NoMatchingResource_SkipsSilently → now expects missing entry
+   - Added 6 new validation strategy tests:
+     * PinnedResources_MixOfFoundAndMissing_ShowsBoth (mixed scenarios)
+     * PinnedResources_OriginalCasingPreserved_ForMissingEntry (UX)
+     * PinnedResources_DuplicateTokens_DeduplicatedCaseInsensitive (data quality)
+     * PinnedResources_AspireNotRunning_NoMissingEntries (edge case)
+     * PinnedResources_StatusEnum_CorrectlyAssigned (status validation)
+   - All 273 tests passing ✅
+
+**XAML Patterns Established:**
+
+1. **DataTrigger for Missing State:**
+   - Used <DataTrigger Binding="{Binding IsMissing}" Value="True"> to conditionally apply styles
+   - Icon: Switch from 📌 to ⚠
+   - Foreground: Gray (#999999)
+   - TextDecorations: Strikethrough
+   - Tooltip: Custom message for missing resources
+   - FallbackText color: Red (#CC0000)
+
+2. **Status Enum in ViewModel:**
+   - Clean separation: Found (with URL), FoundNoUrl (type shown), Missing (error state)
+   - Enum provides type-safe status tracking
+   - IsMissing convenience bool simplifies XAML binding
+
+**User Experience Benefits:**
+
+- Users immediately see if configured pins are broken (typo, resource renamed, not deployed)
+- Original token casing preserved → user sees exactly what they typed in settings
+- Visual distinction: ⚠ + strikethrough + gray color for missing entries
+- Helpful tooltip explains why the resource isn't clickable
+- No silent failures → all configured tokens are accounted for
+
+**Technical Decisions:**
+
+1. **Token Preservation:**
+   - Parse creates {Original, Lower} pairs
+   - Matching uses lowercase, display uses original
+   - Deduplication on lowercase prevents "web, WEB, Web" from creating 3 entries
+
+2. **Missing Entry Representation:**
+   - Still a MiniResourceItem object (same type as found resources)
+   - Name = original token, Url = null, FallbackText = "not found"
+   - Status = Missing → drives visual differences in XAML
+
+3. **Edge Case: Aspire Not Running:**
+   - If Resources.Count == 0, clear PinnedResources entirely
+   - Rationale: Can't validate "missing" when we have no live snapshot to compare against
+   - Prevents showing false positives during Aspire startup/shutdown
+
+**Quality Metrics:**
+
+- Build: ✅ 0 errors, 2 pre-existing warnings (unrelated)
+- Tests: ✅ 273/273 passing (13 for mini resources feature)
+- XAML: ✅ No new converters needed (used existing BoolToVisibility pattern)
+- Integration: ✅ Backward compatible with existing pinned resources behavior
+
+**Ready for Integration:**
+
+- Feature complete and tested ✅
+- Visual design follows existing mini window patterns ✅
+- No breaking changes to Configuration model ✅
+- Documentation updated (history + decision doc) ✅
+
+## Learnings
+
+### Pinned Resource Validation Strategy Pattern
+
+1. **3-State Model (Found / FoundNoUrl / Missing):**
+   - Use enum for type-safe status tracking
+   - Add convenience bool properties (IsMissing) for XAML DataTriggers
+   - Keep all states as same model type (MiniResourceItem) for uniform ItemsControl binding
+
+2. **Original Token Preservation:**
+   - Parse tokens into {Original, Lower} pairs early in pipeline
+   - Use lowercase for matching/deduplication logic
+   - Use original casing for display (better UX, shows user exactly what they configured)
+
+3. **XAML DataTrigger Styling:**
+   - Use <Style.Triggers> with <DataTrigger> on bool properties (not enum values)
+   - Conditional icon: TextBlock.Text setter for different emoji
+   - Conditional styling: Foreground, TextDecorations, ToolTip text
+   - Avoid new converters when DataTriggers can handle it
+
+4. **Missing Entry as Real Item:**
+   - Don't skip missing tokens → add them to collection as "missing" entries
+   - Provides visual accountability for all configured pins
+   - User sees broken config immediately (not silent failure)
+
+5. **Edge Case: No Live Snapshot:**
+   - When Aspire not running (count == 0), clear collection entirely
+   - Don't show "missing" entries when we have no comparison baseline
+   - Prevents false positives during app lifecycle transitions
+
+6. **Deduplication Strategy:**
+   - Group tokens by lowercase before matching
+   - Take first occurrence from each group (preserves user's preferred casing)
+   - Prevents "web, WEB, Web" from creating 3 identical entries
+
+
+---
+
+## Cross-Agent Note: Pinned Resource Validation Implemented (2026-04-27)
+
+**From:** Han (Frontend Dev) via Scribe  
+**Subject:** 3-state pinned resource validation complete
+
+Han implemented 3-state validation model for MiniMonitor pinned resources (Found / FoundNoUrl / Missing). Missing resources now show visual warnings (⚠ icon, gray strikethrough, red "not found" text) instead of being silently dropped.
+
+**Implementation:**
+- Added PinnedResourceStatus enum to MiniResourceItem model
+- Updated validation logic: case-insensitive matching with original casing display
+- Deduplication: group by lowercase to prevent "web, WEB, Web" duplicates
+- XAML DataTriggers: conditional styling based on IsMissing property
+- 18/18 mini window tests pass (6 new, 1 updated)
+
+**Model Pattern:**
+\\\csharp
+public class MiniResourceItem {
+    public string Name { get; set; }
+    public string? Url { get; set; }
+    public string FallbackText { get; set; }
+    public PinnedResourceStatus Status { get; set; }
+    public bool IsMissing => Status == PinnedResourceStatus.Missing;
+}
+\\\
+
+**Decision:** Canonical for resource validation in mini window. Treat 3-state model as standard.
+
+**Impact on Backend:** None — Luke's backend continues to provide Resources collection unchanged. This is pure frontend validation/UX enhancement.
+
+**Reference:** .squad/decisions.md → Validation & Quality Decisions

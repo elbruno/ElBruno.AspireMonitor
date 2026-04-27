@@ -597,4 +597,58 @@ Bruno clarified the actual mental model: Users set a working folder → app disc
 
 **Status:** ✅ COMPLETE — README updated with real tray icons; emoji-based fiction removed
 
+---
+
+## Learnings
+
+### Promo Docs v1.3.0 Refresh (2026-04-26)
+
+**Context:** Updated all promotional content (blog, LinkedIn, Twitter) to reflect v1.3.0 .NET global tool release. This is a major distribution model change (from executable to `dotnet tool`), plus config model change (working folder vs endpoint URL).
+
+**Changes Made:**
+
+1. **Install model:**
+   - OLD: `Download from GitHub Releases` (empty/broken code fences)
+   - NEW: `dotnet tool install --global ElBruno.AspireMonitor` (real command)
+   - Launch: `aspiremon` (lowercase, from any terminal)
+   - Update: `dotnet tool update --global ElBruno.AspireMonitor`
+   - Uninstall: `dotnet tool uninstall --global ElBruno.AspireMonitor`
+
+2. **Configuration model:**
+   - OLD: `aspireEndpoint: "http://localhost:5000"` (URL-based)
+   - NEW: `workingFolder: "C:\\Projects\\MyAspireApp"` (folder-based discovery)
+   - User sets working folder on first run; app discovers Aspire instances in that directory
+   - Twitter tutorial updated: "Set working folder" replaces "Enter Aspire endpoint"
+
+3. **Fixed recurring typo:**
+   - `#opensouce` → `#opensource` (corrected in 12+ places across LinkedIn and Twitter posts, plus hashtag reference list)
+
+4. **Blog "What's Next?" section:**
+   - Updated to reflect v1.3.0 .NET tool distribution as a shipped item
+   - Removed "Remote Monitoring" (already supported via working folder approach)
+   - Kept Multi-Instance, Advanced Metrics, Cross-Platform, Web Dashboard as future roadmap
+
+5. **Requirements:**
+   - Windows 10+ (was implicit, now explicit)
+   - .NET 10 Runtime (called out consistently)
+
+**Critical Insight:**
+- The working folder vs endpoint distinction is the most critical messaging change. Users no longer provide a URL; they point to their Aspire AppHost directory, and the tool discovers the running instance. This is a fundamental UX shift and must be reflected consistently across all promotional and documentation surfaces.
+- Empty code fences (`Download from GitHub Releases`) were placeholders from earlier docs; all replaced with real commands.
+
+**Quality Checklist:**
+- ✅ blog-post.md: 4 sections updated (Install, Config example, What's Next, Try It Today)
+- ✅ linkedin-post.md: 12 updates (install commands, hashtag spelling, launch commands)
+- ✅ twitter-post.md: 7 updates (install commands, tutorial flow, hashtag spelling)
+- ✅ All install commands now use: `dotnet tool install --global ElBruno.AspireMonitor`
+- ✅ All launch references now use: `aspiremon`
+- ✅ All config examples show `workingFolder` (not `aspireEndpoint`)
+- ✅ All `#opensouce` typos fixed → `#opensource`
+
+**Cross-Document Impact:**
+- README.md already reflects v1.3.0 model (no changes needed per user request)
+- QUICKSTART.md, configuration.md, troubleshooting.md likely need similar updates if they still reference old install/config model (not in scope for this task)
+
+**Status:** ✅ COMPLETE — All promo docs updated for v1.3.0 .NET tool release
+
 

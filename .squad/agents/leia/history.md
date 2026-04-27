@@ -733,3 +733,65 @@ upkg/ — NuGet Artifacts:**
 **Next Steps (User Action Required):**
 - Bruno needs to push to NuGet.org with his API key (command documented above)
 
+---
+
+### 2026-04-27 — Future Improvements Analysis (Session 10)
+
+**Context:**
+- v1.3.0 stable and released as .NET global tool
+- Bruno requested comprehensive future improvements analysis
+- Goal: Create decision-ready planning artifact for roadmap prioritization
+
+**Deliverable Created:**
+- `docs/FUTURE-IMPROVEMENTS.md` — Comprehensive analysis document
+
+**Themes Identified:**
+1. **Cross-Platform Reach** — macOS/Linux via Avalonia (XL effort)
+2. **Observability Depth** — Remote monitoring, historical metrics, alerting
+3. **Distribution & Onboarding** — winget/Chocolatey/scoop, code signing
+4. **Operator Experience** — Settings UI, dashboard links, toast notifications
+5. **Architecture & Tech Debt** — CA2024 fix, test coverage, shared Core library
+
+**Prioritization Buckets:**
+
+**Now (v1.4.x):**
+- Dashboard deep-links from tray menu (S, high impact)
+- Settings UI window to replace JSON editing (S, high impact)
+- Fix CA2024 EndOfStream async anti-pattern (S, tech debt)
+- Toast notifications on threshold breach (S, high impact)
+- Diagnostic logging for troubleshooting (S, essential for support)
+
+**Next (v1.5–2.0):**
+- Remote Aspire instance monitoring (M, unlocks team scenarios)
+- Historical metrics with sparklines (M, debugging requires trends)
+- winget/Chocolatey/scoop distribution (S, discoverability)
+- Code signing certificate (M, removes SmartScreen friction)
+- Multi-instance monitoring (M, power users)
+- Launch `aspire run` from tray (S, convenience)
+
+**Later/Aspirational:**
+- macOS support via Avalonia (XL, only if Bruno commits to cross-platform)
+- Linux tray support (L, depends on macOS port)
+- OTLP/Prometheus export (L, enterprise niche)
+- Localization (M, defer unless demand)
+- IDE integration (L, high maintenance)
+
+**Top 3 Recommendations:**
+1. **Add dashboard deep-links** — Trivial effort, daily utility, most-requested
+2. **Implement toast notifications** — Proactive alerting transforms passive monitoring
+3. **Pursue remote Aspire monitoring** — Unlocks team/cloud scenarios with existing HTTP client
+
+**Decisions Needed from Bruno:**
+1. Stay Windows-only or invest in cross-platform?
+2. Local-only or support remote/cloud Aspire monitoring?
+3. Add telemetry/anonymous usage stats?
+4. Invest in EV code signing certificate (~$400/year)?
+5. Commit to winget/Chocolatey/scoop manifest maintenance?
+6. OTLP/Prometheus integration — worth the complexity?
+
+**Documents Created:**
+- `docs/FUTURE-IMPROVEMENTS.md` — Full analysis (19KB)
+- `.squad/decisions/inbox/leia-future-improvements-decisions-needed.md` — Decision ledger entry
+
+**Status:** ✅ COMPLETE — Analysis delivered, decisions surfaced for Bruno
+
