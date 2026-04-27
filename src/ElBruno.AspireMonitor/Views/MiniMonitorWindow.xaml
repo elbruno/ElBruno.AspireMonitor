@@ -174,7 +174,7 @@
                                            RequestNavigate="ResourceLink_RequestNavigate"
                                            Foreground="#1565C0"
                                            TextDecorations="None">
-                                    <Run Text="🔗 Open"/>
+                                    <Run Text="{Binding Url, Mode=OneWay}"/>
                                 </Hyperlink>
                             </TextBlock>
                             <!-- Show fallback text if no URL -->
