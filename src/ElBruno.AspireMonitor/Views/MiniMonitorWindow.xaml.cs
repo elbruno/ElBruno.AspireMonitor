@@ -79,53 +79,42 @@ public partial class MiniMonitorWindow : Window
 
     private void StartAspire_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as MiniMonitorViewModel;
-        if (viewModel != null)
-        {
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                ExecuteAspireCommand("start");
-            });
-        }
+        InvokeMainViewModelCommand(vm => vm.StartAspireCommand, "start");
     }
 
     private void StopAspire_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as MiniMonitorViewModel;
-        if (viewModel != null)
-        {
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                ExecuteAspireCommand("stop");
-            });
-        }
+        InvokeMainViewModelCommand(vm => vm.StopAspireCommand, "stop");
     }
 
-    private void ExecuteAspireCommand(string command)
+    private void InvokeMainViewModelCommand(Func<MainViewModel, ICommand?> commandSelector, string commandName)
     {
         try
         {
-            var viewModel = DataContext as MiniMonitorViewModel;
-            var workingDir = viewModel?.MainViewModel?.ProjectFolder ?? Environment.CurrentDirectory;
-
-            var psi = new System.Diagnostics.ProcessStartInfo
+            if (DataContext is not MiniMonitorViewModel { MainViewModel: { } mainVm })
             {
-                FileName = "cmd.exe",
-                Arguments = $"/c aspire {command}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true,
-                WorkingDirectory = workingDir
-            };
-
-            using (var process = System.Diagnostics.Process.Start(psi))
-            {
-                process?.WaitForExit(5000);
+                System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Cannot invoke aspire {commandName}: MainViewModel unavailable");
+                return;
             }
+
+            var command = commandSelector(mainVm);
+            if (command is null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Cannot invoke aspire {commandName}: command is null");
+                return;
+            }
+
+            if (!command.CanExecute(null))
+            {
+                System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Aspire {commandName} command CanExecute returned false (already running or busy)");
+                return;
+            }
+
+            command.Execute(null);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to execute aspire {command}: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Failed to invoke aspire {commandName}: {ex.Message}");
         }
     }
 }
