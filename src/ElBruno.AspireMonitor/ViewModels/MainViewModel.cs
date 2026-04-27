@@ -446,11 +446,35 @@ public class MainViewModel : ViewModelBase
                         pollingService.UpdateEndpoint(endpoint);
                     }
                     
-                    CommandStatus = "✅ Aspire started successfully";
                     System.Diagnostics.Debug.WriteLine($"[MainViewModel] Aspire started with endpoint: {endpoint}");
                     
                     // Trigger refresh to immediately connect
                     _pollingService?.RefreshAsync();
+
+                    // Wait for resources to actually appear (Aspire can take 30-60s to spin up)
+                    // Keep IsExecutingCommand = true so START button stays disabled while we wait.
+                    const int readinessTimeoutSeconds = 90;
+                    var readinessStart = DateTime.UtcNow;
+                    while ((DateTime.UtcNow - readinessStart).TotalSeconds < readinessTimeoutSeconds)
+                    {
+                        if (Resources.Count > 0)
+                        {
+                            break;
+                        }
+                        var elapsed = (int)(DateTime.UtcNow - readinessStart).TotalSeconds;
+                        CommandStatus = $"⏳ Starting Aspire... ({elapsed}s / {readinessTimeoutSeconds}s)";
+                        await Task.Delay(1000);
+                    }
+
+                    if (Resources.Count > 0)
+                    {
+                        CommandStatus = "✅ Aspire started successfully";
+                    }
+                    else
+                    {
+                        CommandStatus = "⚠️ Aspire is taking longer than expected — still waiting for resources";
+                        System.Diagnostics.Debug.WriteLine("[MainViewModel] Aspire start timed out waiting for resources");
+                    }
                 }
                 else
                 {
