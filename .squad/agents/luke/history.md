@@ -36,6 +36,8 @@
 
 **Dependencies:** Polly (retry policies), System.Net.Http (standard, no NuGet), JSON parsing (built-in System.Text.Json).
 
+**Archived Sessions:** 2026-04-26 Sessions 1-14 (detailed logs of Aspire API integration, AspirePollingService implementation, retry logic with exponential backoff, configuration system design, status calculation, error handling patterns, and logging infrastructure). See full history for API endpoint research, polling strategy evolution, and test coverage progression. Key outcome: 260+ tests passing, graceful error recovery, configurable retry policies, background polling stable.
+
 ---
 
 ## Session Log
@@ -856,6 +858,8 @@ Phase 4 backend implementation verified and complete. All three core services (A
 - Package ID: ElBruno.AspireMonitor v1.0.0
 - Target Framework: net10.0-windows7.0 (WPF/Windows Forms app)
 - Dependencies: Microsoft.Extensions.Http 9.0.0, Polly 8.5.0
+
+**Archived Sessions:** 2026-04-26 Sessions 1-14 (detailed logs of Aspire API integration, AspirePollingService implementation, retry logic with exponential backoff, configuration system design, status calculation, error handling patterns, and logging infrastructure). See full history for API endpoint research, polling strategy evolution, and test coverage progression. Key outcome: 260+ tests passing, graceful error recovery, configurable retry policies, background polling stable.
 - License: MIT expression (NuGet-hosted license URL)
 - Includes icon and README for NuGet.org display
 
@@ -1085,3 +1089,4 @@ If backend later adds:
 **Current Impact:** None — Backend continues unchanged. Frontend-only enhancement.
 
 **Reference:** .squad/decisions.md → Validation & Quality Decisions; .squad/agents/han/history.md
+

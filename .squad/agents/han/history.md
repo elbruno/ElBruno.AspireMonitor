@@ -1841,3 +1841,4 @@ public class MiniResourceItem {
 **Impact on Backend:** None — Luke's backend continues to provide Resources collection unchanged. This is pure frontend validation/UX enhancement.
 
 **Reference:** .squad/decisions.md → Validation & Quality Decisions
+
