@@ -70,7 +70,13 @@ jobs:
           user: ${{ secrets.NUGET_USER }}
 
       - name: Push to NuGet.org
-        run: dotnet nuget push artifacts/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        shell: pwsh
+        run: |
+          Get-ChildItem artifacts/*.nupkg | ForEach-Object {
+            Write-Host "Pushing $($_.Name)"
+            dotnet nuget push $_.FullName --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { throw "Push failed for $($_.Name)" }
+          }
 
       - name: Upload NuGet package artifact
         uses: actions/upload-artifact@v4
