@@ -1,145 +1,74 @@
 # Twitter / X Posts — AspireMonitor v1.4.0
 
-### Main Launch
+## Tweet 1: Main Hook
 
-🚀 AspireMonitor v1.4.0 is out — a Windows tray app for your Aspire AppHost.
+**[Attach: ./screenshots/hero-banner.png]**
 
-📌 Pin the resources you care about
-🔗 Full URLs in the mini window
-▶️ Start / Stop your AppHost from the tray (Start stays disabled with a live countdown until resources show up)
+Bouncing to a browser tab to check your Aspire resources?
 
-`dotnet tool install --global ElBruno.AspireMonitor`
-
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet
-
----
-
-### Mini Window
-
-🪟 Small thing, big quality-of-life win in AspireMonitor v1.4:
-
-Set `MiniWindowResources: "web, store, gateway"` in settings → get a compact panel pinned to your screen with exactly those three resources and their live URLs.
-
-Prefix match, case-insensitive. Aspire replica suffixes (`web-xggqzmyn`) just work.
-
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet
-
----
-
-### Start / Stop Fix
-
-🛠 v1.4 fixed the two things that bugged me most about the previous AspireMonitor build:
-
-▶️ Start used to re-enable ~60s before resources actually appeared. Now: stays disabled with `⏳ Starting Aspire... (12 / 90s)`.
-⏹ Stop didn't stop. Now it does. And disables itself during shutdown.
-
-Small UX polish. Big difference.
-
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet
-
----
-
-### Real URLs
-
-🔗 Tiny but satisfying v1.4 change in AspireMonitor:
-
-Pinned resources used to render as a generic "🔗 Open" link.
-Useless when you have three pinned web services.
-
-Now you see the actual URL inline (`http://localhost:5021`).
-
-You can tell them apart. Crazy concept.
-
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet
-
----
-
-### Settings
-
-⚙️ AspireMonitor's entire config surface fits on a Tweet:
-
-```json
-{
-  "WorkingFolder": "...AppHost",
-  "AspireHostUrl": "http://localhost:18888",
-  "PollingIntervalMs": 2000,
-  "MiniWindowResources": "web, store, gateway"
-}
+```
+dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
 ```
 
-Four fields. No wizard. Live reload.
+Tray app. One click. Pin the resources you care about. See their URLs. Start/Stop without leaving your IDE.
 
-`dotnet tool install --global ElBruno.AspireMonitor`
+https://github.com/elbruno/ElBruno.AspireMonitor
+
+#dotnet #aspire
+
+---
+
+## Tweet 2: Screenshot + Caption
+
+[Screenshot: mini-window.png]
+
+AspireMonitor mini window—three pinned resources with live URLs, Start/Stop buttons, no browser tab required.
 
 #aspire #dotnet
 
 ---
 
-### One-liner Install
+## Tweet 3: The UX Fixes
 
-⚡ One command to monitor your Aspire AppHost from the Windows tray:
+v1.4 fixed the two bugs that bugged me most:
 
-`dotnet tool install --global ElBruno.AspireMonitor`
+▶️ Start now stays disabled until resources *actually* show up (countdown: ⏳ 12 / 90s)
+⏹️ Stop now... actually stops
 
-Then: `aspiremon`
+Install: https://www.nuget.org/packages/ElBruno.AspireMonitor
 
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet #opensource
-
----
-
-### Architecture
-
-📐 AspireMonitor v1.4 stack:
-
-✅ .NET 10 + WPF
-✅ MVVM, xUnit + Moq
-✅ Polls `aspire describe --format json` (no third-party SDK)
-✅ Distributed as a .NET global tool
-✅ NuGet trusted publishing (OIDC, no long-lived keys)
-
-Open source, MIT.
-
-github.com/elbruno/ElBruno.AspireMonitor
-
-#aspire #dotnet #opensource
+#dotnet #aspire
 
 ---
 
-### Engagement
+## Tweet 4: Install One-Liner
 
-🗳 Aspire devs — what's the most useful thing I could add to AspireMonitor next?
+**[Attach: ./screenshots/tabs-vs-tray.png]**
 
-🔁 Multi-AppHost switcher
-🔔 Toast notifications when pins go down
-🍎 Cross-platform tray (Avalonia)
-📜 Per-resource log viewer
+One command to stop bouncing between Aspire dashboard and code:
 
-Reply or vote 👇 — roadmap follows what you'd actually use.
+```
+dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
+```
+
+That's it.
+
+#aspire #dotnet #devtools
+
+---
+
+## Tweet 5: Real URLs
+
+🔗 Tiny v1.4 quality-of-life win:
+
+Pinned resources now show their actual URLs (`http://localhost:5021`) instead of generic "Open" links.
+
+Now you can tell three pinned web services apart.
+
+Novel concept.
 
 github.com/elbruno/ElBruno.AspireMonitor
 
 #aspire #dotnet
-
----
-
-### Threading Strategy
-
-Suggested order for a launch week:
-- Day 1 — Main Launch
-- Day 2 — Mini Window
-- Day 3 — Start / Stop Fix
-- Day 4 — Real URLs
-- Day 5 — Settings + Install one-liner
-- Week 2 — Architecture, Engagement
-
-> 📸 Add a screenshot to each tweet before posting (mini window + settings dialog get the most engagement).

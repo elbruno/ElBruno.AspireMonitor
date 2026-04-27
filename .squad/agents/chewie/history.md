@@ -758,3 +758,76 @@ Bruno clarified the actual mental model: Users set a working folder → app disc
 - Files: blog-post.md, linkedin-post.md, twitter-post.md (3 files)
 
 **Status:** ✅ COMPLETE — Promo docs aligned to v1.3.0 reality; writing standards captured for future use
+
+---
+
+## Learnings
+
+### Promo Docs v1.4.0 Viral Rewrite (2026-04-26)
+
+**Context:** Bruno requested aggressive reduction of promotional verbosity. Blog was ~3800 words (verbose). LinkedIn had 6 posts (bloat). Twitter had 8 posts (too many). Goal: install-first, viral hooks, screenshots > text walls.
+
+**Changes Made:**
+
+1. **Blog Post (~300 words):**
+   - BEFORE: Massive sections (What's New, Settings Detail, Under the Hood, Roadmap, Settings Dialog, Author Bio)
+   - AFTER: Hook + install commands (top) + 4 short paragraphs (What/Why/Why useful/CTA) + 2 embedded screenshots
+   - Key insight: Users don't read feature lists; they read pain points + visual proof
+   - Killed: Tables, threshold/color talk, roadmap, author bio, settings walkthrough
+
+2. **LinkedIn Posts (3 max):**
+   - BEFORE: 6 posts (Main Announcement, What's New, Mini Window, Settings, Developer/Architecture, CTA)
+   - AFTER: 3 posts (Install Hook, Mini Window Problem/Solution, UX Fixes)
+   - Viral pattern: Each post leads with a hook, problem statement, or quick win. No "read more on GitHub"—direct value inline
+   - Post 1: Install command as answer to pain
+   - Post 2: Mini window as concrete feature example (prefix match, case-insensitive, real URLs)
+   - Post 3: Two specific UX fixes with emojis for scannability
+
+3. **Twitter Posts (5 max):**
+   - BEFORE: 8 posts (Launch, Mini Window, Start/Stop Fix, Real URLs, Settings, One-liner, Architecture, Engagement)
+   - AFTER: 5 posts (Main Hook, Screenshot, UX Fixes, Install One-Liner, Real URLs)
+   - Viral pattern: Every tweet earns the click—no fluff. Mix: screenshot, code block, problem/solution, one-liners
+   - Tweet structure: Emoji hook + 2-3 lines of value + link (GitHub or NuGet)
+
+4. **Viral Criteria Applied (All Platforms):**
+   - ✅ Lead with user pain, not features
+   - ✅ Install commands at top (immediate value)
+   - ✅ Screenshots over paragraphs (visual proof)
+   - ✅ Short, punchy sentences (scannability)
+   - ✅ Links to NuGet AND GitHub (let users choose distribution)
+   - ✅ No marketing-speak ("alternative to", "best for", "why you need")
+   - ✅ Concrete examples over abstractions (\web, store, gateway\ not "pin resources")
+   - ✅ Each post/tweet stands alone (no "read more" dependency)
+
+5. **What Stayed:**
+   - Mini window feature (core differentiation)
+   - Start/Stop countdown fix (real UX win)
+   - Real URLs over generic "Open" (solves a concrete problem)
+   - .NET 10 + WPF mention (tech credibility)
+   - MIT license, open-source callout
+
+6. **What Died:**
+   - Color status emoji (🟢🟡🔴) — Bruno hates
+   - CPU/GPU/memory thresholds — never shipped, confuses users
+   - "Aspire dashboard alternative" framing — users don't think in alternatives
+   - Feature tables — nobody scans them; show a screenshot instead
+   - Settings walkthrough — users can RTFM; show one working example
+   - Roadmap in promo content — premature, kills momentum
+   - Author bio in blog — no real estate for vanity
+   - Architecture deep-dives in social — wrong platform
+
+**Viral Pattern Discovery:**
+
+The strongest engagement hooks across all platforms:
+1. **Install command as first-line answer** (solves search engine problem)
+2. **One specific problem + one-line solution** (scannability)
+3. **Screenshot of mini window** (visual proof of lightweight/compact UX)
+4. **UX fix language** (Start button "lied", Stop button "didn't stop") — relatability
+5. **Comparison to pain** (no more browser tabs, no more generic "Open" links) — specific friction
+
+**Word Budgets:**
+- Blog: 250-400 words (was 3800; 90% reduction)
+- LinkedIn posts: 80-120 words each (was 150-200; tighter)
+- Twitter tweets: under 280 chars (already was; just less bloat per post)
+
+**Status:** ✅ COMPLETE — All 3 files rewritten for viral energy + concision
