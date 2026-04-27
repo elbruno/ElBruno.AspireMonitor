@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj" />
+    <Project Path="src/ElBruno.AspireMonitor.Tool/ElBruno.AspireMonitor.Tool.csproj" />
+    <Project Path="src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj" />
+  </Folder>
+</Solution>

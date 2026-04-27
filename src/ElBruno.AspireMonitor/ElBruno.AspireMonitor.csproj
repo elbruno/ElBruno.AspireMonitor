@@ -9,43 +9,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>ElBruno.AspireMonitor</AssemblyName>
     <RootNamespace>ElBruno.AspireMonitor</RootNamespace>
-    
+
     <!-- Version -->
-    <Version>1.2.0</Version>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
-    <FileVersion>1.2.0.0</FileVersion>
-    
-    <!-- NuGet Package Metadata -->
-    <PackageId>ElBruno.AspireMonitor</PackageId>
-    <Title>ElBruno.AspireMonitor</Title>
-    <Description>Real-time Windows system tray monitor for .NET Aspire distributed applications. Monitor CPU, memory, and health status of your Aspire resources with color-coded indicators and clickable URLs.</Description>
-    <Authors>Bruno Capuano</Authors>
-    <Company>ElBruno</Company>
-    <Product>ElBruno.AspireMonitor</Product>
-    <Copyright>Copyright (c) 2026 Bruno Capuano</Copyright>
-    
-    <!-- Repository & Project URLs -->
-    <RepositoryUrl>https://github.com/elbruno/ElBruno.AspireMonitor</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/elbruno/ElBruno.AspireMonitor</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    
-    <!-- License -->
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    
-    <!-- Tags for discoverability -->
-    <PackageTags>aspire;monitoring;dotnet;system-tray;windows;devtools;aspire-monitor;real-time;wpf</PackageTags>
-    
-    <!-- Release Notes -->
-    <PackageReleaseNotes>https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.2.0</PackageReleaseNotes>
-    
-    <!-- Icon -->
-    <PackageIcon>aspire-monitor-icon-128.png</PackageIcon>
-    
-    <!-- Symbols for debugging -->
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Version>1.3.0</Version>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <FileVersion>1.3.0.0</FileVersion>
+
+    <!-- Not directly packable: WPF apps cannot be .NET tools.
+         Distribution happens via the wrapper project ElBruno.AspireMonitor.Tool. -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
@@ -61,12 +33,6 @@
          Remove them from the SDK's auto-included None items first to avoid duplicates. -->
     <None Remove="Resources\aspire-logo*.png" />
     <Resource Include="Resources\aspire-logo*.png" />
-  </ItemGroup>
-
-  <!-- Package Content -->
-  <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-    <None Include="..\..\images\aspire-monitor-icon-128.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

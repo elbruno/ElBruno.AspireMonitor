@@ -34,34 +34,27 @@ jobs:
           } elseif ("${{ inputs.version }}" -ne "") {
             $v = "${{ inputs.version }}"
           } else {
-            $csproj = Get-Content src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj -Raw
-            if ($csproj -match '<Version>([^<]+)</Version>') { 
-              $v = $Matches[1] 
-            } else { 
-              throw "No version found in csproj" 
-            }
+            [xml]$proj = Get-Content src/ElBruno.AspireMonitor.Tool/ElBruno.AspireMonitor.Tool.csproj
+            $v = $proj.Project.PropertyGroup.Version
           }
-          if ($v -notmatch '^\d+\.\d+\.\d+') { 
-            throw "Invalid version: $v" 
+          if ($v -notmatch '^\d+\.\d+\.\d+') {
+            throw "Invalid version: $v"
           }
           "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "📦 Publishing version: $v"
 
       - name: Restore
-        run: |
-          dotnet restore src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj
-          dotnet restore src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj
+        run: dotnet restore ElBruno.AspireMonitor.slnx
 
       - name: Build
-        run: |
-          dotnet build src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
-          dotnet build src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
+        run: dotnet build ElBruno.AspireMonitor.slnx -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
 
       - name: Unit Tests
         run: dotnet test src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj -c Release --no-build --verbosity normal
 
-      - name: Pack
-        run: dotnet pack src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj -c Release --no-build -p:Version=${{ steps.version.outputs.version }} -o artifacts
+      - name: Pack (publish desktop + pack tool + inject payload)
+        shell: pwsh
+        run: .\build\Pack-Tool.ps1 -Configuration Release -Version ${{ steps.version.outputs.version }}
 
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@v1
@@ -72,9 +65,9 @@ jobs:
       - name: Push to NuGet.org
         shell: pwsh
         run: |
-          Get-ChildItem artifacts/*.nupkg | ForEach-Object {
+          Get-ChildItem artifacts/packages/*.nupkg | ForEach-Object {
             Write-Host "Pushing $($_.Name)"
-            dotnet nuget push $_.FullName --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+            dotnet nuget push $_.FullName --api-key '${{ steps.login.outputs.NUGET_API_KEY }}' --source https://api.nuget.org/v3/index.json --skip-duplicate
             if ($LASTEXITCODE -ne 0) { throw "Push failed for $($_.Name)" }
           }
 
@@ -82,4 +75,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nupkg
-          path: artifacts/*.nupkg
+          path: artifacts/packages/*.nupkg

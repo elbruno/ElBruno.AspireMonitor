@@ -41,12 +41,26 @@ Perfect for developers who want instant visibility into what Aspire deployed, wi
 
 ## ⚡ Quick Start
 
-1. **Download** from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest)
-2. **Run** `ElBruno.AspireMonitor.exe`
+1. **Install** as a .NET global tool: `dotnet tool install --global ElBruno.AspireMonitor`
+2. **Launch** with `aspiremon` from any terminal
 3. **Set working folder** when prompted (point to your Aspire AppHost directory)
 4. **Start monitoring** — Run `aspire run` from that directory; the tray icon will turn green with resources listed
 
-> **Note:** ElBruno.AspireMonitor is a WPF system tray application, not a CLI tool. It is published to NuGet for discoverability and versioning, but is **not** installable via `dotnet tool install`. Download the executable from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest).
+**Install as a .NET Global Tool** (recommended):
+
+```bash
+dotnet tool install --global ElBruno.AspireMonitor
+```
+
+Then launch anytime from any terminal:
+
+```bash
+aspiremon
+```
+
+The tool is Windows-only (the underlying app is WPF). Requires the [.NET 10 Runtime](https://dotnet.microsoft.com/en-us/download).
+
+**Or download the executable** from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest).
 
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
@@ -71,7 +85,12 @@ The tray icon tells you at a glance:
 
 ### First Run
 
-Download the latest release from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest) and run `ElBruno.AspireMonitor.exe`.
+Install the global tool and launch it:
+
+```bash
+dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
+```
 
 On first run, you'll be prompted for your working folder:
 ```
@@ -140,26 +159,31 @@ See [Architecture Guide](./docs/architecture.md) for detailed design decisions a
 
 ## 📦 Installation & Updates
 
-### Download
+### Install
 
-Download the latest release from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest):
+```bash
+dotnet tool install --global ElBruno.AspireMonitor
+```
 
-1. Go to [Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases)
-2. Download `ElBruno.AspireMonitor-v1.0.0.zip`
-3. Extract to a folder (e.g., `C:\Tools\AspireMonitor`)
-4. Run `ElBruno.AspireMonitor.exe`
+Then run `aspiremon` from any terminal.
 
 ### Update
 
-Download the latest version and replace the existing files.
+```bash
+dotnet tool update --global ElBruno.AspireMonitor
+```
 
 ### Uninstall
 
-Simply delete the folder containing the application.
+```bash
+dotnet tool uninstall --global ElBruno.AspireMonitor
+```
 
 ### Verify Version
 
-Right-click `ElBruno.AspireMonitor.exe` → **Properties** → **Details** tab
+```bash
+dotnet tool list --global
+```
 
 ## 🐛 Troubleshooting
 
