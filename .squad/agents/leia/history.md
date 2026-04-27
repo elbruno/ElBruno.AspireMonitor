@@ -795,3 +795,18 @@ upkg/ — NuGet Artifacts:**
 
 **Status:** ✅ COMPLETE — Analysis delivered, decisions surfaced for Bruno
 
+
+## Learnings — v1.5.0 release (2026-04-27)
+
+**Shipped:** v1.5.0 — compact mini-window header (Start/Stop/Close as single-glyph buttons on the header row, removing the dedicated controls row). Version bumped in both ElBruno.AspireMonitor.csproj and ElBruno.AspireMonitor.Tool.csproj (1.4.0 → 1.5.0). Added repo-root CHANGELOG.md (Keep a Changelog format) starting from this release, and docs/releases/RELEASE-v1.5.0.md.
+
+**Quality gates:** Release build clean (0 errors, 7 pre-existing warnings), 278/278 tests passed via dotnet test ElBruno.AspireMonitor.slnx -c Release --no-build. Commit 6bfa53a, tag 1.5.0, both pushed to `origin/main`.
+
+**Release:** https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.5.0
+**Workflow run:** Publish to NuGet (run id 25017292502) auto-triggered by `release: published` and was running within seconds via OIDC trusted publishing — no manual dispatch needed.
+
+**Process notes / conventions for next time:**
+- Always bump **both** csproj files (Tool + WPF app) and update the `PackageReleaseNotes` URL in the Tool csproj — it's baked into the nupkg.
+- `CHANGELOG.md` now exists; prepend new `## [x.y.z] - YYYY-MM-DD` section at the top, then mirror it (verbatim) into `artifacts/release-notes-vX.Y.Z.md` as the `--notes-file` for `gh release create`, then delete that temp file.
+- `RELEASE-vX.Y.Z.md` doc must avoid fabricated metrics (e.g. coverage %, test counts) unless verified — the v1.0.0 template's metrics table is aspirational, not a requirement.
+- Don't forget to `git add` work-in-progress that's actually part of the release. This time Han's MiniMonitorWindow.xaml + history.md were uncommitted in the working tree and would've been lost from the tag had I not staged them explicitly.
