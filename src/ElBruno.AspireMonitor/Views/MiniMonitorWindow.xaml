@@ -31,12 +31,10 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="1"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="1"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header: Logo and Title with Close Button -->
-            <Grid Grid.Row="0" Height="24">
+            <!-- Header: Logo, Title, compact Start/Stop, and Close Button -->
+            <Grid Grid.Row="0" Height="26">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Image Source="pack://application:,,,/Resources/aspire-logo.png"
                            Width="18"
@@ -49,17 +47,59 @@
                                Foreground="#222222"
                                VerticalAlignment="Center"/>
                 </StackPanel>
-                <Button Content="✕"
-                        Width="20"
-                        Height="20"
-                        FontSize="11"
-                        Padding="0"
-                        HorizontalAlignment="Right"
-                        Click="Close_Click"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Foreground="#999999"
-                        Cursor="Hand"/>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+                    <Button Content="▶"
+                            ToolTip="Start Aspire"
+                            Width="24"
+                            Height="22"
+                            FontSize="10"
+                            FontWeight="Bold"
+                            Padding="0"
+                            Margin="0,0,4,0"
+                            Command="{Binding MainViewModel.StartAspireCommand}"
+                            Background="#4CAF50"
+                            Foreground="#FFFFFF"
+                            BorderThickness="0"
+                            Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="3"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                    <Button Content="⏹"
+                            ToolTip="Stop Aspire"
+                            Width="24"
+                            Height="22"
+                            FontSize="10"
+                            FontWeight="Bold"
+                            Padding="0"
+                            Margin="0,0,8,0"
+                            Command="{Binding MainViewModel.StopAspireCommand}"
+                            Background="#F44336"
+                            Foreground="#FFFFFF"
+                            BorderThickness="0"
+                            Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="3"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                    <Button Content="✕"
+                            ToolTip="Close"
+                            Width="20"
+                            Height="20"
+                            FontSize="11"
+                            Padding="0"
+                            Click="Close_Click"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#999999"
+                            Cursor="Hand"/>
+                </StackPanel>
             </Grid>
 
             <!-- Divider -->
@@ -200,44 +240,10 @@
             <!-- Divider -->
             <Border Grid.Row="4"
                     Background="#EEEEEE"
-                    Margin="-14,0,-14,0"/>
-
-            <!-- Control Buttons -->
-            <Grid Grid.Row="5" Height="40" Margin="0,0,0,6">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Button Content="▶ START"
-                            Width="90"
-                            Height="32"
-                            FontSize="11"
-                            FontWeight="Bold"
-                            Command="{Binding MainViewModel.StartAspireCommand}"
-                            Background="#4CAF50"
-                            Foreground="#FFFFFF"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            Padding="0"
-                            Margin="0,0,10,0"/>
-                    <Button Content="⏹ STOP"
-                            Width="90"
-                            Height="32"
-                            FontSize="11"
-                            FontWeight="Bold"
-                            Command="{Binding MainViewModel.StopAspireCommand}"
-                            Background="#F44336"
-                            Foreground="#FFFFFF"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            Padding="0"/>
-                </StackPanel>
-            </Grid>
-
-            <!-- Divider -->
-            <Border Grid.Row="6"
-                    Background="#EEEEEE"
-                    Margin="-14,0,-14,0"/>
+                    Margin="-14,4,-14,4"/>
 
             <!-- Footer: Version and Hint -->
-            <Grid Grid.Row="7" Height="16">
+            <Grid Grid.Row="5" Height="16">
                 <TextBlock Text="{Binding AppVersion, StringFormat='v{0}'}"
                            FontSize="8"
                            Foreground="#BBBBBB"

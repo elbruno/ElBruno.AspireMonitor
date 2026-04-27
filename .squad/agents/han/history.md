@@ -1842,3 +1842,20 @@ public class MiniResourceItem {
 
 **Reference:** .squad/decisions.md → Validation & Quality Decisions
 
+
+
+### Compact Header Action Buttons Pattern (MiniMonitorWindow)
+**Date:** session
+**Context:** User asked to move Start/Stop off their dedicated row onto the header line.
+
+**Pattern:**
+- Group action buttons + close in a right-aligned `StackPanel Orientation="Horizontal"` inside the header Grid.
+- Sizing for header-bar buttons: Width=22-26, Height=20-22, FontSize 10-11, Padding=0, BorderThickness=0, Cursor=Hand.
+- Use single-glyph content (▶ / ⏹ / ✕) with ToolTip for affordance. Color cues remain (green #4CAF50, red #F44336).
+- Header row Height bumped from 24 → 26 to fit 22px buttons comfortably.
+- Removed the dedicated controls row + its surrounding dividers; renumbered RowDefinitions (8 → 6 rows).
+- `Window MouseLeftButtonDown` drag still works because the buttons sit above the drag handler and consume their own clicks.
+
+**Watch-outs:**
+- When deleting rows, count Grid.Row references carefully — easy to leave two children on the same row (overlap).
+- Keep MainViewModel.StartAspireCommand / StopAspireCommand bindings exact; CanExecute logic still gates enabled state.
