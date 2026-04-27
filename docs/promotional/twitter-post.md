@@ -10,7 +10,7 @@ Real-time system tray monitoring—no more dashboard-switching.
 🟡 Yellow: Warning  
 🔴 Red: Critical
 
-Install: `dotnet tool install --global ElBruno.AspireMonitor`
+Install: `Download from GitHub Releases`
 
 GitHub: github.com/elbruno/ElBruno.AspireMonitor
 NuGet: nuget.org/packages/ElBruno.AspireMonitor
@@ -60,7 +60,7 @@ Set custom CPU/memory thresholds, adjust polling interval, monitor remote Aspire
 
 One simple JSON config file. No wizards. No bloat.
 
-Try it: `dotnet tool install --global ElBruno.AspireMonitor`
+Try it: `Download from GitHub Releases`
 
 github.com/elbruno/ElBruno.AspireMonitor
 
@@ -86,9 +86,9 @@ github.com/elbruno/ElBruno.AspireMonitor
 
 One command to get real-time Aspire monitoring in your Windows system tray:
 
-`dotnet tool install --global ElBruno.AspireMonitor`
+`Download from GitHub Releases`
 
-Then run: `aspire-monitor`
+Then run: `ElBruno.AspireMonitor`
 
 Boom. Real-time resource metrics in your taskbar.
 
@@ -152,8 +152,8 @@ github.com/elbruno/ElBruno.AspireMonitor
 
 Start monitoring your Aspire apps in 30 seconds:
 
-1. `dotnet tool install --global ElBruno.AspireMonitor`
-2. `aspire-monitor`
+1. `Download from GitHub Releases`
+2. `ElBruno.AspireMonitor`
 3. Enter Aspire endpoint: `http://localhost:5000`
 4. Watch real-time metrics in system tray 🟢🟡🔴
 

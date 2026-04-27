@@ -13,8 +13,8 @@ Monitoring .NET Aspire microservices shouldn't mean constant dashboard-switching
 
 **Get started:**
 ```bash
-dotnet tool install --global ElBruno.AspireMonitor
-aspire-monitor
+Download from GitHub Releases
+
 ```
 
 Open source (MIT), zero dependencies, built with .NET 10 + WPF.
@@ -36,7 +36,7 @@ Feedback welcome! 🚀
 
 One-liner to install:
 ```bash
-dotnet tool install --global ElBruno.AspireMonitor
+Download from GitHub Releases
 ```
 
 Get real-time CPU/memory monitoring of your Aspire resources in your Windows system tray. No dashboards. No browser tabs. Just one icon that tells you everything.
@@ -72,7 +72,7 @@ Works with:
 - Docker-based Aspire
 - Remote Aspire instances (via URL)
 
-Try it: `dotnet tool install --global ElBruno.AspireMonitor`
+Try it: `Download from GitHub Releases`
 
 GitHub: elbruno/ElBruno.AspireMonitor (MIT, contributions welcome!)
 
@@ -126,8 +126,8 @@ A lightweight, open-source monitoring tool for .NET Aspire distributed applicati
 
 **Try it:**
 ```bash
-dotnet tool install --global ElBruno.AspireMonitor
-aspire-monitor
+Download from GitHub Releases
+
 ```
 
 Built with .NET 10, WPF, and ❤️ for the Aspire community.
@@ -150,8 +150,8 @@ What feature would you like to see next?
 
 Real-time monitoring for your .NET Aspire apps—no more dashboard-switching.
 
-**Install:** `dotnet tool install --global ElBruno.AspireMonitor`
-**Run:** `aspire-monitor`
+**Install:** `Download from GitHub Releases`
+**Run:** `ElBruno.AspireMonitor`
 
 Features:
 - 🟢🟡🔴 Color-coded status indicators

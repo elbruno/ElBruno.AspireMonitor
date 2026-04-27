@@ -69,13 +69,13 @@ Network hiccup? Aspire restarted? AspireMonitor automatically reconnects with ex
 ### Installation
 
 ```bash
-dotnet tool install --global ElBruno.AspireMonitor
+Download from GitHub Releases
 ```
 
 ### Run It
 
 ```bash
-aspire-monitor
+
 ```
 
 That's it. The first time you run it, you'll be prompted for your Aspire endpoint URL (default: `http://localhost:5000`).
@@ -141,8 +141,8 @@ AspireMonitor is on GitHub with MIT license. Want to add features? Contribute. W
 AspireMonitor is production-ready and available on NuGet:
 
 ```bash
-dotnet tool install --global ElBruno.AspireMonitor
-aspire-monitor
+Download from GitHub Releases
+
 ```
 
 Feedback welcome! Found a bug? Have a feature idea? [Open an issue on GitHub](https://github.com/elbruno/ElBruno.AspireMonitor/issues).

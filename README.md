@@ -46,11 +46,7 @@ Perfect for developers who want instant visibility into what Aspire deployed, wi
 3. **Set working folder** when prompted (point to your Aspire AppHost directory)
 4. **Start monitoring** — Run `aspire run` from that directory; the tray icon will turn green with resources listed
 
-**Or install as a .NET Global Tool:**
-```bash
-dotnet tool install --global ElBruno.AspireMonitor
-aspire-monitor
-```
+> **Note:** ElBruno.AspireMonitor is a WPF system tray application, not a CLI tool. It is published to NuGet for discoverability and versioning, but is **not** installable via `dotnet tool install`. Download the executable from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest).
 
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
