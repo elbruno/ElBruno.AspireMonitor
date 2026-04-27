@@ -71,7 +71,7 @@ public class AspireCommandService : IAspireCommandService
             var processInfo = new ProcessStartInfo
             {
                 FileName = "aspire",
-                Arguments = "stop",
+                Arguments = "stop --all --non-interactive",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,

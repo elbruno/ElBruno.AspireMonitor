@@ -77,44 +77,4 @@ public partial class MiniMonitorWindow : Window
         }
     }
 
-    private void StartAspire_Click(object sender, RoutedEventArgs e)
-    {
-        InvokeMainViewModelCommand(vm => vm.StartAspireCommand, "start");
-    }
-
-    private void StopAspire_Click(object sender, RoutedEventArgs e)
-    {
-        InvokeMainViewModelCommand(vm => vm.StopAspireCommand, "stop");
-    }
-
-    private void InvokeMainViewModelCommand(Func<MainViewModel, ICommand?> commandSelector, string commandName)
-    {
-        try
-        {
-            if (DataContext is not MiniMonitorViewModel { MainViewModel: { } mainVm })
-            {
-                System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Cannot invoke aspire {commandName}: MainViewModel unavailable");
-                return;
-            }
-
-            var command = commandSelector(mainVm);
-            if (command is null)
-            {
-                System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Cannot invoke aspire {commandName}: command is null");
-                return;
-            }
-
-            if (!command.CanExecute(null))
-            {
-                System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Aspire {commandName} command CanExecute returned false (already running or busy)");
-                return;
-            }
-
-            command.Execute(null);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[MiniMonitorWindow] Failed to invoke aspire {commandName}: {ex.Message}");
-        }
-    }
 }

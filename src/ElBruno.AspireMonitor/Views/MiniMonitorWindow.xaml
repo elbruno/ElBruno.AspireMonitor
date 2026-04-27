@@ -210,26 +210,24 @@
                             Height="32"
                             FontSize="11"
                             FontWeight="Bold"
-                            Click="StartAspire_Click"
+                            Command="{Binding MainViewModel.StartAspireCommand}"
                             Background="#4CAF50"
                             Foreground="#FFFFFF"
                             BorderThickness="0"
                             Cursor="Hand"
                             Padding="0"
-                            Margin="0,0,10,0"
-                            IsEnabled="{Binding CanStartAspire}"/>
+                            Margin="0,0,10,0"/>
                     <Button Content="⏹ STOP"
                             Width="90"
                             Height="32"
                             FontSize="11"
                             FontWeight="Bold"
-                            Click="StopAspire_Click"
+                            Command="{Binding MainViewModel.StopAspireCommand}"
                             Background="#F44336"
                             Foreground="#FFFFFF"
                             BorderThickness="0"
                             Cursor="Hand"
-                            Padding="0"
-                            IsEnabled="{Binding CanStopAspire}"/>
+                            Padding="0"/>
                 </StackPanel>
             </Grid>
 
