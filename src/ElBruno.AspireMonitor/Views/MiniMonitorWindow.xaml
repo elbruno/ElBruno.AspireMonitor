@@ -180,7 +180,7 @@
                             <!-- Show fallback text if no URL -->
                             <TextBlock Text="{Binding FallbackText}" FontSize="10" 
                                        FontStyle="Italic" VerticalAlignment="Center"
-                                       Visibility="{Binding HasUrl, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                       Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="#999999"/>
