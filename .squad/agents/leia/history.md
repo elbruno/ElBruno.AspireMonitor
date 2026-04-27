@@ -73,6 +73,18 @@
    - Uses global tool packaging with FrameworkDependentExecutable
    - README structure: badges, features, quick start, config link, author bio
 
+3. **NuGet OIDC Trusted Publishing (2026-04-27):**
+   - **Pattern:** Use `NuGet/login@v1` action to exchange GitHub OIDC id-token for temporary NuGet API key
+   - **Required Job Config:**
+     - `environment: release` (enforces trusted publishing scope on NuGet.org)
+     - `permissions: id-token: write, contents: read`
+   - **Secret:** `NUGET_USER` = NuGet.org username (NOT an API key — just identifies the trusted publishing config)
+   - **One-Time NuGet.org Setup:** Configure trusted publishing for repo owner, repo name, workflow file (publish-nuget.yml), environment (release)
+   - **WPF-Specific:** Must use `windows-latest` runner (WPF requires Windows, cannot build on ubuntu)
+   - **Version Extraction:** Support release tags (`v1.2.0` → `1.2.0`), workflow_dispatch input, or csproj `<Version>` fallback
+   - **Automated Steps:** restore → build (with version) → test → pack → OIDC login → push to NuGet → upload artifact
+   - **Manual Bruno Setup Required:** Create `NUGET_USER` secret, configure trusted publishing on NuGet.org (one-time per repo)
+
 3. **Team Workflow:**
    - Decisions stored in .squad/decisions.md
    - Agents write to personal inbox files, Scribe merges
