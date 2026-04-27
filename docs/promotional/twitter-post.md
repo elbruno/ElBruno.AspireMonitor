@@ -2,13 +2,13 @@
 
 ### Main Launch (280 chars) 🚀
 
-🚀 Just shipped: AspireMonitor for .NET Aspire!
+🚀 Just shipped: AspireMonitor for Aspire!
 
-Real-time system tray monitoring—no more dashboard-switching.
+Live system tray monitoring—no more dashboard-switching.
 
-🟢 Green: Healthy
-🟡 Yellow: Warning  
-🔴 Red: Critical
+🟢 Green: Running
+🟡 Yellow: Partial
+🔴 Red: Stopped
 
 Install: `dotnet tool install --global ElBruno.AspireMonitor`
 Launch: `aspiremon`
@@ -22,9 +22,9 @@ NuGet: nuget.org/packages/ElBruno.AspireMonitor
 
 ### Feature Highlight #1: Real-Time Updates (280 chars)
 
-⚡ AspireMonitor: Real-time Aspire monitoring in your system tray
+⚡ AspireMonitor: Live Aspire monitoring in your system tray
 
-• Polls every 2 seconds (configurable)
+• Checks resources live
 • Color-coded status: 🟢🟡🔴
 • Clickable resource URLs
 • Auto-reconnect on failures
@@ -41,11 +41,11 @@ nuget.org/packages/ElBruno.AspireMonitor
 
 🎨 AspireMonitor status colors:
 
-🟢 All resources < 70% = Healthy
-🟡 Any resource 70-90% = Warning
-🔴 Any resource > 90% = Critical
+🟢 All resources running = Healthy
+🟡 Some unavailable = Warning
+🔴 None running = Stopped
 
-Know your app's health at a glance. No browser tab required.
+Know your app's status at a glance. No browser tab required.
 
 Get it: github.com/elbruno/ElBruno.AspireMonitor
 
@@ -57,7 +57,7 @@ Get it: github.com/elbruno/ElBruno.AspireMonitor
 
 ⚙️ AspireMonitor: Fully configurable
 
-Set custom CPU/memory thresholds, adjust polling interval, monitor remote Aspire instances.
+Pin the resources you care about, set working folder, filter by resource prefix.
 
 One simple JSON config file. No wizards. No bloat.
 
@@ -72,7 +72,7 @@ github.com/elbruno/ElBruno.AspireMonitor
 
 ### Developer-Focused (280 chars)
 
-Built AspireMonitor for .NET devs monitoring Aspire distributed apps locally.
+Built AspireMonitor for Aspire developers monitoring distributed apps locally.
 
 MVVM architecture. Async/await. xUnit tests. OIDC publishing to NuGet.
 
@@ -86,13 +86,13 @@ github.com/elbruno/ElBruno.AspireMonitor
 
 ### Quick Install (280 chars)
 
-One command to get real-time Aspire monitoring in your Windows system tray:
+One command to get live Aspire monitoring in your Windows system tray:
 
 `dotnet tool install --global ElBruno.AspireMonitor`
 
 Then launch: `aspiremon`
 
-Boom. Real-time resource metrics in your taskbar.
+Boom. Live resource status in your taskbar.
 
 github.com/elbruno/ElBruno.AspireMonitor
 
@@ -106,7 +106,7 @@ Problem: Aspire dashboards are great but require browser tabs.
 
 Solution: AspireMonitor—system tray app with 🟢🟡🔴 status indicators.
 
-Know your app's health without leaving your code editor.
+Know your app's status without leaving your code editor.
 
 Get it: nuget.org/packages/ElBruno.AspireMonitor
 
@@ -118,7 +118,7 @@ Get it: nuget.org/packages/ElBruno.AspireMonitor
 
 🚀 AspireMonitor v1.0 is live!
 
-Monitoring .NET Aspire resources in your system tray.
+Monitoring Aspire resources in your system tray.
 
 Try it, give feedback, contribute!
 
@@ -136,9 +136,9 @@ What feature would you like to see next?
 
 ✅ .NET 10 WPF
 ✅ MVVM architecture
-✅ Async HTTP polling
+✅ Async polling with CLI
 ✅ Exponential backoff retry
-✅ Color-coded status calculation
+✅ Resource status evaluation
 ✅ System tray integration
 ✅ JSON configuration
 
@@ -157,7 +157,7 @@ Start monitoring your Aspire apps in 30 seconds:
 1. `dotnet tool install --global ElBruno.AspireMonitor`
 2. `aspiremon`
 3. Set working folder (path to your Aspire AppHost project)
-4. Watch real-time metrics in system tray 🟢🟡🔴
+4. Watch live status in system tray 🟢🟡🔴
 
 Full docs: github.com/elbruno/ElBruno.AspireMonitor
 
@@ -167,7 +167,7 @@ Full docs: github.com/elbruno/ElBruno.AspireMonitor
 
 ### Engagement Variant (280 chars)
 
-🎯 AspireMonitor question for .NET devs:
+🎯 AspireMonitor question for Aspire devs:
 
 When monitoring microservices, do you prefer:
 
@@ -190,7 +190,7 @@ github.com/elbruno/ElBruno.AspireMonitor
 • No external dependencies  
 • Minimal memory footprint
 • Native Windows WPF
-• Fast startup, instant updates
+• Fast startup, live updates
 
 Just you, your Aspire apps, and one small icon.
 

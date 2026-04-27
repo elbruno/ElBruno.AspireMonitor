@@ -1,15 +1,15 @@
 ## LinkedIn Post: Main Announcement
 
-💻 **Just shipped: AspireMonitor — real-time visibility into your Aspire distributed apps**
+💻 **Just shipped: AspireMonitor — live visibility into your Aspire distributed apps**
 
-Monitoring .NET Aspire microservices shouldn't mean constant dashboard-switching. I built AspireMonitor—a lightweight Windows system tray app that puts real-time resource metrics directly in your taskbar.
+Monitoring Aspire microservices shouldn't mean constant dashboard-switching. I built AspireMonitor—a lightweight Windows system tray app that puts your running resources directly in your taskbar.
 
 **Key features:**
 - 🟢 🟡 🔴 Color-coded health status (at a glance)
-- ⚡ Real-time polling every 2 seconds (configurable)
+- 📌 Pin the resources you care about in a mini window
 - 🔗 Clickable URLs for instant resource access
-- ⚙️ Configurable CPU/memory thresholds
 - 🪟 Minimal, native Windows integration
+- ⚠️ Pinned resource validation—shows warnings when a configured resource is missing
 
 **Get started:**
 ```bash
@@ -19,7 +19,7 @@ aspiremon
 
 Open source (MIT), zero dependencies, built with .NET 10 + WPF.
 
-Perfect for local development, performance testing, and debugging resource-heavy workloads.
+Perfect for local development, debugging, and quick status checks.
 
 **GitHub:** github.com/elbruno/ElBruno.AspireMonitor
 **NuGet:** nuget.org/packages/ElBruno.AspireMonitor
@@ -32,7 +32,7 @@ Feedback welcome! 🚀
 
 ## LinkedIn Post: Installation Variant
 
-⚡ **New tool: AspireMonitor for .NET Aspire**
+⚡ **New tool: AspireMonitor for Aspire**
 
 One-liner to install:
 ```bash
@@ -41,11 +41,11 @@ dotnet tool install --global ElBruno.AspireMonitor
 
 Then launch with: `aspiremon`
 
-Get real-time CPU/memory monitoring of your Aspire resources in your Windows system tray. No dashboards. No browser tabs. Just one icon that tells you everything.
+Get live status of your Aspire resources in your Windows system tray. No dashboards. No browser tabs. Just one icon that tells you everything.
 
 🟢 = healthy
-🟡 = warning
-🔴 = critical
+🟡 = partial
+🔴 = stopped
 
 Built for developers who want to focus on code, not monitoring dashboards.
 
@@ -57,16 +57,16 @@ MIT licensed, open source, GitHub: elbruno/ElBruno.AspireMonitor
 
 ## LinkedIn Post: Features Highlight
 
-🎯 **AspireMonitor: Real-time Aspire monitoring for Windows**
+🎯 **AspireMonitor: Live Aspire monitoring for Windows**
 
-Tired of switching tabs to check if your microservices are eating CPU? Here's what I built:
+Tired of switching tabs to check if your microservices are running? Here's what I built:
 
 ✅ System tray integration — Always visible, never intrusive
 ✅ Color-coded status — Green/Yellow/Red at a glance
-✅ Real-time polling — Updates every 2 seconds
+✅ Pinned resources — Focus on the resources that matter to you
 ✅ Clickable URLs — Open resources directly from the app
-✅ Configurable thresholds — Set alerts that match your infrastructure
-✅ Auto-reconnect — Handles network hiccups gracefully
+✅ Resource validation — Warnings when a pinned resource is missing
+✅ Auto-reconnect — Handles connection issues gracefully
 ✅ Zero dependencies — Lightweight, fast, native Windows
 
 Works with:
@@ -85,16 +85,16 @@ GitHub: elbruno/ElBruno.AspireMonitor (MIT, contributions welcome!)
 
 ## LinkedIn Post: Developer-Focused
 
-🔧 **Built a monitoring tool for .NET Aspire developers**
+🔧 **Built a monitoring tool for Aspire developers**
 
 Problem: Aspire dashboards are awesome, but keeping them visible while you code is friction.
 
-Solution: AspireMonitor—a system tray app that shows real-time resource status without leaving your editor.
+Solution: AspireMonitor—a system tray app that shows live resource status without leaving your editor.
 
 **Architecture:**
-- Polling service with configurable intervals
+- Polling service calling `aspire describe --format json`
 - MVVM-clean code for testability
-- HTTP API integration (no CLI parsing)
+- Pinned resource filtering and validation
 - Exponential backoff on connection failures
 - WPF for native Windows experience
 
@@ -113,18 +113,17 @@ Solution: AspireMonitor—a system tray app that shows real-time resource status
 
 📢 **Launching AspireMonitor v1.0 today!**
 
-A lightweight, open-source monitoring tool for .NET Aspire distributed applications.
+A lightweight, open-source monitoring tool for Aspire distributed applications.
 
 **What it does:**
-- Monitors CPU, memory, and health of Aspire resources
-- Shows status in Windows system tray (🟢/🟡/🔴)
-- Real-time updates every 2 seconds
-- Clickable resource URLs for quick access
-- Configurable alerting thresholds
+- Shows status of all Aspire resources in Windows system tray (🟢/🟡/🔴)
+- Pin the resources you care about for quick access
+- Clickable resource URLs for instant open
+- Validates pinned resources (warns if a configured resource is missing)
 
 **Perfect for:**
 - Local microservices development
-- Performance testing & debugging
+- Debugging and quick status checks
 - Keeping developers informed without context-switching
 
 **Try it:**
@@ -151,16 +150,16 @@ What feature would you like to see next?
 
 🚀 **AspireMonitor is live!**
 
-Real-time monitoring for your .NET Aspire apps—no more dashboard-switching.
+Live monitoring for your Aspire apps—no more dashboard-switching.
 
 **Install:** `dotnet tool install --global ElBruno.AspireMonitor`
 **Run:** `aspiremon`
 
 Features:
 - 🟢🟡🔴 Color-coded status indicators
-- ⚡ Real-time updates (2s interval, configurable)
+- 📌 Pin resources you care about
 - 🔗 Clickable resource URLs
-- ⚙️ Threshold customization
+- ⚠️ Pinned resource validation
 - 🪟 Native Windows system tray
 
 **Give it a try and let me know what you think!**

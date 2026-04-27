@@ -652,3 +652,109 @@ Bruno clarified the actual mental model: Users set a working folder → app disc
 **Status:** ✅ COMPLETE — All promo docs updated for v1.3.0 .NET tool release
 
 
+---
+
+### 2026-04-29 — Promo Content Audit & Reality Alignment
+
+**Context:** Bruno flagged that promo docs (blog-post.md, linkedin-post.md, twitter-post.md) describe a product that no longer exists. The issue: docs claim AspireMonitor measures CPU/GPU/memory/resource utilization and supports remote Aspire instances—neither true in v1.3.0.
+
+**Source of Truth (v1.3.0 Actual Behavior):**
+- **Distribution:** .NET global tool (`dotnet tool install --global ElBruno.AspireMonitor`)
+- **Platform:** Windows-only WPF app, .NET 10, system tray
+- **Data source:** Calls `aspire describe --format json` via Aspire CLI (not HTTP API, not remote)
+- **What it measures:** Resource status (running/partial/stopped) — NOT resource utilization
+- **What it shows:** System tray icon (🟢/🟡/🔴), resource list, mini window with pinned resources
+- **Settings:** `workingFolder` (path to AppHost) + `MiniWindowResources` (prefix filter) — no thresholds, no polling interval UI
+- **Key recent feature (v1.3.0):** Pinned-resource validation (warns if configured pin doesn't match live resource)
+
+**Critical Bruno Directives:**
+1. **"the new name is just Aspire"** — never write ".NET Aspire" in promo docs (Microsoft renamed it)
+2. **"They talk about CPU and GPU and we don't do that"** — strip ALL CPU/GPU/memory/RAM/threshold/metric language (removed in commit de9564f)
+3. **"and more"** — thorough audit; anything not matching v1.3.0 reality gets fixed
+
+**Work Completed:**
+
+1. ✅ **docs/promotional/blog-post.md** (8 edits)
+   - Line 10: "Aspire" (removed ".NET Aspire")
+   - Lines 12-13: "live Aspire resource status" (removed "real-time metrics", "CPU, memory")
+   - Lines 14-15: "running / down detection" (removed CPU/memory % thresholds)
+   - Line 27: "Live Status Updates" (removed "polls every 2 seconds configurable"; polling is internal, not user-facing)
+   - Lines 31-32: Rewrote color meanings (running/partial/stopped; removed 70%/90% thresholds)
+   - Lines 44-53: **Replaced "Configurable Thresholds" with "Pin Your Resources"** (removed cpuThresholdWarning/cpuThresholdCritical JSON; added pinned resource filtering)
+   - Lines 100-108: **Updated "How It Works" architecture** (AspireCliClient instead of AspireApiClient; removed StatusCalculator; added ResourceStatusEvaluator; removed "HTTP API")
+   - Lines 133-138: **Updated "What's Next"** (removed "Advanced Metrics", "threshold-based alerts", "metrics trends"; reframed as "Custom Views")
+
+2. ✅ **docs/promotional/linkedin-post.md** (6 variants updated)
+   - Main Announcement: "live visibility" (not "real-time metrics"), removed "Configurable CPU/memory thresholds", added "⚠️ Pinned resource validation"
+   - Installation Variant: "live status" (not "CPU/memory monitoring"), color meanings (healthy/partial/stopped not warning/critical)
+   - Features Highlight: Removed "Real-time polling", "Configurable thresholds"; added "Pinned resources", "Resource validation"
+   - Developer-Focused: "Polling service calling `aspire describe`" (not "HTTP API integration")
+   - Launch Week: "Shows status of Aspire resources" (not "Monitors CPU, memory, and health")
+   - Call-to-Action: Removed "threshold customization", added "Pinned resource validation"
+
+3. ✅ **docs/promotional/twitter-post.md** (12 variants updated)
+   - Main Launch: "Live system tray monitoring" (not "Real-time"), color meanings (running/partial/stopped)
+   - Feature #1: "Checks resources live" (not "Polls every 2 seconds"), removed "configurable"
+   - Feature #2: Status meanings "All resources running/Some unavailable/None running" (not 70%/90% thresholds)
+   - Feature #3: "Pin resources, set working folder, filter by prefix" (not "Set custom CPU/memory thresholds, monitor remote instances")
+   - Developer-Focused: "Async polling with CLI" (not "Async HTTP polling")
+   - Quick Install: "Live resource status" (not "real-time resource metrics")
+   - Problem/Solution: "status indicators" (not "health")
+   - Community CTA: "Monitoring Aspire resources" (not ".NET Aspire resources")
+   - Technical Deep-Dive: "Resource status evaluation" (not "Color-coded status calculation")
+   - Tutorial: "Watch live status" (not "real-time metrics")
+   - Engagement: Same format, refined messaging
+   - Performance Angle: "Lightweight Aspire monitoring" (not "real-time")
+
+**Three Critical Decision Rules Captured for Future:**
+
+**Writing Standard 1: Product Naming**
+- ✅ Rule: Never write ".NET Aspire"
+- ✅ Correct form: "Aspire" only
+- ✅ Reason: Microsoft renamed the product; ".NET Aspire" is outdated
+
+**Writing Standard 2: Monitoring Scope**
+- ✅ Rule: Never claim AspireMonitor measures resource utilization (CPU, GPU, memory, RAM, metrics)
+- ✅ What it DOES measure: Resource status (running/partial/stopped)
+- ✅ Removed language: "CPU/memory monitoring", "utilization metrics", "threshold-based alerts", "70-90% thresholds", "metric consumption", "performance monitoring", "trends"
+- ✅ Correct language: "live resource status", "health indicators", "service visibility", "pinned resource validation"
+- ✅ Reason: StatusCalculator and threshold logic removed in commit de9564f; claiming these features damages product trust
+
+**Writing Standard 3: Architecture Accuracy**
+- ✅ Current: AspireCliClient (calls `aspire describe --format json`)
+- ✅ NOT: AspireApiClient (was HTTP-based, now CLI-based)
+- ✅ Removed component: StatusCalculator (threshold evaluation)
+- ✅ Added component: ResourceStatusEvaluator (actual status determination)
+- ✅ Scope: Local monitoring only (not remote; working folder is local directory)
+
+**Decision Document:**
+- ✅ Created `.squad/decisions/inbox/chewie-promo-naming-and-scope.md`
+  - Captures Standard 1 (Product Naming: ".NET Aspire" → "Aspire")
+  - Captures Standard 2 (Monitoring Scope: Resource utilization → Resource status)
+  - Captures Standard 3 (Architecture: CLI-based, no thresholds, local only)
+  - Applies to ALL future promotional and documentation content
+  - Includes removal language reference, correct language patterns, rationale, and future applicability checklist
+
+**Cross-Document Impact Assessment:**
+- QUICKSTART.md: Likely still references old config (aspireEndpoint); should verify
+- Configuration.md: Likely still mentions thresholds; should audit
+- Troubleshooting.md: Likely still references CPU/memory issues; should audit
+- README.md: Already verified correct in prior session (no changes needed)
+
+**Quality Checklist:**
+- ✅ All ".NET Aspire" replaced with "Aspire" (3 files, 20+ occurrences)
+- ✅ All CPU/GPU/memory/threshold language removed (3 files, 30+ removals)
+- ✅ All "Configurable Thresholds" section replaced with "Pin Your Resources" (blog-post.md)
+- ✅ "StatusCalculator" removed from architecture description; "ResourceStatusEvaluator" added
+- ✅ "Remote Aspire instances" mention removed (Feature #3, twitter-post.md line 60)
+- ✅ Color meanings corrected: running/partial/stopped (not <%70%/70-90%/>90%)
+- ✅ "What's Next?" reframed: removed "Advanced Metrics", kept realistic roadmap
+- ✅ All install/launch commands verified correct
+- ✅ Decision file captures writing standards for team
+
+**Commit:**
+- Message: `docs(promo): rewrite for v1.3.0 reality (drop CPU/GPU, ".NET Aspire" → "Aspire")`
+- Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+- Files: blog-post.md, linkedin-post.md, twitter-post.md (3 files)
+
+**Status:** ✅ COMPLETE — Promo docs aligned to v1.3.0 reality; writing standards captured for future use

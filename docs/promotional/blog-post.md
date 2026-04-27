@@ -8,50 +8,46 @@
 
 ## Headline
 
-For developers building distributed applications with .NET Aspire, monitoring resource health is critical—but checking dashboards constantly breaks focus. **AspireMonitor** puts real-time Aspire metrics directly in your Windows system tray, giving you instant visibility into CPU, memory, and status of all your Aspire resources without leaving your code editor.
+For developers building distributed applications with Aspire, staying aware of your services is critical—but checking dashboards constantly breaks focus. **AspireMonitor** puts live Aspire resource status directly in your Windows system tray, giving you instant visibility into what's running without leaving your code editor.
 
 ---
 
 ## Why This Matters
 
-.NET Aspire has revolutionized distributed application development by giving developers a unified, intuitive way to orchestrate microservices, databases, and caches locally. But Aspire's excellent dashboard lives in a browser tab—one more thing to context-switch to when you need to check if your API is eating memory or your database is saturated.
+Aspire has revolutionized distributed application development by giving developers a unified, intuitive way to orchestrate microservices, databases, and caches locally. But Aspire's excellent dashboard lives in a browser tab—one more thing to context-switch to when you need to check service status or reachability.
 
-**AspireMonitor solves this problem.** A lightweight Windows system tray icon gives you real-time status at a glance:
-- 🟢 **Green**: All resources healthy (<70% CPU/memory)
-- 🟡 **Yellow**: Warning zone (70-90% utilization)
-- 🔴 **Red**: Critical (>90% or connection error)
+**AspireMonitor solves this problem.** A lightweight Windows system tray icon gives you live status at a glance:
+- 🟢 **Green**: All resources running
+- 🟡 **Yellow**: Some resources unavailable or partial
+- 🔴 **Red**: No resources running
 
 ---
 
 ## Key Features
 
-### ⚡ Real-Time Monitoring
+### ⚡ Live Status Updates
 
-AspireMonitor polls your Aspire dashboard every 2 seconds (configurable) and updates instantly. No manual refreshes. No lag. Just live data.
+AspireMonitor checks your running Aspire resources and updates instantly. No manual refreshes. No lag. Just live data.
 
 ### 🚦 Color-Coded Status
 
-At a glance, know if your infrastructure is healthy:
-- Green icon? All systems nominal.
-- Yellow icon? Time to check what's consuming resources.
-- Red icon? Something needs immediate attention.
+At a glance, know if your Aspire infrastructure is running:
+- Green icon? All resources running.
+- Yellow icon? Some resources down or unreachable.
+- Red icon? No resources running.
 
 ### 🔗 Clickable URLs
 
 Right-click any resource in the expanded view and open it directly—no copy/paste, no hunting through logs.
 
-### ⚙️ Configurable Thresholds
+### 📌 Pin Your Resources
 
-Default thresholds work for most, but your app is unique. Set CPU/memory warning and critical points in one simple JSON file:
+Focus on the resources that matter. Configure a comma-separated list of resources to pin in your mini window, and AspireMonitor highlights just those with live status and clickable URLs:
 
 ```json
 {
   "workingFolder": "C:\\Projects\\MyAspireApp",
-  "pollingIntervalMs": 2000,
-  "cpuThresholdWarning": 70,
-  "cpuThresholdCritical": 90,
-  "memoryThresholdWarning": 70,
-  "memoryThresholdCritical": 90
+  "MiniWindowResources": "api,frontend,db"
 }
 ```
 
@@ -83,17 +79,16 @@ That's it. The first time you run it, you'll be prompted for your working folder
 
 ### Configure (Optional)
 
-Edit `%APPDATA%\Local\ElBruno\AspireMonitor\config.json` to adjust polling interval or thresholds. Restart the app and you're done.
+Edit `%APPDATA%\Local\ElBruno\AspireMonitor\config.json` to set your working folder and pin resources. Restart the app and you're done.
 
 ---
 
 ## Perfect For
 
-- **Local Development**: Keep tabs on your microservices while coding
-- **Performance Testing**: Watch resource consumption in real-time during load tests
-- **Debugging**: Quickly spot which resource is misbehaving
-- **Teaching**: Show students what happens to resource usage under load
-- **Integration Testing**: Run tests while monitoring system health
+- **Local Development**: Keep tabs on your microservices without leaving your editor
+- **Debugging**: Quickly check which resources are running or down
+- **Teaching**: Show students your Aspire setup at a glance
+- **Quick Checks**: Verify all services are up before running tests or committing code
 
 ---
 
@@ -101,11 +96,11 @@ Edit `%APPDATA%\Local\ElBruno\AspireMonitor\config.json` to adjust polling inter
 
 AspireMonitor uses a simple, elegant architecture:
 
-1. **AspireApiClient** — Talks to Aspire's HTTP API
-2. **AspirePollingService** — Runs background thread at configurable interval
-3. **StatusCalculator** — Evaluates CPU/memory against thresholds
+1. **AspireCliClient** — Calls `aspire describe --format json` against your Aspire AppHost
+2. **PollingService** — Runs background checks at configurable interval
+3. **ResourceStatusEvaluator** — Determines resource health (running/partial/stopped)
 4. **MainViewModel** — MVVM binding to WPF
-5. **WPF UI** — Lightweight notification window + system tray
+5. **WPF UI** — Lightweight notification window + system tray + mini window with pinned resources
 
 No external dependencies. No bloat. Just you, your Aspire apps, and one small green icon. Or yellow. Or red.
 
@@ -133,9 +128,9 @@ AspireMonitor is on GitHub with MIT license. Want to add features? Contribute. W
 v1.3.0 ships as a .NET global tool, making installation and updates seamless via `dotnet tool` commands. Future roadmap includes:
 
 - **Multi-Instance**: Monitor multiple Aspire apps simultaneously
-- **Advanced Metrics**: Historical trends and threshold-based alerts
-- **Cross-Platform**: macOS and Linux support
-- **Web Dashboard**: Companion web UI for more detailed analysis
+- **Cross-Platform**: macOS and Linux support (WPF → WinUI/Avalonia)
+- **Web Companion**: Companion dashboard for remote monitoring
+- **Custom Views**: More flexible resource filtering and grouping
 
 ---
 
