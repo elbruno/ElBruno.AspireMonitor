@@ -172,11 +172,35 @@ public class AspireCliService
 
             if (element.TryGetProperty("type", out var typeEl))
                 resource.Type = typeEl.GetString();
+            else if (element.TryGetProperty("resourceType", out var resourceTypeEl))
+                resource.Type = resourceTypeEl.GetString();
 
             if (element.TryGetProperty("state", out var stateEl))
             {
                 var state = stateEl.GetString();
                 resource.Status = ParseResourceStatus(state);
+            }
+
+            // Aspire emits "urls": [ { "name": "...", "url": "http://..." } ].
+            // Older/alternative shape used "endpoints" (string[] or [{url:...}]).
+            // Accept both so the monitor works across CLI versions.
+            if (element.TryGetProperty("urls", out var urlsEl) && urlsEl.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var entry in urlsEl.EnumerateArray())
+                {
+                    if (entry.ValueKind == JsonValueKind.String)
+                    {
+                        var url = entry.GetString();
+                        if (!string.IsNullOrWhiteSpace(url))
+                            resource.Endpoints.Add(url);
+                    }
+                    else if (entry.ValueKind == JsonValueKind.Object && entry.TryGetProperty("url", out var urlEl))
+                    {
+                        var url = urlEl.GetString();
+                        if (!string.IsNullOrWhiteSpace(url))
+                            resource.Endpoints.Add(url);
+                    }
+                }
             }
 
             if (element.TryGetProperty("endpoints", out var endpointsEl) && endpointsEl.ValueKind == JsonValueKind.Array)
