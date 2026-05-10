@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-05-10
+
+### Added
+- Mini monitor pinned-resource telemetry for CPU, memory, disk, resource type, endpoints, environment, and status without showing a fake GPU metric.
+- Settings toggle to show or hide mini monitor telemetry, enabled by default.
+
+### Changed
+- Corrected Aspire CLI parsing and start-command documentation for current Aspire behavior.
+- Hardened Start button coverage with a test lock to prevent regressions.
+- Improved backend telemetry parsing resilience for resource details and metric payloads.
+
 ## [1.6.0] - 2026-05-10
 
 ### Added
@@ -27,5 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Notes
 - No public API or NuGet packaging changes. The global tool (`aspiremon`) is published from the same `ElBruno.AspireMonitor.Tool` package, now versioned 1.5.0.
 
+[1.7.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.7.0
 [1.6.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.6.0
 [1.5.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.5.0
