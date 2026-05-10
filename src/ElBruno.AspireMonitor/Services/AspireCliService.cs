@@ -17,7 +17,7 @@ public class AspireCliService
     /// </summary>
     public string? WorkingDirectory { get; set; }
 
-    public async Task<string> ExecuteCommandAsync(string command, string arguments = "", CancellationToken cancellationToken = default)
+    public virtual async Task<string> ExecuteCommandAsync(string command, string arguments = "", CancellationToken cancellationToken = default)
     {
         try
         {
@@ -94,7 +94,7 @@ public class AspireCliService
         }
     }
 
-    public async Task<JsonDocument?> ExecuteJsonAsync(string command, string arguments = "", CancellationToken cancellationToken = default)
+    public virtual async Task<JsonDocument?> ExecuteJsonAsync(string command, string arguments = "", CancellationToken cancellationToken = default)
     {
         var output = await ExecuteCommandAsync(command, arguments, cancellationToken);
         
@@ -113,7 +113,7 @@ public class AspireCliService
         }
     }
 
-    public async Task<ResourceCollection> ParseResourcesFromDescribeJsonAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<ResourceCollection> ParseResourcesFromDescribeJsonAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -271,7 +271,7 @@ public class AspireCliService
         };
     }
 
-    public async IAsyncEnumerable<string> GetLiveLogsAsync(string resourceName, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<string> GetLiveLogsAsync(string resourceName, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var startInfo = new ProcessStartInfo
         {

@@ -52,6 +52,10 @@ jobs:
       - name: Unit Tests
         run: dotnet test src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj -c Release --no-build --verbosity normal
 
+      - name: Services/Models Coverage Gate
+        shell: pwsh
+        run: .\build\Test-CoverageGate.ps1 -Configuration Release -Threshold 80 -NoBuild
+
       - name: SampleHarness Tests
         run: dotnet test src/SampleHarness/SampleHarness.Tests/SampleHarness.Tests.csproj -c Release --verbosity normal
 
