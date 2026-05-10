@@ -810,3 +810,50 @@ upkg/ — NuGet Artifacts:**
 - `CHANGELOG.md` now exists; prepend new `## [x.y.z] - YYYY-MM-DD` section at the top, then mirror it (verbatim) into `artifacts/release-notes-vX.Y.Z.md` as the `--notes-file` for `gh release create`, then delete that temp file.
 - `RELEASE-vX.Y.Z.md` doc must avoid fabricated metrics (e.g. coverage %, test counts) unless verified — the v1.0.0 template's metrics table is aspirational, not a requirement.
 - Don't forget to `git add` work-in-progress that's actually part of the release. This time Han's MiniMonitorWindow.xaml + history.md were uncommitted in the working tree and would've been lost from the tag had I not staged them explicitly.
+
+---
+
+### 2026-05-10 — v1.6.0 Release Preparation (Session 11)
+
+**Context:**
+- Leia checked release path and recommended v1.6.0
+- Yoda validated release tests: ElBruno.AspireMonitor.Tests 283/283 ✅ + SampleHarness.Tests 12/12 ✅
+- PR #1 merged to main (fc1a86b)
+- Version metadata updated to 1.6.0 across both csproj files
+- CHANGELOG.md and docs/releases/RELEASE-v1.6.0.md created
+- .github/workflows/publish.yml updated to include SampleHarness.Tests in publish workflow
+- Release validation and Pack-Tool.ps1 -Version 1.6.0 passed locally
+- Package artifact: artifacts/packages/ElBruno.AspireMonitor.1.6.0.nupkg created
+
+**Release Validation:**
+1. ✅ Version 1.6.0 set in both ElBruno.AspireMonitor.csproj and ElBruno.AspireMonitor.Tool.csproj
+2. ✅ All 295 tests pass (283 + 12 SampleHarness)
+3. ✅ Build succeeds in Release configuration (0 errors)
+4. ✅ Documentation complete (CHANGELOG.md + release notes)
+5. ✅ publish.yml updated to run SampleHarness.Tests pre-publish
+6. ✅ Local pack succeeded: ElBruno.AspireMonitor.1.6.0.nupkg
+
+**QA Blocker — Coverage Gate (Yoda):**
+Yoda rejected NuGet publishing due to **undefined 80% coverage gate**:
+- Current raw coverage measured at ~27% aggregate (includes UI/AppHost code)
+- Documented as ">80% on Services/Models" but gate not enforced in CI
+- No runsettings.xml or ReportGenerator configuration
+- Repository needs to define:
+  1. Exact coverage scope (all assemblies? only Services/Models?)
+  2. Coverage reporting tooling (ReportGenerator, threshold config)
+  3. CI gate that enforces 80% before publish
+
+**Decision:**
+Do not proceed to NuGet publish for v1.6.0. Document blocker for Phase 6 pre-release setup.
+
+**Commit:**
+- Commit a250266 "Prepare v1.6.0 release" pushed to main (no tag/release/publish yet)
+- All release prep work preserved
+- Version 1.6.0 on main branch ready for coverage gate implementation
+
+**Next Steps:**
+- Yoda/Leia collaborate on Phase 6: define coverage scope and implement CI gate
+- Once gate implemented and passing, revalidate v1.6.0 and proceed to NuGet publish
+- Documentation consolidated in .squad/decisions.md (dashboard endpoint + coverage gate entries)
+
+**Status:** ⚠️ PREPARED BUT BLOCKED — All artifacts ready; awaiting coverage gate implementation

@@ -1125,3 +1125,51 @@ Participated in parallel multi-agent session with Han (implementation) and Lando
 4. Document final test patterns for team wiki
 
 ---
+
+### 2026-05-10 — v1.6.0 Release Validation (Session 11)
+
+**Context:**
+- v1.6.0 release candidate ready for validation
+- All 295 tests pass (283 ElBruno.AspireMonitor.Tests + 12 SampleHarness.Tests)
+- Leia prepared version bump, changelog, and release documentation
+- publish.yml updated to include SampleHarness.Tests pre-publish validation
+
+**Test Validation Executed:**
+
+1. **ElBruno.AspireMonitor.Tests:** 283/283 passing ✅
+   - Core functionality: polling, status calculation, API client, configuration
+   - Edge cases: offline, malformed responses, large datasets
+   - UI integration: binding, command state, window lifecycle
+
+2. **SampleHarness.Tests:** 12/12 passing ✅
+   - Tool integration tests
+   - End-to-end workflow validation
+
+3. **Build Quality:** 0 errors, pre-existing warnings only (no regressions)
+
+**Release Blocker Decision — Coverage Gate:**
+
+**Finding:** Raw code coverage measured at ~27% aggregate (Cobertura line coverage):
+- Repository includes `coverlet.collector` but no runsettings/ReportGenerator configuration
+- No CI gate currently enforces 80% coverage
+- Documentation claims >80% on Services/Models, but measurement scope undefined
+
+**Tooling Gap:**
+- No checked-in runsettings file
+- No ReportGenerator threshold configuration
+- No workflow gate to parse and enforce coverage
+
+**Requirements for Phase 6 Pre-Release:**
+1. Define coverage scope (all assemblies vs. Services/Models subset)
+2. Add runsettings or MSBuild coverage configuration
+3. Implement ReportGenerator integration
+4. Add workflow gate that fails below 80%
+5. Re-validate v1.6.0 against gate
+
+**Decision:** ⚠️ REJECT v1.6.0 NuGet publish until coverage gate implemented. This is a quality decision, not a technical blocker.
+
+**Impact:** v1.6.0 remains production-ready (all tests pass), but blocked at NuGet publish step pending coverage gate.
+
+**Status:** ⚠️ VALIDATED BUT BLOCKED — All functional tests pass; coverage gate undefined
+
+---

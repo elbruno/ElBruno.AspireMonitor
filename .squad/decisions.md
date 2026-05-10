@@ -5254,5 +5254,127 @@ ElBruno.AspireMonitor v1.2.0 is released but not published to NuGet.org. Existin
 
 ---
 
-**Last Updated:** 2026-04-27 (Decisions Merged: Promo, Validation, Roadmap, NuGet Publishing)  
-**Next Steps:** Bruno reviews/approves 6 strategic decisions; team proceeds with implementation
+**Last Updated:** 2026-05-10 (Phase 1 Dashboard Alignment + Coverage Gate Blocker)  
+
+---
+
+## Phase 1 Dashboard Endpoint Alignment (2026-05-10)
+
+### Dashboard Endpoint Decision
+
+**Date:** 2026-05-10  
+**Status:** ✅ IMPLEMENTED  
+**Scope:** Phase 1 environment filter endpoint handling
+
+**Decision:** Default UI/config endpoint is now `http://localhost:18888` for Aspire 13.3.
+
+**Implementation:**
+- Main window exposes an explicit `Open Dashboard` action
+- `MainViewModel` loads `HostUrl` from saved configuration at startup
+- Configuration hydration uses `IConfigurationService.DefaultAspireEndpoint` as single source of truth
+- Prevents stale hardcoded dashboard URLs from drifting across configuration and view models
+
+**Configuration Pattern:**
+- **Use:** `Configuration.DefaultAspireEndpoint` as single source of truth for dashboard URL
+- **Why:** Ensures `MainViewModel` hydrates `HostUrl` from `IConfigurationService`
+- **Benefits:** Fixture-backed deterministic test coverage, easy phase 1 dashboard-aware slice testing
+
+**Rationale:**
+This prevents stale hardcoded endpoints from drifting across configuration and view models. Keeps the phase 1 dashboard-aware slice easy to test with deterministic coverage.
+
+**Future Alignment:**
+Keep endpoint labels/examples aligned to `Configuration.DefaultAspireEndpoint` so UI and docs stay consistent.
+
+**Files Affected:**
+- `src/ElBruno.AspireMonitor/ViewModels/MainViewModel.cs`
+- `src/ElBruno.AspireMonitor/App.xaml.cs`
+- Configuration/Settings UI
+
+**Testing:**
+- All tests passing with deterministic fixture-backed coverage
+- Dashboard URL auto-discovery verified against Aspire 13.3 endpoint
+
+---
+
+## Test Coverage & Release Gate Decisions (2026-05-10)
+
+### Coverage Gate Implementation Blocked for v1.6.0
+
+**Date:** 2026-05-10  
+**Author:** Yoda (QA/Tester), Leia (Lead)  
+**Status:** ⚠️ BLOCKED — Awaiting implementation
+
+**Context:**
+Yoda requires the NuGet publish workflow to enforce an **80% coverage release gate** before publishing v1.6.0. The repository passes all functional tests (283/283 + 12/12 SampleHarness) but lacks defined coverage gate tooling.
+
+**Test Results:**
+- ✅ ElBruno.AspireMonitor.Tests: 283/283 passing
+- ✅ SampleHarness.Tests: 12/12 passing
+- ✅ Total: 295/295 tests passing
+
+**Coverage Investigation:**
+The repository includes `coverlet.collector` in both test projects, but lacks:
+- runsettings file
+- ReportGenerator configuration
+- CI coverage threshold enforcement
+
+**Raw Coverage Analysis:**
+Running local coverage collection with:
+```powershell
+dotnet test src\ElBruno.AspireMonitor.Tests\ElBruno.AspireMonitor.Tests.csproj -c Release --collect:"XPlat Code Coverage"
+dotnet test src\SampleHarness\SampleHarness.Tests\SampleHarness.Tests.csproj -c Release --collect:"XPlat Code Coverage"
+```
+
+**Results:**
+- Monitor test project: ~28.45% line coverage (raw Cobertura)
+- Sample harness test project: ~22.38% line coverage (raw Cobertura)
+- Aggregate: ~27.13% line coverage
+
+**Note:** Raw scope includes assemblies and UI/application code beyond historical docs claim of `>80%` on Services/Models only.
+
+**Current Command Limitation:**
+The documented development command `dotnet test /p:CollectCoverage=true` is incomplete:
+- Repository does not reference `coverlet.msbuild`
+- No threshold settings defined
+- Not suitable as publish-time release gate
+
+**Decision:**
+❌ Do NOT add publish-time 80% gate yet. A truthful gate using current tooling would immediately fail v1.6.0 and may not match Yoda's intended Services/Models coverage scope.
+
+**Required Next Steps (Phase 6 Pre-Release):**
+1. **Define Coverage Scope:** Decide whether 80% threshold applies to:
+   - All production assemblies
+   - Only `ElBruno.AspireMonitor` namespace
+   - Services/Models subset only
+
+2. **Implement Deterministic Tooling:**
+   - Add checked-in `runsettings` or MSBuild coverage configuration
+   - Add ReportGenerator integration for reporting
+   - Add workflow gate that parses coverage output and fails below 80%
+
+3. **Re-validate Release:**
+   - Run coverage validation against agreed scope
+   - Confirm metrics meet 80% threshold
+   - Only then proceed to NuGet publish
+
+**Block Resolution:**
+Yoda/Leia must complete above steps before v1.6.0 NuGet publish. This is a **quality gate**, not a technical blocker.
+
+**Impact:**
+- ✅ All functional tests pass (v1.6.0 build-ready)
+- ✅ PR #1 merged to main (fc1a86b)
+- ✅ Version 1.6.0 updated in project files
+- ✅ Documentation created (CHANGELOG, release notes)
+- ⚠️ NuGet publish halted pending coverage gate implementation
+
+**Commit:** a250266 "Prepare v1.6.0 release" (main branch)
+
+**Merged Date:** 2026-05-10T14:18:35Z  
+**Merged By:** Scribe (GitHub Copilot)  
+**From:** .squad/decisions/inbox/leia-coverage-gate-blocked.md  
+**Status:** Consolidated & Documented
+
+---
+
+**Last Updated:** 2026-05-10 (Phase 1 Dashboard Alignment + Coverage Gate Blocker)  
+**Next Steps:** Yoda/Leia implement coverage gate tooling for Phase 6 pre-release; team prepares for v1.6.0 NuGet publish after gate satisfied
