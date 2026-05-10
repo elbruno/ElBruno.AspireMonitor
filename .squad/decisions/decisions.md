@@ -245,3 +245,171 @@ None — all changes backward-compatible with v1.1.0.
 **Release URL:** https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.2.0  
 **Tag:** v1.2.0  
 **Commit:** 5fd4d412f40c4ca828dc5bc693bd696debd5450a
+
+---
+
+## Decision 3: What's New Documentation for Aspire 13.3 Alignment
+
+**Date:** 2026-05-10  
+**Author:** Chewie (DevRel/Docs)  
+**Status:** ✅ IMPLEMENTED  
+**Type:** Documentation Strategy
+
+---
+
+### Context
+
+ElBruno.AspireMonitor v1.6.0 aligns with Aspire 13.3, bringing:
+- Standard dashboard endpoint alignment
+- Rich resource telemetry (type, disk, endpoints, environment badges)
+- Maintained sample harness for validation
+
+Users need clear guidance on:
+1. What's new in the monitor
+2. How it relates to Aspire 13.3 features
+3. Upgrade path for existing users
+
+---
+
+### Decision
+
+**Create a two-tiered "What's New" documentation structure:**
+
+#### Tier 1: Root README
+- **Location:** `README.md` → "✨ What's New in v1.6.0" section
+- **Content:** 3 bullet points (dashboard alignment, telemetry, sample harness)
+- **Purpose:** Immediate visibility; link to detailed guide
+- **Placement:** After "What It Does", before "Features" table
+
+#### Tier 2: Detailed Guide
+- **Location:** `docs/whats-new.md` (NEW file)
+- **Content:** 6.5 KB comprehensive guide including:
+  - Detailed explanations of each new capability
+  - Why each matters to the user
+  - Tables showing telemetry examples
+  - Feature alignment matrix (Aspire 13.3 → Monitor)
+  - Upgrade guide for v1.5.0 → v1.6.0 users
+  - Quick start with v1.6.0
+  - Links to configuration and reference docs
+
+#### Supporting Updates
+- **docs/README.md:** Added whats-new.md to structure and links
+- **root README:** Added whats-new.md to documentation links list
+
+---
+
+### Rationale
+
+#### Why Two Tiers?
+1. **Root README** — Discoverable, engaging, drives to fuller content
+2. **Detailed Guide** — In-depth context, tables, upgrade guidance, feature matrices
+3. **Separation of concerns** — Keeps root README concise; docs folder has rich content
+
+#### Why This Structure?
+- Grounded in **official sources** (https://aspire.dev/whats-new/aspire-13-3/)
+- **Honest capability mapping** — Distinguishes "Monitor exposes" vs. "View on dashboard" vs. "Use CLI"
+- **User-centric** — Explains "Why it matters" for each feature
+- **Practical** — Includes upgrade path and configuration references
+
+#### Feature Alignment Principle
+Not every Aspire 13.3 feature is exposed by the monitor. Honesty builds trust:
+
+| Aspire 13.3 Feature | Monitor Support | Notes |
+|---|---|---|
+| `aspire destroy` | ℹ️ See CLI | Direct CLI usage |
+| Browser logs & screenshots | 📊 Dashboard | View in main dashboard |
+| `aspire deploy` to Kubernetes | 📊 Dashboard | Tracked as resources |
+| Standard dashboard endpoint | ✅ Implemented | **Monitor feature** |
+| Richer resource metadata | ✅ Implemented | **Monitor feature** |
+
+This prevents overclaiming and sets accurate expectations.
+
+---
+
+### Files Changed
+
+1. **README.md**
+   - Added "✨ What's New in v1.6.0" section
+   - Updated documentation links to include whats-new.md
+
+2. **docs/README.md**
+   - Added whats-new.md to "Getting Started" section
+   - Updated documentation structure tree
+   - Marked as "NEW!"
+
+3. **docs/whats-new.md** (NEW)
+   - 6,544 bytes
+   - Comprehensive guide with tables, matrices, upgrade guidance
+
+---
+
+### References
+
+- **Official Source:** https://aspire.dev/whats-new/aspire-13-3/
+- **Release Notes:** docs/releases/RELEASE-v1.6.0.md
+- **CHANGELOG:** CHANGELOG.md (v1.6.0 entry)
+
+---
+
+### Success Criteria
+
+✅ "What's New in v1.6.0" section visible on root README  
+✅ Comprehensive guide at `docs/whats-new.md` with tables and matrices  
+✅ All documentation links updated and tested  
+✅ Feature alignment is honest (no overclaiming)  
+✅ Upgrade path documented for existing users  
+✅ Links to official Aspire 13.3 page provided  
+
+---
+
+### Follow-Up
+
+- Monitor GitHub Issues for user questions about new features
+- Track adoption of telemetry features in analytics (if available)
+- Update guide as monitor features expand in future releases
+- Coordinate with Release Manager (Leia) for NuGet release notes
+
+---
+
+**Chewie**  
+DevRel/Docs, ElBruno.AspireMonitor
+
+---
+
+## Decision 3.1: What's New Documentation — QA Review & Approval
+
+**Date:** 2026-05-10  
+**Reviewer:** Yoda (QA/Tester)  
+**Status:** ✅ APPROVED  
+**Type:** Quality Gate
+
+---
+
+### Review Scope
+
+- Dashboard endpoint language and implementation accuracy
+- Resource telemetry descriptions vs. actual codebase
+- SampleHarness composition claims
+- Container tunnel and JavaScript publishing support claims
+- Feature alignment matrix truthfulness
+
+### Corrections Applied
+
+✅ **Dashboard endpoint language** — Narrowed to: "app defaults to the local Aspire dashboard URL documented by Aspire 13.3 and preserves user overrides"
+
+✅ **Resource telemetry descriptions** — Updated to: "disk usage as a percentage and environment badges as compact environment-variable summaries"
+
+✅ **SampleHarness composition** — Corrected to: "two API services plus one worker service, not database/cache/background-job coverage"
+
+✅ **Container tunnel & JavaScript publishing support** — Removed implications of dedicated app integration beyond resources exposed by Aspire CLI output
+
+---
+
+### Approval
+
+Docs approved for merge into v1.6.0 release. Chewie remains unblocked for future revisions.
+
+---
+
+**Yoda**  
+QA/Tester, ElBruno.AspireMonitor

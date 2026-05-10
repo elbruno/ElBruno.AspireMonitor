@@ -80,6 +80,13 @@
    - Test config persistence across restarts
    - Test UI updates (if testable with UIAutomation)
 
+### 2026-05-10 — What's New Docs QA Review
+
+- Reviewed `docs\whats-new.md`, README release notes, changelog, and sample harness docs against Aspire 13.3 source and current code.
+- Corrected overclaims around dashboard endpoint scope, monitor support levels, sample harness composition, disk telemetry units, mini-window telemetry, and environment badges.
+- Verified the sample harness is two API services plus one worker service; no database/cache services are present.
+- Verdict after edits: approved; Chewie is not locked out of the next revision.
+
 ---
 
 ### 2026-04-26 — Phase 2 Test Implementation (Session 2)

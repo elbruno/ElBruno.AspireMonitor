@@ -90,6 +90,46 @@
 
 ## Learnings
 
+### What's New Section Documentation (Session 5 — 2026-05-10)
+
+**Challenge:** Add a "What's new" section highlighting Aspire 13.3 alignment for v1.6.0.
+
+**Approach:**
+1. Researched Aspire 13.3 official what's new page (https://aspire.dev/whats-new/aspire-13-3/)
+2. Mapped Aspire 13.3 features to monitor capabilities
+3. Identified what the monitor DOES expose vs. what requires dashboard navigation
+4. Created **two-tiered documentation:**
+   - **Root README:** Brief teaser ("What's New in v1.6.0") linking to detailed guide
+   - **Detailed Guide:** `docs/whats-new.md` (6.5 KB) with tables, upgrade path, feature alignment matrix
+
+**Key Outcomes:**
+- Root README now has ✨ "What's New in v1.6.0" section (3 bullet points)
+- New `docs/whats-new.md` guide covers:
+  - Aspire 13.3 dashboard alignment (why it matters)
+  - Rich resource telemetry (type, disk, endpoints, env badges with table)
+  - Sample harness validation
+  - Upgrade guide for existing users
+  - Feature alignment matrix (Aspire 13.3 → Monitor capabilities)
+  - Quick start with v1.6.0
+- Updated `docs/README.md` to include link to new guide
+- Updated root README documentation links list
+
+**Decision Pattern:**
+- "What's new" ≠ Marketing hype — it's practical, grounded in the official Aspire 13.3 feature list
+- Distinguish between "Monitor exposes" vs. "View on dashboard" vs. "Use via CLI"
+- Link to official sources (aspire.dev) for credibility
+- Provide upgrade guidance for existing users (no breaking changes)
+
+**Files Modified:**
+- README.md (added What's New section + docs link)
+- docs/README.md (added whats-new.md in structure + getting started)
+- docs/whats-new.md (NEW! — 6.5 KB comprehensive guide)
+
+**Official Source Reference:**
+- https://aspire.dev/whats-new/aspire-13-3/
+
+---
+
 ### README Structure (from OllamaMonitor)
 
 1. **Badges:** NuGet version, downloads, build status, .NET version, MIT license
