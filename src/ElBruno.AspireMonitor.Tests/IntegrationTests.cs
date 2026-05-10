@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Windows;
 using Xunit;
+using ModelConfiguration = ElBruno.AspireMonitor.Models.Configuration;
 
 namespace ElBruno.AspireMonitor.Tests;
 
@@ -21,9 +22,9 @@ public class IntegrationTests
     [Fact]
     public void Configuration_DefaultAspireEndpoint_UsesDashboardPort()
     {
-        var configuration = new Configuration();
+        var configuration = new ModelConfiguration();
 
-        configuration.AspireEndpoint.Should().Be(Configuration.DefaultAspireEndpoint);
+        configuration.AspireEndpoint.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
     }
 
     [Fact]
@@ -31,15 +32,15 @@ public class IntegrationTests
     {
         var configService = new Mock<IConfigurationService>();
         configService.Setup(service => service.LoadConfiguration())
-            .Returns(new Configuration());
+            .Returns(new ModelConfiguration());
 
         var settingsViewModel = new SettingsViewModel(configService.Object);
         var configurationViewModel = new ConfigurationViewModel();
         var mainViewModel = new MainViewModel(null, configService.Object);
 
-        settingsViewModel.AspireEndpoint.Should().Be(Configuration.DefaultAspireEndpoint);
-        configurationViewModel.AspireEndpoint.Should().Be(Configuration.DefaultAspireEndpoint);
-        mainViewModel.HostUrl.Should().Be(Configuration.DefaultAspireEndpoint);
+        settingsViewModel.AspireEndpoint.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
+        configurationViewModel.AspireEndpoint.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
+        mainViewModel.HostUrl.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
     }
 
     [Fact]
@@ -47,7 +48,7 @@ public class IntegrationTests
     {
         var configService = new Mock<IConfigurationService>();
         configService.Setup(service => service.LoadConfiguration())
-            .Returns(new Configuration
+            .Returns(new ModelConfiguration
             {
                 AspireEndpoint = "http://localhost:19999"
             });
@@ -71,7 +72,7 @@ public class IntegrationTests
             var configurationService = new ConfigurationService(configPath);
             var mainViewModel = new MainViewModel(null, configurationService);
 
-            mainViewModel.HostUrl.Should().Be(Configuration.DefaultAspireEndpoint);
+            mainViewModel.HostUrl.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
         }
         finally
         {
@@ -177,7 +178,7 @@ public class IntegrationTests
                 var pollingService = new Mock<IAspirePollingService>();
                 var configService = new Mock<IConfigurationService>();
                 configService.Setup(service => service.LoadConfiguration())
-                    .Returns(new Configuration());
+                    .Returns(new ModelConfiguration());
 
                 var viewModel = new MainViewModel(pollingService.Object, configService.Object);
                 var telemetryJson = File.ReadAllText(_telemetryRichJsonPath);
@@ -228,7 +229,7 @@ public class IntegrationTests
             {
                 var configService = new Mock<IConfigurationService>();
                 configService.Setup(service => service.LoadConfiguration())
-                    .Returns(new Configuration
+                    .Returns(new ModelConfiguration
                     {
                         HideDevelopmentResources = true
                     });
@@ -267,7 +268,7 @@ public class IntegrationTests
             {
                 var configService = new Mock<IConfigurationService>();
                 configService.Setup(service => service.LoadConfiguration())
-                    .Returns(new Configuration
+                    .Returns(new ModelConfiguration
                     {
                         HideDevelopmentResources = false
                     });

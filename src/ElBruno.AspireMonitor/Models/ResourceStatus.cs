@@ -6,5 +6,6 @@ public enum ResourceStatus
     Running,
     Stopped,
     Starting,
-    Stopping
+    Stopping,
+    Failed
 }

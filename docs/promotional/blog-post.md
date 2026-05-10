@@ -1,165 +1,36 @@
-# Blog Post: Introducing AspireMonitor
+# AspireMonitor: Stop bouncing between your Aspire dashboard and your code.
 
-## Title
-
-**Introducing AspireMonitor: Real-Time Aspire Monitoring in Your System Tray**
-
----
-
-## Headline
-
-For developers building distributed applications with .NET Aspire, monitoring resource health is critical—but checking dashboards constantly breaks focus. **AspireMonitor** puts real-time Aspire metrics directly in your Windows system tray, giving you instant visibility into CPU, memory, and status of all your Aspire resources without leaving your code editor.
-
----
-
-## Why This Matters
-
-.NET Aspire has revolutionized distributed application development by giving developers a unified, intuitive way to orchestrate microservices, databases, and caches locally. But Aspire's excellent dashboard lives in a browser tab—one more thing to context-switch to when you need to check if your API is eating memory or your database is saturated.
-
-**AspireMonitor solves this problem.** A lightweight Windows system tray icon gives you real-time status at a glance:
-- 🟢 **Green**: All resources healthy (<70% CPU/memory)
-- 🟡 **Yellow**: Warning zone (70-90% utilization)
-- 🔴 **Red**: Critical (>90% or connection error)
-
----
-
-## Key Features
-
-### ⚡ Real-Time Monitoring
-
-AspireMonitor polls your Aspire dashboard every 2 seconds (configurable) and updates instantly. No manual refreshes. No lag. Just live data.
-
-### 🚦 Color-Coded Status
-
-At a glance, know if your infrastructure is healthy:
-- Green icon? All systems nominal.
-- Yellow icon? Time to check what's consuming resources.
-- Red icon? Something needs immediate attention.
-
-### 🔗 Clickable URLs
-
-Right-click any resource in the expanded view and open it directly—no copy/paste, no hunting through logs.
-
-### ⚙️ Configurable Thresholds
-
-Default thresholds work for most, but your app is unique. Set CPU/memory warning and critical points in one simple JSON file:
-
-```json
-{
-  "aspireEndpoint": "http://localhost:18888",
-  "cpuThresholdWarning": 70,
-  "cpuThresholdCritical": 90,
-  "memoryThresholdWarning": 70,
-  "memoryThresholdCritical": 90
-}
-```
-
-### 🪟 System Tray Integration
-
-Minimize it, forget about it. AspireMonitor runs in the background, never interrupting your workflow. Click the icon anytime to see resource details. Double-click to expand/collapse.
-
-### 🔄 Auto-Reconnect
-
-Network hiccup? Aspire restarted? AspireMonitor automatically reconnects with exponential backoff—no manual intervention needed.
-
----
-
-## Getting Started
-
-### Installation
+![AspireMonitor — your Aspire AppHost, one tray icon away](./screenshots/hero-banner.png)
 
 ```bash
 dotnet tool install --global ElBruno.AspireMonitor
+aspiremon
 ```
 
-### Run It
+## What it is
 
-```bash
-aspire-monitor
-```
+AspireMonitor is a Windows tray app that puts your Aspire AppHost status one click away. No browser tabs. No switching context. Click the tray icon, see what's running, Start/Stop your app, or pin the resources you actually care about in a compact mini window.
 
-That's it. The first time you run it, you'll be prompted for your Aspire endpoint URL (default: `http://localhost:18888`).
+It also shows richer Aspire resource details: CPU, memory, disk, resource type, endpoint count, environment badges, real URLs, and a one-click dashboard URL that defaults to `http://localhost:18888`.
 
-### Configure (Optional)
+## Why it exists
 
-Edit `%APPDATA%\Local\ElBruno\AspireMonitor\config.json` to adjust polling interval or thresholds. Restart the app and you're done.
+If you use Aspire, you know the dashboard is useful—but you don't want a browser tab open all day. You're writing code, not monitoring. AspireMonitor solves the friction: a lightweight tray icon that gives you "is my API up?" and "what URL does this service run on?" without leaving your IDE.
 
----
+## Why it's useful
 
-## Perfect For
+The mini window pins only the resources you care about (configure once: `web, store, gateway`) with their live URLs and Start/Stop buttons. The main window shows the full resource list when you need it.
 
-- **Local Development**: Keep tabs on your microservices while coding
-- **Performance Testing**: Watch resource consumption in real-time during load tests
-- **Debugging**: Quickly spot which resource is misbehaving
-- **Teaching**: Show students what happens to resource usage under load
-- **Integration Testing**: Run tests while monitoring system health
+Start stays disabled with `⏳ Starting Aspire... (12 / 90s)` so you know when resources are actually ready. Stop actually stops. URLs are real (`http://localhost:5021`), not generic "Open" links.
 
----
+![AspireMonitor mini window—pinned resources with live URLs](./screenshots/mini-window.png)
 
-## How It Works (Architecture)
+![AspireMonitor main window—full resource list](./screenshots/main-window.png)
 
-AspireMonitor uses a simple, elegant architecture:
+## Get it
 
-1. **AspireApiClient** — Talks to Aspire's HTTP API
-2. **AspirePollingService** — Runs background thread at configurable interval
-3. **StatusCalculator** — Evaluates CPU/memory against thresholds
-4. **MainViewModel** — MVVM binding to WPF
-5. **WPF UI** — Lightweight notification window + system tray
+- **NuGet:** https://www.nuget.org/packages/ElBruno.AspireMonitor
+- **GitHub:** https://github.com/elbruno/ElBruno.AspireMonitor
+- **MIT licensed.** Issues and PRs welcome.
 
-No external dependencies. No bloat. Just you, your Aspire apps, and one small green icon. Or yellow. Or red.
-
----
-
-## Technology Stack
-
-- **.NET 10** — Modern, performant runtime
-- **WPF** — Native Windows integration
-- **MVVM** — Clean architecture for testability
-- **MIT License** — Open source, do what you want with it
-
----
-
-## Open Source & Extensible
-
-AspireMonitor is on GitHub with MIT license. Want to add features? Contribute. Want to run it on macOS? Fork it and port it. The codebase is small, clean, and well-documented.
-
-**GitHub:** [github.com/elbruno/ElBruno.AspireMonitor](https://github.com/elbruno/ElBruno.AspireMonitor)
-
----
-
-## What's Next?
-
-- **Remote Monitoring**: Connect to Aspire instances on different machines
-- **Multi-Instance**: Monitor multiple Aspire apps simultaneously
-- **Advanced Metrics**: Historical trends and threshold-based alerts
-- **Web Dashboard**: Companion web UI for more detailed analysis
-
----
-
-## Try It Today
-
-AspireMonitor is production-ready and available on NuGet:
-
-```bash
-dotnet tool install --global ElBruno.AspireMonitor
-aspire-monitor
-```
-
-Feedback welcome! Found a bug? Have a feature idea? [Open an issue on GitHub](https://github.com/elbruno/ElBruno.AspireMonitor/issues).
-
----
-
-## About the Author
-
-**Bruno Capuano** ([@elbruno](https://github.com/elbruno)) is a Microsoft AI MVP and GitHub Star based in Barcelona. He builds open-source tools for .NET developers and shares his work via his blog ([elbruno.com](https://elbruno.com)) and YouTube. When not coding, he's probably thinking about how to make developer tools faster and more intuitive.
-
-**Connect:**
-- GitHub: [@elbruno](https://github.com/elbruno)
-- Blog: [elbruno.com](https://elbruno.com)
-- LinkedIn: [/in/elbruno](https://linkedin.com/in/elbruno)
-- Twitter: [@elbruno](https://twitter.com/elbruno)
-- YouTube: [@elbruno](https://youtube.com/@elbruno)
-
----
-
-**Happy monitoring!** 🚀
+> Built with .NET 10 + WPF. Shells out to `aspire describe`—no third-party SDK dependency.

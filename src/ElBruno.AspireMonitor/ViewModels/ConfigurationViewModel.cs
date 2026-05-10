@@ -11,16 +11,16 @@ public class ConfigurationViewModel : ViewModelBase
     private bool _startWithWindows;
     private string _validationMessage = string.Empty;
 
-    public string AspireEndpoint
-    {
-        get => _aspireEndpoint;
-        set => SetProperty(ref _aspireEndpoint, value);
-    }
-
     public int PollingInterval
     {
         get => _pollingInterval;
         set => SetProperty(ref _pollingInterval, value);
+    }
+
+    public string AspireEndpoint
+    {
+        get => _aspireEndpoint;
+        set => SetProperty(ref _aspireEndpoint, string.IsNullOrWhiteSpace(value) ? Models.Configuration.DefaultAspireEndpoint : value);
     }
 
     public int CpuThreshold
@@ -50,20 +50,6 @@ public class ConfigurationViewModel : ViewModelBase
     public bool Validate()
     {
         ValidationMessage = string.Empty;
-
-        // Validate URL
-        if (string.IsNullOrWhiteSpace(AspireEndpoint))
-        {
-            ValidationMessage = "Aspire Endpoint cannot be empty.";
-            return false;
-        }
-
-        if (!Uri.TryCreate(AspireEndpoint, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-        {
-            ValidationMessage = "Aspire Endpoint must be a valid HTTP or HTTPS URL.";
-            return false;
-        }
 
         // Validate polling interval
         if (PollingInterval < 1000 || PollingInterval > 60000)

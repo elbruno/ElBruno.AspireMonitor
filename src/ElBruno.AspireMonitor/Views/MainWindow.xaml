@@ -10,30 +10,103 @@
         MinHeight="400"
         MinWidth="600"
         WindowStartupLocation="CenterScreen"
+        Visibility="Hidden"
+        ShowInTaskbar="False"
         StateChanged="Window_StateChanged"
         Closing="Window_Closing">
     
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Top Section: Dashboard URL and Status -->
-        <Border Grid.Row="0" 
+        <!-- Aspire Logo & Title Bar -->
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Logo Image -->
+            <Image Grid.Column="0"
+                   Source="pack://application:,,,/Resources/aspire-logo-256.png"
+                   Width="32"
+                   Height="32"
+                   Margin="0,0,10,0"
+                   VerticalAlignment="Center"/>
+
+            <!-- Title -->
+            <TextBlock Grid.Column="1"
+                       Text="{Binding AppVersionTitle}"
+                       FontSize="14"
+                       FontWeight="Bold"
+                       Foreground="#333333"
+                       VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Working Folder (always visible) -->
+        <TextBlock Grid.Row="1"
+                   FontSize="11"
+                   Foreground="#555555"
+                   Margin="0,0,0,10"
+                   ToolTip="{Binding ProjectFolder, Mode=OneWay}">
+            <Run Text="📁 Working Folder: "/>
+            <Run Text="{Binding ProjectFolderDisplay, Mode=OneWay}"
+                 FontWeight="Bold"
+                 Foreground="#333333"/>
+        </TextBlock>
+
+        <!-- Error Banner (visible when not connected) -->
+        <Border Grid.Row="2"
+                Background="#FFF4E5" 
+                BorderBrush="#FFB74D" 
+                BorderThickness="1" 
+                Padding="10"
+                Margin="0,0,0,10"
+                Visibility="{Binding IsConnected, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                    <TextBlock Text="⚠️" 
+                               FontSize="16" 
+                               Margin="0,0,10,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ErrorTitle}" 
+                               FontSize="12" 
+                               FontWeight="Bold"
+                               Foreground="#E65100"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ErrorMessage}" 
+                           FontSize="11" 
+                           Foreground="#E65100"
+                           TextWrapping="Wrap"
+                           Margin="26,0,0,0"/>
+            </StackPanel>
+        </Border>
+        <!-- Top Section: Host URL and Status -->
+        <Border Grid.Row="2"
                 BorderBrush="#CCCCCC" 
                 BorderThickness="0,0,0,1" 
                 Padding="10"
-                Margin="0,0,0,10">
+                Margin="0,0,0,10"
+                Visibility="{Binding IsConnected, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
@@ -73,100 +146,254 @@
                            VerticalAlignment="Center"
                            Margin="10,0,0,0"/>
 
+                <!-- Start Button -->
+                <Button Grid.Row="0"
+                        Grid.Column="4"
+                        Content="▶ Start"
+                        Width="70"
+                        Height="24"
+                        Padding="5,2"
+                        Margin="10,0,5,0"
+                        Command="{Binding StartAspireCommand}"
+                        VerticalAlignment="Center"
+                        FontSize="11"/>
+
+                <!-- Stop Button -->
+                <Button Grid.Row="0"
+                        Grid.Column="5"
+                        Content="⏹ Stop"
+                        Width="70"
+                        Height="24"
+                        Padding="5,2"
+                        Margin="0,0,0,0"
+                        Command="{Binding StopAspireCommand}"
+                        VerticalAlignment="Center"
+                        FontSize="11"/>
+
                 <!-- Last Updated -->
                 <TextBlock Grid.Row="1"
                            Grid.Column="1"
-                           Grid.ColumnSpan="3"
+                           Grid.ColumnSpan="5"
                            Text="{Binding LastUpdatedText}"
                            FontSize="10"
                            Foreground="#666666"
                            Margin="5,5,0,0"/>
+
+                <!-- Command Status -->
+                <TextBlock Grid.Row="2"
+                           Grid.Column="3"
+                           Grid.ColumnSpan="3"
+                           Text="{Binding CommandStatus}"
+                           FontSize="11"
+                           Foreground="#D32F2F"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Margin="0,8,0,0"/>
             </Grid>
         </Border>
 
-        <!-- Middle Section: Resource List -->
-        <ScrollViewer Grid.Row="1" 
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding Resources}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="#EEEEEE" 
-                                BorderThickness="0,0,0,1" 
-                                Padding="10,8"
-                                Margin="0,2">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+        <!-- Middle Section: Split View (Resources + Logs) -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="300"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="3*" MinWidth="400"/>
+            </Grid.ColumnDefinitions>
 
-                                <!-- Status Indicator -->
-                                <Ellipse Grid.Column="0"
-                                         Style="{StaticResource StatusIndicator}"
-                                         Fill="{Binding StatusColor}"
-                                         VerticalAlignment="Center"/>
+            <!-- Left Panel: Resource Grid -->
+            <Border Grid.Column="0"
+                    BorderBrush="#EEEEEE"
+                    BorderThickness="0,0,1,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                                <!-- Resource Name -->
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding Name}"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           VerticalAlignment="Center"
-                                           Margin="5,0,10,0"/>
+                    <!-- Resource Header -->
+                    <Border Grid.Row="0"
+                            Background="#F5F5F5"
+                            BorderBrush="#EEEEEE"
+                            BorderThickness="0,0,0,1"
+                            Padding="10,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="" Width="12" Margin="5,0"/>
+                            <TextBlock Grid.Column="1" Text="Name" FontWeight="Bold" FontSize="11" Foreground="#666666"/>
+                            <TextBlock Grid.Column="2" Text="State" FontWeight="Bold" FontSize="11" Foreground="#666666"/>
+                        </Grid>
+                    </Border>
 
-                                <WrapPanel Grid.Column="2"
-                                           Grid.ColumnSpan="3"
-                                           VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
-                                        <TextBlock Text="CPU: " FontSize="11" Foreground="#666666"/>
-                                        <TextBlock Text="{Binding CpuUsageText}" FontSize="11" FontWeight="Bold"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
-                                        <TextBlock Text="MEM: " FontSize="11" Foreground="#666666"/>
-                                        <TextBlock Text="{Binding MemoryUsageText}" FontSize="11" FontWeight="Bold"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
-                                        <TextBlock Text="TYPE: " FontSize="11" Foreground="#666666"/>
-                                        <TextBlock Text="{Binding TypeDisplay}" FontSize="11" FontWeight="Bold"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
-                                        <TextBlock Text="DISK: " FontSize="11" Foreground="#666666"/>
-                                        <TextBlock Text="{Binding DiskUsageText}" FontSize="11" FontWeight="Bold"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
-                                        <TextBlock Text="ENDPOINTS: " FontSize="11" Foreground="#666666"/>
-                                        <TextBlock Text="{Binding EndpointCountText}" FontSize="11" FontWeight="Bold"/>
-                                    </StackPanel>
-                                    <Border Background="#EEF2FF"
-                                            CornerRadius="8"
-                                            Padding="6,2"
-                                            Margin="0,0,10,0"
-                                            Visibility="{Binding HasEnvironment, Converter={StaticResource BoolToVisibilityConverter}}">
-                                        <TextBlock Text="{Binding EnvironmentSummaryText}"
-                                                  FontSize="10"
-                                                  FontWeight="SemiBold"
-                                                  Foreground="#4F46E5"/>
+                    <!-- Resource List -->
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Resources}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#EEEEEE" 
+                                            BorderThickness="0,0,0,1" 
+                                            Padding="10,8"
+                                            Background="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Background}"
+                                            MouseLeftButtonDown="Resource_Click"
+                                            Cursor="Hand">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="120"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Status Indicator -->
+                                            <Ellipse Grid.Column="0"
+                                                     Style="{StaticResource StatusIndicator}"
+                                                     Fill="{Binding StatusColor}"
+                                                     VerticalAlignment="Center"/>
+
+                                            <!-- Resource Name -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0,10,0">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontSize="13"
+                                                           FontWeight="SemiBold"/>
+                                                <WrapPanel Margin="0,3,0,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="CPU: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding CpuUsageText}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="MEM: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding MemoryUsageText}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="TYPE: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding TypeDisplay}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="DISK: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding DiskUsageText}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="ENDPOINTS: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding EndpointCountText}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <Border Background="#EEF2FF"
+                                                            CornerRadius="8"
+                                                            Padding="6,1"
+                                                            Margin="0,0,10,0"
+                                                            Visibility="{Binding HasEnvironment, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <TextBlock Text="{Binding EnvironmentSummaryText}"
+                                                                   FontSize="9"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="#4F46E5"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Url}"
+                                                               FontSize="9"
+                                                               Foreground="#2196F3"
+                                                               TextDecorations="Underline"
+                                                               Cursor="Hand"
+                                                               MouseLeftButtonDown="ResourceUrl_Click"
+                                                               Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                </WrapPanel>
+                                            </StackPanel>
+
+                                            <!-- State -->
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding StatusText}"
+                                                       FontSize="11"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
                                     </Border>
-                                    <TextBlock Style="{StaticResource ClickableUrl}"
-                                               Text="{Binding UrlDisplay}"
-                                               FontSize="11"
-                                               VerticalAlignment="Center"
-                                               MouseLeftButtonDown="ResourceUrl_Click"
-                                               Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                </WrapPanel>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1"
+                          Width="3"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch"
+                          Background="#CCCCCC"/>
+
+            <!-- Right Panel: Live Logs -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Log Header -->
+                <Border Grid.Row="0"
+                        Background="#F5F5F5"
+                        BorderBrush="#EEEEEE"
+                        BorderThickness="0,0,0,1"
+                        Padding="10,8">
+                    <Grid>
+                        <TextBlock Text="{Binding LogHeader}"
+                                   FontWeight="Bold"
+                                   FontSize="11"
+                                   Foreground="#666666"
+                                   VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <CheckBox Content="Pause"
+                                      IsChecked="{Binding IsLogPaused}"
+                                      FontSize="10"
+                                      Margin="0,0,10,0"/>
+                            <Button Content="Clear"
+                                    Width="60"
+                                    Height="22"
+                                    FontSize="10"
+                                    Click="ClearLogs_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Log Viewer -->
+                <Border Grid.Row="1"
+                        Background="#1E1E1E"
+                        BorderBrush="#333333"
+                        BorderThickness="1">
+                    <ScrollViewer x:Name="LogScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding LogLines}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"
+                                               FontFamily="Consolas, Courier New"
+                                               FontSize="10"
+                                               Foreground="#E0E0E0"
+                                               Padding="8,2"
+                                               TextWrapping="NoWrap"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Log Status Bar -->
+                <Border Grid.Row="2"
+                        Background="#F5F5F5"
+                        BorderBrush="#EEEEEE"
+                        BorderThickness="0,1,0,0"
+                        Padding="10,5">
+                    <TextBlock Text="{Binding LogStatus}"
+                               FontSize="9"
+                               Foreground="#666666"/>
+                </Border>
+            </Grid>
+        </Grid>
 
         <!-- Bottom Section: Control Buttons -->
-        <Border Grid.Row="2" 
+        <Border Grid.Row="4"
                 BorderBrush="#CCCCCC" 
                 BorderThickness="0,1,0,0" 
                 Padding="10"
@@ -178,16 +405,24 @@
                         Height="30"
                         Margin="0,0,10,0"
                         Click="Refresh_Click"/>
-                <Button Content="Settings" 
-                        Width="80" 
+                <Button Content="Mini Monitor" 
+                        Width="100" 
                         Height="30"
                         Margin="0,0,10,0"
-                        Click="Settings_Click"/>
+                        Click="MiniMonitor_Click"/>
                 <Button Content="Close" 
                         Width="80" 
                         Height="30"
                         Click="Close_Click"/>
             </StackPanel>
         </Border>
+
+        <!-- Version Footer -->
+        <TextBlock Grid.Row="5"
+                   Text="{Binding AppVersion}"
+                   FontSize="9"
+                   Foreground="#999999"
+                   HorizontalAlignment="Right"
+                   Margin="0,5,0,0"/>
     </Grid>
 </Window>

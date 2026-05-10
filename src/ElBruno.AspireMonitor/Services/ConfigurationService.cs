@@ -56,12 +56,6 @@ public class ConfigurationService : IConfigurationService
         SaveConfigurationToFile();
     }
 
-    public void SetEndpoint(string endpoint)
-    {
-        _configuration.AspireEndpoint = endpoint;
-        SaveConfiguration(_configuration);
-    }
-
     public void SetPollingInterval(int intervalMs)
     {
         _configuration.PollingIntervalMs = intervalMs;
@@ -91,12 +85,16 @@ public class ConfigurationService : IConfigurationService
             if (!File.Exists(_configFilePath))
             {
                 var defaultConfig = new Configuration();
-                SaveConfigurationToFile();
+                SaveConfigurationToFile(defaultConfig);
                 return defaultConfig;
             }
 
             var json = File.ReadAllText(_configFilePath);
-            var config = JsonSerializer.Deserialize<Configuration>(json);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var config = JsonSerializer.Deserialize<Configuration>(json, options);
             
             if (config == null)
             {
@@ -122,22 +120,24 @@ public class ConfigurationService : IConfigurationService
 
     private void SaveConfigurationToFile()
     {
+        SaveConfigurationToFile(_configuration);
+    }
+
+    private void SaveConfigurationToFile(Configuration? config)
+    {
+        if (config == null)
+            return;
+
         var options = new JsonSerializerOptions
         {
             WriteIndented = true
         };
-        var json = JsonSerializer.Serialize(_configuration, options);
+        var json = JsonSerializer.Serialize(config, options);
         File.WriteAllText(_configFilePath, json);
     }
 
     private void ValidateConfiguration(Configuration configuration)
     {
-        if (string.IsNullOrWhiteSpace(configuration.AspireEndpoint))
-            throw new InvalidOperationException("AspireEndpoint cannot be empty");
-
-        if (!Uri.TryCreate(configuration.AspireEndpoint, UriKind.Absolute, out _))
-            throw new InvalidOperationException("AspireEndpoint must be a valid URL");
-
         if (configuration.PollingIntervalMs < 500 || configuration.PollingIntervalMs > 60000)
             throw new InvalidOperationException("PollingIntervalMs must be between 500 and 60000");
 

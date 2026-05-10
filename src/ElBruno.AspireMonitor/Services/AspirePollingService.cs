@@ -14,13 +14,13 @@ public enum PollingServiceState
 
 public class AspirePollingService : IAspirePollingService, IDisposable
 {
-    private readonly AspireApiClient _apiClient;
-    private readonly Configuration _configuration;
+    private readonly AspireCliService _cliService;
     private readonly System.Timers.Timer _pollingTimer;
     private PollingServiceState _state;
     private List<AspireResource> _lastKnownResources;
     private int _reconnectAttempts;
     private bool _disposed;
+    private readonly int _pollingIntervalMs;
 
     public event EventHandler<List<AspireResource>>? ResourcesUpdated;
     public event EventHandler<string>? StatusChanged;
@@ -39,15 +39,15 @@ public class AspirePollingService : IAspirePollingService, IDisposable
         }
     }
 
-    public AspirePollingService(AspireApiClient apiClient, Configuration configuration)
+    public AspirePollingService(AspireCliService cliService, int pollingIntervalMs = 2000)
     {
-        _apiClient = apiClient;
-        _configuration = configuration;
+        _cliService = cliService;
+        _pollingIntervalMs = pollingIntervalMs;
         _state = PollingServiceState.Idle;
         _lastKnownResources = new List<AspireResource>();
         _reconnectAttempts = 0;
 
-        _pollingTimer = new System.Timers.Timer(_configuration.PollingIntervalMs);
+        _pollingTimer = new System.Timers.Timer(_pollingIntervalMs);
         _pollingTimer.Elapsed += OnPollingTimerElapsed;
         _pollingTimer.AutoReset = true;
     }
@@ -57,6 +57,7 @@ public class AspirePollingService : IAspirePollingService, IDisposable
         if (_state == PollingServiceState.Polling || _state == PollingServiceState.Connecting)
             return;
 
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Starting polling service. Interval: {_pollingIntervalMs}ms");
         State = PollingServiceState.Connecting;
         _reconnectAttempts = 0;
         _pollingTimer.Start();
@@ -70,7 +71,13 @@ public class AspirePollingService : IAspirePollingService, IDisposable
 
     public async Task RefreshAsync()
     {
+        System.Diagnostics.Debug.WriteLine("[AspirePollingService] RefreshAsync called");
         await PollResourcesAsync();
+    }
+
+    public void UpdateEndpoint(string newEndpoint)
+    {
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] UpdateEndpoint called with: {newEndpoint} (CLI-based, endpoint not used)");
     }
 
     private async void OnPollingTimerElapsed(object? sender, ElapsedEventArgs e)
@@ -85,7 +92,37 @@ public class AspirePollingService : IAspirePollingService, IDisposable
 
         try
         {
-            var resources = await _apiClient.GetResourcesAsync();
+            var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+            System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Polling cycle started. State: {_state}");
+
+            var resourceCollection = await _cliService.ParseResourcesFromDescribeJsonAsync();
+
+            if (!string.IsNullOrEmpty(resourceCollection.ErrorMessage))
+            {
+                System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Error: {resourceCollection.ErrorMessage}");
+
+                // Detect "Aspire is not running" as a clean stopped state (not an error/backoff cycle).
+                // aspire describe returns "No running apphost found" → our parser surfaces these messages.
+                var msg = resourceCollection.ErrorMessage;
+                bool aspireStopped =
+                    msg.Contains("No output from 'aspire describe'", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("No Aspire app is currently running", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("No running apphost found", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("No Aspire resources detected", StringComparison.OrdinalIgnoreCase);
+
+                if (aspireStopped)
+                {
+                    HandleAspireStopped();
+                }
+                else
+                {
+                    HandleError(resourceCollection.ErrorMessage);
+                }
+                return;
+            }
+
+            var resources = resourceCollection.Resources;
+            System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Poll completed. Resources returned: {resources.Count}");
 
             if (resources.Count > 0 || _state == PollingServiceState.Connecting)
             {
@@ -97,35 +134,67 @@ public class AspirePollingService : IAspirePollingService, IDisposable
                     State = PollingServiceState.Polling;
                 }
 
+                foreach (var resource in resources)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Resource: {resource.Name} (Status: {resource.Status}, CPU: {resource.Metrics.CpuUsagePercent:F1}%, Memory: {resource.Metrics.MemoryUsagePercent:F1}%)");
+                }
+
                 ResourcesUpdated?.Invoke(this, resources);
             }
             else if (_lastKnownResources.Count == 0)
             {
-                HandleError("No resources available");
+                System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] No resources available and no last-known state");
+                HandleError("No Aspire resources detected");
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine($"[AspirePollingService] [{timestamp}] Empty response, using last-known state with {_lastKnownResources.Count} resources");
                 ResourcesUpdated?.Invoke(this, _lastKnownResources);
             }
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Polling exception: {ex.GetType().Name}: {ex.Message}");
             HandleError($"Polling error: {ex.Message}");
         }
+    }
+
+    private void HandleAspireStopped()
+    {
+        // Aspire is no longer running. Clear stale resources and surface a clean "Not Running"
+        // state instead of cycling Error → Reconnecting → Connecting → Error.
+        _lastKnownResources = new List<AspireResource>();
+        _reconnectAttempts = 0;
+
+        // Push an empty resource snapshot so the UI clears the previous resource list immediately.
+        ResourcesUpdated?.Invoke(this, _lastKnownResources);
+
+        if (_state != PollingServiceState.Connecting)
+        {
+            // Stay in Connecting so polling continues and we'll auto-recover when Aspire starts again.
+            State = PollingServiceState.Connecting;
+        }
+
+        // Always notify subscribers about the stopped state, even if the polling state didn't change.
+        StatusChanged?.Invoke(this, "Not Running");
     }
 
     private void HandleError(string message)
     {
         State = PollingServiceState.Error;
-        ErrorOccurred?.Invoke(this, message);
-
         _reconnectAttempts++;
         var backoffDelay = CalculateBackoffDelay(_reconnectAttempts);
+
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] ERROR: {message}");
+        System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Reconnect attempt #{_reconnectAttempts}, waiting {backoffDelay.TotalSeconds}s before retry");
+        
+        ErrorOccurred?.Invoke(this, message);
 
         Task.Delay(backoffDelay).ContinueWith(_ =>
         {
             if (_state == PollingServiceState.Error)
             {
+                System.Diagnostics.Debug.WriteLine($"[AspirePollingService] Backoff delay complete, transitioning to Reconnecting");
                 State = PollingServiceState.Reconnecting;
                 State = PollingServiceState.Connecting;
             }

@@ -1,4 +1,4 @@
-name: Publish Release
+name: Publish to NuGet
 
 on:
   release:
@@ -6,57 +6,73 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (e.g., 1.0.0)'
-        required: true
-
-permissions:
-  contents: write
-  id-token: write
+        description: "Package version (leave empty to use csproj version)"
+        required: false
+        type: string
 
 jobs:
-  build-and-publish:
+  publish:
     runs-on: windows-latest
-    
+    environment: release
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
+      - uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
-          
-      - name: Restore dependencies
-        run: dotnet restore src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj
-dotnet restore src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj
-        
-      - name: Build
-        run: dotnet build src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj --configuration Release --no-restore
-dotnet build src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj --configuration Release --no-restore
-        
-      - name: Run tests
-        run: dotnet test src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj --configuration Release --no-build --verbosity normal
-        
-      - name: Publish Windows executable
-        run: dotnet publish src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj --configuration Release --output ./publish --no-build
-        
-      - name: Create release package
+          dotnet-version: 10.0.x
+
+      - name: Determine version
+        id: version
         shell: pwsh
         run: |
-          $version = "${{ github.event.release.tag_name }}" -replace '^v', ''
-          if ([string]::IsNullOrEmpty($version)) {
-            $version = "${{ github.event.inputs.version }}"
+          if ($env:GITHUB_EVENT_NAME -eq "release") {
+            $v = "${{ github.event.release.tag_name }}" -replace '^v', ''
+          } elseif ("${{ inputs.version }}" -ne "") {
+            $v = "${{ inputs.version }}"
+          } else {
+            [xml]$proj = Get-Content src/ElBruno.AspireMonitor.Tool/ElBruno.AspireMonitor.Tool.csproj
+            $v = $proj.Project.PropertyGroup.Version
           }
-          Compress-Archive -Path ./publish/* -DestinationPath "ElBruno.AspireMonitor-v$version.zip"
-        
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if ($v -notmatch '^\d+\.\d+\.\d+') {
+            throw "Invalid version: $v"
+          }
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "📦 Publishing version: $v"
+
+      - name: Restore
+        run: dotnet restore ElBruno.AspireMonitor.slnx
+
+      - name: Build
+        run: dotnet build ElBruno.AspireMonitor.slnx -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Unit Tests
+        run: dotnet test src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj -c Release --no-build --verbosity normal
+
+      - name: Pack (publish desktop + pack tool + inject payload)
+        shell: pwsh
+        run: .\build\Pack-Tool.ps1 -Configuration Release -Version ${{ steps.version.outputs.version }}
+
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: login
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./ElBruno.AspireMonitor-v${{ github.event.release.tag_name }}.zip
-          asset_name: ElBruno.AspireMonitor-${{ github.event.release.tag_name }}.zip
-          asset_content_type: application/zip
+          user: ${{ secrets.NUGET_USER }}
 
+      - name: Push to NuGet.org
+        shell: pwsh
+        run: |
+          Get-ChildItem artifacts/packages/*.nupkg | ForEach-Object {
+            Write-Host "Pushing $($_.Name)"
+            dotnet nuget push $_.FullName --api-key '${{ steps.login.outputs.NUGET_API_KEY }}' --source https://api.nuget.org/v3/index.json --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { throw "Push failed for $($_.Name)" }
+          }
 
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts/packages/*.nupkg

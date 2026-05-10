@@ -1,3 +1,4 @@
+using System.IO;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Services;
 
@@ -8,12 +9,10 @@ public class SettingsViewModel : ViewModelBase
     private readonly IConfigurationService _configService;
     private string _aspireEndpoint = Models.Configuration.DefaultAspireEndpoint;
     private int _pollingInterval = 5000;
-    private int _cpuThresholdWarning = 70;
-    private int _cpuThresholdCritical = 90;
-    private int _memoryThresholdWarning = 70;
-    private int _memoryThresholdCritical = 90;
     private bool _startWithWindows;
     private bool _hideDevelopmentResources;
+    private string _projectFolder = string.Empty;
+    private string _miniWindowResources = string.Empty;
     private string _validationMessage = string.Empty;
 
     public SettingsViewModel(IConfigurationService configService)
@@ -22,40 +21,10 @@ public class SettingsViewModel : ViewModelBase
         LoadSettings();
     }
 
-    public string AspireEndpoint
-    {
-        get => _aspireEndpoint;
-        set => SetProperty(ref _aspireEndpoint, value);
-    }
-
     public int PollingInterval
     {
         get => _pollingInterval;
         set => SetProperty(ref _pollingInterval, value);
-    }
-
-    public int CpuThresholdWarning
-    {
-        get => _cpuThresholdWarning;
-        set => SetProperty(ref _cpuThresholdWarning, value);
-    }
-
-    public int CpuThresholdCritical
-    {
-        get => _cpuThresholdCritical;
-        set => SetProperty(ref _cpuThresholdCritical, value);
-    }
-
-    public int MemoryThresholdWarning
-    {
-        get => _memoryThresholdWarning;
-        set => SetProperty(ref _memoryThresholdWarning, value);
-    }
-
-    public int MemoryThresholdCritical
-    {
-        get => _memoryThresholdCritical;
-        set => SetProperty(ref _memoryThresholdCritical, value);
     }
 
     public bool StartWithWindows
@@ -64,10 +33,28 @@ public class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _startWithWindows, value);
     }
 
+    public string AspireEndpoint
+    {
+        get => _aspireEndpoint;
+        set => SetProperty(ref _aspireEndpoint, string.IsNullOrWhiteSpace(value) ? Models.Configuration.DefaultAspireEndpoint : value);
+    }
+
     public bool HideDevelopmentResources
     {
         get => _hideDevelopmentResources;
         set => SetProperty(ref _hideDevelopmentResources, value);
+    }
+
+    public string ProjectFolder
+    {
+        get => _projectFolder;
+        set => SetProperty(ref _projectFolder, value);
+    }
+
+    public string MiniWindowResources
+    {
+        get => _miniWindowResources;
+        set => SetProperty(ref _miniWindowResources, value);
     }
 
     public string ValidationMessage
@@ -80,20 +67,6 @@ public class SettingsViewModel : ViewModelBase
     {
         ValidationMessage = string.Empty;
 
-        // Validate URL
-        if (string.IsNullOrWhiteSpace(AspireEndpoint))
-        {
-            ValidationMessage = "Aspire Endpoint cannot be empty.";
-            return false;
-        }
-
-        if (!Uri.TryCreate(AspireEndpoint, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-        {
-            ValidationMessage = "Aspire Endpoint must be a valid HTTP or HTTPS URL.";
-            return false;
-        }
-
         // Validate polling interval
         if (PollingInterval < 1000 || PollingInterval > 60000)
         {
@@ -101,41 +74,14 @@ public class SettingsViewModel : ViewModelBase
             return false;
         }
 
-        // Validate thresholds
-        if (CpuThresholdWarning < 0 || CpuThresholdWarning > 100)
+        // Validate ProjectFolder if set
+        if (!string.IsNullOrWhiteSpace(ProjectFolder))
         {
-            ValidationMessage = "CPU Warning Threshold must be between 0 and 100.";
-            return false;
-        }
-
-        if (CpuThresholdCritical < 0 || CpuThresholdCritical > 100)
-        {
-            ValidationMessage = "CPU Critical Threshold must be between 0 and 100.";
-            return false;
-        }
-
-        if (CpuThresholdCritical <= CpuThresholdWarning)
-        {
-            ValidationMessage = "CPU Critical Threshold must be greater than Warning Threshold.";
-            return false;
-        }
-
-        if (MemoryThresholdWarning < 0 || MemoryThresholdWarning > 100)
-        {
-            ValidationMessage = "Memory Warning Threshold must be between 0 and 100.";
-            return false;
-        }
-
-        if (MemoryThresholdCritical < 0 || MemoryThresholdCritical > 100)
-        {
-            ValidationMessage = "Memory Critical Threshold must be between 0 and 100.";
-            return false;
-        }
-
-        if (MemoryThresholdCritical <= MemoryThresholdWarning)
-        {
-            ValidationMessage = "Memory Critical Threshold must be greater than Warning Threshold.";
-            return false;
+            if (!Directory.Exists(ProjectFolder))
+            {
+                ValidationMessage = "ProjectFolder does not exist.";
+                return false;
+            }
         }
 
         return true;
@@ -150,12 +96,10 @@ public class SettingsViewModel : ViewModelBase
         {
             AspireEndpoint = AspireEndpoint,
             PollingIntervalMs = PollingInterval,
-            CpuThresholdWarning = CpuThresholdWarning,
-            CpuThresholdCritical = CpuThresholdCritical,
-            MemoryThresholdWarning = MemoryThresholdWarning,
-            MemoryThresholdCritical = MemoryThresholdCritical,
             StartWithWindows = StartWithWindows,
-            HideDevelopmentResources = HideDevelopmentResources
+            HideDevelopmentResources = HideDevelopmentResources,
+            ProjectFolder = ProjectFolder ?? string.Empty,
+            MiniWindowResources = MiniWindowResources ?? string.Empty
         };
 
         _configService.SaveConfiguration(config);
@@ -165,13 +109,13 @@ public class SettingsViewModel : ViewModelBase
     {
         var config = _configService.LoadConfiguration();
         
-        AspireEndpoint = config.AspireEndpoint;
+        AspireEndpoint = string.IsNullOrWhiteSpace(config.AspireEndpoint)
+            ? Models.Configuration.DefaultAspireEndpoint
+            : config.AspireEndpoint;
         PollingInterval = config.PollingIntervalMs;
-        CpuThresholdWarning = config.CpuThresholdWarning;
-        CpuThresholdCritical = config.CpuThresholdCritical;
-        MemoryThresholdWarning = config.MemoryThresholdWarning;
-        MemoryThresholdCritical = config.MemoryThresholdCritical;
         StartWithWindows = config.StartWithWindows;
         HideDevelopmentResources = config.HideDevelopmentResources;
+        ProjectFolder = config.ProjectFolder ?? string.Empty;
+        MiniWindowResources = config.MiniWindowResources ?? string.Empty;
     }
 }

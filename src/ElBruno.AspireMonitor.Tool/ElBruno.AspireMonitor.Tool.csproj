@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ElBruno.AspireMonitor.Tool</AssemblyName>
+    <RootNamespace>ElBruno.AspireMonitor</RootNamespace>
+
+    <!-- .NET Global Tool packaging -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>aspiremon</ToolCommandName>
+    <PackageOutputPath>..\..\artifacts\packages</PackageOutputPath>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>ElBruno.AspireMonitor</PackageId>
+    <Title>ElBruno.AspireMonitor</Title>
+    <Description>Windows system tray monitor for Aspire distributed applications. Install as a global tool and launch with `aspiremon`. See your Aspire resources at a glance, pin the ones you care about in a compact mini window with full URLs, and start/stop your AppHost from the tray.</Description>
+    <Authors>Bruno Capuano</Authors>
+    <Company>ElBruno</Company>
+    <Product>ElBruno.AspireMonitor</Product>
+    <Copyright>Copyright (c) 2026 Bruno Capuano</Copyright>
+    <PackageTags>aspire;monitoring;dotnet-tool;windows;system-tray;devtools;wpf</PackageTags>
+
+    <!-- Version -->
+    <Version>1.5.0</Version>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <FileVersion>1.5.0.0</FileVersion>
+    <PackageReleaseNotes>https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.5.0</PackageReleaseNotes>
+
+    <!-- Repository / Project URLs -->
+    <RepositoryUrl>https://github.com/elbruno/ElBruno.AspireMonitor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/elbruno/ElBruno.AspireMonitor</PackageProjectUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- License & assets -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>aspire-monitor-icon-128.png</PackageIcon>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\images\aspire-monitor-icon-128.png" Pack="true" PackagePath="\" Link="aspire-monitor-icon-128.png" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+  </ItemGroup>
+
+</Project>

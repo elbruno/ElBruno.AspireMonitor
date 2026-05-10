@@ -11,4 +11,5 @@ public interface IAspirePollingService
     void Start();
     void Stop();
     Task RefreshAsync();
+    void UpdateEndpoint(string newEndpoint);
 }

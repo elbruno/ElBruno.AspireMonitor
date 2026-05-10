@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Diagnostics;
+using System.Windows.Forms;
 using ElBruno.AspireMonitor.ViewModels;
 using ElBruno.AspireMonitor.Services;
 
@@ -18,6 +20,23 @@ public partial class SettingsWindow : Window
         if (configService != null)
         {
             DataContext = new SettingsViewModel(configService);
+        }
+    }
+
+    private void BrowseFolder_Click(object sender, RoutedEventArgs e)
+    {
+        using (var dialog = new FolderBrowserDialog())
+        {
+            dialog.Description = "Select your Aspire project folder";
+            dialog.ShowNewFolderButton = false;
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                if (ViewModel != null)
+                {
+                    ViewModel.ProjectFolder = dialog.SelectedPath;
+                }
+            }
         }
     }
 

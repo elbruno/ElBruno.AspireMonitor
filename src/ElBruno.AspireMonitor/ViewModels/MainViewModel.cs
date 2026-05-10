@@ -1,10 +1,12 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Services;
 using ElBruno.AspireMonitor.Models;
+using ElBruno.AspireMonitor.Helpers;
 
 namespace ElBruno.AspireMonitor.ViewModels;
 
@@ -12,32 +14,49 @@ public class MainViewModel : ViewModelBase
 {
     private readonly IAspirePollingService? _pollingService;
     private readonly IConfigurationService? _configService;
-    private string _hostUrl = Models.Configuration.DefaultAspireEndpoint;
+    private readonly IAspireCommandService? _commandService;
     private string _currentStatus = "Disconnected";
     private bool _isConnected;
     private DateTime _lastUpdated = DateTime.Now;
     private ObservableCollection<ResourceViewModel> _resources = new();
+    private string _projectFolder = string.Empty;
+    private string _miniWindowResourcesSetting = string.Empty;
+    private string _hostUrl = Configuration.DefaultAspireEndpoint;
+    private bool _isExecutingCommand;
+    private string _commandStatus = string.Empty;
+    private MiniMonitorViewModel? _miniMonitorViewModel;
+    private ResourceViewModel? _selectedResource;
+    private ObservableCollection<string> _logLines = new();
+    private bool _isLogPaused;
+    private bool _hostUrlDetected;
+    private const int MaxLogLines = 50;
 
-    public MainViewModel() : this(null, null)
+    public MainViewModel() : this(null, null, null)
     {
         // Design-time constructor
         InitializeSampleData();
     }
 
-    public MainViewModel(IAspirePollingService? pollingService, IConfigurationService? configService)
+    public MainViewModel(IAspirePollingService? pollingService, IConfigurationService? configService, IAspireCommandService? commandService = null)
     {
         _pollingService = pollingService;
         _configService = configService;
+        _commandService = commandService;
         
         RefreshCommand = new RelayCommand(_ => RefreshData());
         OpenUrlCommand = new RelayCommand(param => OpenUrl(param?.ToString() ?? string.Empty));
-
+        StartAspireCommand = new RelayCommand(_ => _ = StartAspireAsync(), _ => !_isExecutingCommand && !_isConnected);
+        StopAspireCommand = new RelayCommand(_ => _ = StopAspireAsync(), _ => !_isExecutingCommand && _isConnected);
+        
+        // Load project folder from config
         if (_configService != null)
         {
-            var configuration = _configService.LoadConfiguration();
-            HostUrl = string.IsNullOrWhiteSpace(configuration.AspireEndpoint)
-                ? Models.Configuration.DefaultAspireEndpoint
-                : configuration.AspireEndpoint;
+            var config = _configService.LoadConfiguration();
+            HostUrl = string.IsNullOrWhiteSpace(config.AspireEndpoint)
+                ? Configuration.DefaultAspireEndpoint
+                : config.AspireEndpoint;
+            ProjectFolder = config.ProjectFolder ?? string.Empty;
+            MiniWindowResourcesSetting = config.MiniWindowResources ?? string.Empty;
         }
         
         if (_pollingService != null)
@@ -48,11 +67,9 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public string HostUrl
-    {
-        get => _hostUrl;
-        set => SetProperty(ref _hostUrl, value);
-    }
+    public string AppVersion => VersionHelper.GetAppVersion();
+
+    public string AppVersionTitle => $"Aspire Monitor {AppVersion}";
 
     public string CurrentStatus
     {
@@ -62,6 +79,8 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _currentStatus, value))
             {
                 OnPropertyChanged(nameof(ConnectionStatus));
+                OnPropertyChanged(nameof(ErrorTitle));
+                OnPropertyChanged(nameof(ErrorMessage));
                 OnPropertyChanged(nameof(OverallStatusColor));
             }
         }
@@ -75,12 +94,31 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _isConnected, value))
             {
                 OnPropertyChanged(nameof(ConnectionStatus));
+                OnPropertyChanged(nameof(ErrorTitle));
+                OnPropertyChanged(nameof(ErrorMessage));
                 OnPropertyChanged(nameof(OverallStatusColor));
+                CommandManager.InvalidateRequerySuggested();
             }
         }
     }
 
     public string ConnectionStatus => CurrentStatus;
+
+    public string ErrorTitle => IsConnected ? "" : "Aspire Not Connected";
+
+    public string ErrorMessage
+    {
+        get
+        {
+            if (IsConnected)
+                return "";
+
+            if (CurrentStatus.Contains("Error"))
+                return $"{CurrentStatus}. Retrying...";
+
+            return "No Aspire instance found. Start Aspire with: aspire start";
+        }
+    }
 
     public System.Windows.Media.Brush OverallStatusColor
     {
@@ -132,8 +170,92 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _resources, value);
     }
 
+    public string ProjectFolder
+    {
+        get => _projectFolder;
+        set
+        {
+            if (SetProperty(ref _projectFolder, value))
+            {
+                OnPropertyChanged(nameof(ProjectFolderDisplay));
+            }
+        }
+    }
+
+    public string MiniWindowResourcesSetting
+    {
+        get => _miniWindowResourcesSetting;
+        set => SetProperty(ref _miniWindowResourcesSetting, value);
+    }
+
+    public string ProjectFolderDisplay => PathHumanizer.Humanize(_projectFolder, 50);
+
+    public string HostUrl
+    {
+        get => _hostUrl;
+        set => SetProperty(ref _hostUrl, value);
+    }
+
+    public string CommandStatus
+    {
+        get => _commandStatus;
+        set => SetProperty(ref _commandStatus, value);
+    }
+
+    public bool IsExecutingCommand
+    {
+        get => _isExecutingCommand;
+        set
+        {
+            if (SetProperty(ref _isExecutingCommand, value))
+            {
+                // Trigger requery of commands
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
     public ICommand? RefreshCommand { get; }
     public ICommand? OpenUrlCommand { get; }
+    public ICommand? StartAspireCommand { get; }
+    public ICommand? StopAspireCommand { get; }
+
+    public MiniMonitorViewModel? MiniMonitorViewModel
+    {
+        get => _miniMonitorViewModel;
+        set => _miniMonitorViewModel = value;
+    }
+
+    public ResourceViewModel? SelectedResource
+    {
+        get => _selectedResource;
+        set
+        {
+            if (SetProperty(ref _selectedResource, value))
+            {
+                OnPropertyChanged(nameof(LogHeader));
+                LoadResourceLogs();
+            }
+        }
+    }
+
+    public ObservableCollection<string> LogLines
+    {
+        get => _logLines;
+        set => SetProperty(ref _logLines, value);
+    }
+
+    public bool IsLogPaused
+    {
+        get => _isLogPaused;
+        set => SetProperty(ref _isLogPaused, value);
+    }
+
+    public string LogHeader => SelectedResource != null 
+        ? $"Logs - {SelectedResource.Name}" 
+        : "Logs - Select a resource";
+
+    public string LogStatus => $"{LogLines.Count} lines | {(IsLogPaused ? "Paused" : "Live")}";
 
     private void RefreshData()
     {
@@ -169,9 +291,9 @@ public class MainViewModel : ViewModelBase
                 UseShellExecute = true
             });
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail for now
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Failed to open URL '{url}': {ex.Message}");
         }
     }
 
@@ -180,6 +302,8 @@ public class MainViewModel : ViewModelBase
         InvokeOnUiThread(() =>
         {
             var hideDevelopmentResources = _configService?.LoadConfiguration().HideDevelopmentResources ?? false;
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnResourcesUpdated received: {resources.Count} resources");
+
             Resources.Clear();
             foreach (var resource in resources)
             {
@@ -209,11 +333,37 @@ public class MainViewModel : ViewModelBase
                 }
                 
                 Resources.Add(resourceViewModel);
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel]   Added resource: {resource.Name} (CPU: {metrics.CpuUsagePercent:F1}%, Mem: {metrics.MemoryUsagePercent:F1}%)");
             }
             
             LastUpdated = DateTime.Now;
-            IsConnected = true;
+            IsConnected = Resources.Count > 0;
             OnPropertyChanged(nameof(OverallStatusColor));
+
+            // Auto-detect the AppHost dashboard URL the first time we see Aspire running, so the
+            // mini and main windows can show a clickable link without requiring the user to start
+            // Aspire from the app itself.
+            if (IsConnected && !_hostUrlDetected && _commandService != null)
+            {
+                _hostUrlDetected = true;
+                _ = DetectAndUpdateHostUrlAsync();
+            }
+            else if (!IsConnected)
+            {
+                _hostUrlDetected = false;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] UI updated with {Resources.Count} resources, IsConnected={IsConnected}");
+
+            // If a resource is selected, update its logs
+            if (SelectedResource != null)
+            {
+                var updatedResource = Resources.FirstOrDefault(r => r.Name == SelectedResource.Name);
+                if (updatedResource != null)
+                {
+                    SelectedResource = updatedResource;
+                }
+            }
         });
     }
 
@@ -221,8 +371,17 @@ public class MainViewModel : ViewModelBase
     {
         InvokeOnUiThread(() =>
         {
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnStatusChanged: {status}");
             CurrentStatus = status;
             IsConnected = status == "Connected";
+
+            // When Aspire is reported as not running, reset the dashboard URL to the default
+            // so we re-detect it when Aspire starts again.
+            if (status == "Not Running")
+            {
+                HostUrl = Configuration.DefaultAspireEndpoint;
+                _hostUrlDetected = false;
+            }
         });
     }
 
@@ -230,6 +389,7 @@ public class MainViewModel : ViewModelBase
     {
         InvokeOnUiThread(() =>
         {
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnError: {error}");
             CurrentStatus = $"Error: {error}";
             IsConnected = false;
         });
@@ -248,14 +408,184 @@ public class MainViewModel : ViewModelBase
         dispatcher.Invoke(action);
     }
 
+    private async Task DetectAndUpdateHostUrlAsync()
+    {
+        try
+        {
+            if (_commandService == null) return;
+            var endpoint = await _commandService.DetectAspireEndpointAsync();
+            if (!string.IsNullOrWhiteSpace(endpoint))
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    HostUrl = endpoint!;
+                    System.Diagnostics.Debug.WriteLine($"[MainViewModel] Detected dashboard URL: {endpoint}");
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Dashboard URL detection failed: {ex.Message}");
+            _hostUrlDetected = false;
+        }
+    }
+
     public void Start()
     {
+        System.Diagnostics.Debug.WriteLine("[MainViewModel] Starting polling...");
         _pollingService?.Start();
+        // Trigger initial refresh to get resources immediately
+        _ = _pollingService?.RefreshAsync();
     }
 
     public void Stop()
     {
         _pollingService?.Stop();
+    }
+
+    private async Task StartAspireAsync()
+    {
+        if (_commandService == null || string.IsNullOrWhiteSpace(ProjectFolder))
+        {
+            CommandStatus = "❌ Project folder not configured";
+            return;
+        }
+
+        try
+        {
+            IsExecutingCommand = true;
+            CommandStatus = "🚀 Starting Aspire...";
+            
+            // Clear logs before starting new command
+            _miniMonitorViewModel?.ClearLog();
+            
+            var success = await _commandService.StartAspireAsync(ProjectFolder, _miniMonitorViewModel?.LogCallback);
+            
+            if (success)
+            {
+                CommandStatus = "🔍 Detecting Aspire endpoint...";
+                
+                // Wait a moment then detect the endpoint from running Aspire instance
+                await Task.Delay(2000);
+                var endpoint = await _commandService.DetectAspireEndpointAsync(_miniMonitorViewModel?.LogCallback);
+                
+                if (!string.IsNullOrWhiteSpace(endpoint))
+                {
+                    // CRITICAL: Update the polling service's API client endpoint before refreshing
+                    if (_pollingService is AspirePollingService pollingService)
+                    {
+                        pollingService.UpdateEndpoint(endpoint);
+                    }
+                    
+                    System.Diagnostics.Debug.WriteLine($"[MainViewModel] Aspire started with endpoint: {endpoint}");
+                    
+                    // Trigger refresh to immediately connect
+                    _pollingService?.RefreshAsync();
+
+                    // Wait for resources to actually appear (Aspire can take 30-60s to spin up)
+                    // Keep IsExecutingCommand = true so START button stays disabled while we wait.
+                    const int readinessTimeoutSeconds = 90;
+                    var readinessStart = DateTime.UtcNow;
+                    while ((DateTime.UtcNow - readinessStart).TotalSeconds < readinessTimeoutSeconds)
+                    {
+                        if (Resources.Count > 0)
+                        {
+                            break;
+                        }
+                        var elapsed = (int)(DateTime.UtcNow - readinessStart).TotalSeconds;
+                        CommandStatus = $"⏳ Starting Aspire... ({elapsed}s / {readinessTimeoutSeconds}s)";
+                        await Task.Delay(1000);
+                    }
+
+                    if (Resources.Count > 0)
+                    {
+                        CommandStatus = "✅ Aspire started successfully";
+                    }
+                    else
+                    {
+                        CommandStatus = "⚠️ Aspire is taking longer than expected — still waiting for resources";
+                        System.Diagnostics.Debug.WriteLine("[MainViewModel] Aspire start timed out waiting for resources");
+                    }
+                }
+                else
+                {
+                    CommandStatus = "⚠️ Aspire started but endpoint not detected";
+                    System.Diagnostics.Debug.WriteLine("[MainViewModel] Aspire started but could not detect endpoint");
+                }
+            }
+            else
+            {
+                CommandStatus = "❌ Failed to start Aspire";
+                System.Diagnostics.Debug.WriteLine("[MainViewModel] Failed to start Aspire");
+            }
+        }
+        catch (Exception ex)
+        {
+            CommandStatus = $"❌ Error: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Error starting Aspire: {ex.Message}");
+        }
+        finally
+        {
+            IsExecutingCommand = false;
+            // Clear status after 5 seconds
+            _ = Task.Delay(5000).ContinueWith(_ =>
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (CommandStatus != "✅ Aspire started successfully" && !CommandStatus.StartsWith("🚀"))
+                        CommandStatus = string.Empty;
+                });
+            });
+        }
+    }
+
+    private async Task StopAspireAsync()
+    {
+        if (_commandService == null)
+        {
+            CommandStatus = "❌ Command service not available";
+            return;
+        }
+
+        try
+        {
+            IsExecutingCommand = true;
+            CommandStatus = "⏹️ Stopping Aspire...";
+            
+            // Clear logs before starting new command
+            _miniMonitorViewModel?.ClearLog();
+            
+            var success = await _commandService.StopAspireAsync(_miniMonitorViewModel?.LogCallback);
+            
+            if (success)
+            {
+                CommandStatus = "✅ Aspire stopped successfully";
+                System.Diagnostics.Debug.WriteLine("[MainViewModel] Aspire stopped successfully");
+            }
+            else
+            {
+                CommandStatus = "❌ Failed to stop Aspire";
+                System.Diagnostics.Debug.WriteLine("[MainViewModel] Failed to stop Aspire");
+            }
+        }
+        catch (Exception ex)
+        {
+            CommandStatus = $"❌ Error: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Error stopping Aspire: {ex.Message}");
+        }
+        finally
+        {
+            IsExecutingCommand = false;
+            // Clear status after 5 seconds
+            _ = Task.Delay(5000).ContinueWith(_ =>
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (!CommandStatus.Contains("Error") && CommandStatus != "✅ Aspire stopped successfully")
+                        CommandStatus = string.Empty;
+                });
+            });
+        }
     }
 
     private void InitializeSampleData()
@@ -305,5 +635,72 @@ public class MainViewModel : ViewModelBase
         });
 
         IsConnected = true;
+    }
+
+    public void SelectResource(ResourceViewModel resource)
+    {
+        // Deselect all resources first
+        foreach (var r in Resources)
+        {
+            r.IsSelected = false;
+        }
+
+        // Select the clicked resource
+        resource.IsSelected = true;
+        SelectedResource = resource;
+    }
+
+    public void ClearLogs()
+    {
+        LogLines.Clear();
+        OnPropertyChanged(nameof(LogStatus));
+    }
+
+    private void LoadResourceLogs()
+    {
+        if (SelectedResource == null)
+        {
+            LogLines.Clear();
+            OnPropertyChanged(nameof(LogStatus));
+            return;
+        }
+
+        // Clear current logs
+        LogLines.Clear();
+
+        // Add initial log entry
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] Monitoring logs for: {SelectedResource.Name}");
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] Status: {SelectedResource.Status}");
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] CPU: {SelectedResource.CpuUsageText}, Memory: {SelectedResource.MemoryUsageText}");
+        
+        if (SelectedResource.HasUrl)
+        {
+            AddLogLine($"[{DateTime.Now:HH:mm:ss}] Endpoint: {SelectedResource.Url}");
+        }
+
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] ---");
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] NOTE: Live log streaming from Aspire CLI will be implemented in Phase 2");
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] For now, this panel shows resource status updates");
+
+        OnPropertyChanged(nameof(LogStatus));
+    }
+
+    private void AddLogLine(string line)
+    {
+        if (IsLogPaused)
+            return;
+
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        {
+            LogLines.Add(line);
+
+            // Keep only the last 50 lines
+            while (LogLines.Count > MaxLogLines)
+            {
+                LogLines.RemoveAt(0);
+            }
+
+            OnPropertyChanged(nameof(LogStatus));
+        });
     }
 }

@@ -1,0 +1,47 @@
+{
+  "resources": [
+    {
+      "id": "apiservice",
+      "name": "apiservice",
+      "type": "project.v0",
+      "status": "Running",
+      "metrics": {
+        "cpuUsagePercent": 25.5,
+        "memoryUsagePercent": 40.2,
+        "diskUsagePercent": 15.0
+      },
+      "endpoints": [
+        "http://localhost:5000",
+        "https://localhost:5001"
+      ]
+    },
+    {
+      "id": "webapp",
+      "name": "webapp",
+      "type": "project.v0",
+      "status": "Running",
+      "metrics": {
+        "cpuUsagePercent": 15.3,
+        "memoryUsagePercent": 32.8,
+        "diskUsagePercent": 10.5
+      },
+      "endpoints": [
+        "http://localhost:3000"
+      ]
+    },
+    {
+      "id": "postgres",
+      "name": "postgres",
+      "type": "container.v0",
+      "status": "Running",
+      "metrics": {
+        "cpuUsagePercent": 5.1,
+        "memoryUsagePercent": 60.4,
+        "diskUsagePercent": 25.0
+      },
+      "endpoints": [
+        "postgresql://localhost:5432"
+      ]
+    }
+  ]
+}

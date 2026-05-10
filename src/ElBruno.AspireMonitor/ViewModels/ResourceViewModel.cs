@@ -17,6 +17,7 @@ public class ResourceViewModel : ViewModelBase
     private int _endpointCount;
     private string? _url;
     private List<AspireEnvironmentEntry> _environment = new();
+    private bool _isSelected;
 
     public string Name
     {
@@ -200,4 +201,20 @@ public class ResourceViewModel : ViewModelBase
     public bool HasUrl => !string.IsNullOrEmpty(Url);
 
     public string UrlDisplay => HasUrl ? "🔗 Open" : string.Empty;
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+
+    public string StatusText => Status switch
+    {
+        ResourceStatus.Running => "Running",
+        ResourceStatus.Stopped => "Stopped",
+        ResourceStatus.Starting => "Starting",
+        ResourceStatus.Stopping => "Stopping",
+        ResourceStatus.Unknown => "Unknown",
+        _ => "Unknown"
+    };
 }
