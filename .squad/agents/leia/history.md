@@ -857,3 +857,9 @@ Do not proceed to NuGet publish for v1.6.0. Document blocker for Phase 6 pre-rel
 - Documentation consolidated in .squad/decisions.md (dashboard endpoint + coverage gate entries)
 
 **Status:** ⚠️ PREPARED BUT BLOCKED — All artifacts ready; awaiting coverage gate implementation
+
+### 2026-05-10 — v1.7.0 Release
+
+- Released ElBruno.AspireMonitor v1.7.0 from `main` after validating build, unit tests, coverage gate, SampleHarness tests, and tool packaging.
+- GitHub release publishing via `.github\workflows\publish.yml` completed successfully and NuGet.org indexed `ElBruno.AspireMonitor` 1.7.0 after a short delay.
+- Keep release notes in `docs\releases\RELEASE-vX.Y.Z.md` and point `<PackageReleaseNotes>` to the matching GitHub release tag.
