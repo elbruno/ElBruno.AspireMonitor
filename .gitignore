@@ -17,6 +17,7 @@ obj/
 *.log
 
 # Build artifacts
+artifacts/coverage/
 *.nupkg
 *.snupkg
 

@@ -299,6 +299,104 @@ public class AspireCommandServiceTests
     }
 
     [Fact]
+    public void ParseEndpointFromAspirePsJson_WithDashboardUrl_ReturnsFullLoginUrl()
+    {
+        // Arrange
+        var output = """
+            [{
+                "appHostPath": "C:\\src\\SampleHarness\\SampleHarness.AppHost.csproj",
+                "appHostPid": 12345,
+                "cliPid": 67890,
+                "dashboardUrl": "http://localhost:15295/login?t=abc123"
+            }]
+            """;
+
+        // Act
+        var result = InvokeJsonParser(output);
+
+        // Assert
+        result.Should().Be("http://localhost:15295/login?t=abc123",
+            "JSON parser should preserve the Aspire dashboard login token");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ParseEndpointFromAspirePsJson_WithEmptyOutput_ReturnsNull(string output)
+    {
+        // Act
+        var result = InvokeJsonParser(output);
+
+        // Assert
+        result.Should().BeNull("empty JSON output should not produce an endpoint");
+    }
+
+    [Fact]
+    public void ParseEndpointFromAspirePsJson_WithMissingDashboardUrl_ReturnsNull()
+    {
+        // Arrange
+        var output = """
+            [{
+                "appHostPath": "C:\\src\\SampleHarness\\SampleHarness.AppHost.csproj",
+                "appHostPid": 12345,
+                "cliPid": 67890
+            }]
+            """;
+
+        // Act
+        var result = InvokeJsonParser(output);
+
+        // Assert
+        result.Should().BeNull("instances without dashboardUrl should fall back to text parsing");
+    }
+
+    [Theory]
+    [InlineData("""[{ "dashboardUrl": "" }]""")]
+    [InlineData("""[{ "dashboardUrl": null }]""")]
+    public void ParseEndpointFromAspirePsJson_WithBlankDashboardUrl_ReturnsNull(string output)
+    {
+        // Act
+        var result = InvokeJsonParser(output);
+
+        // Assert
+        result.Should().BeNull("blank dashboardUrl values should be treated as missing");
+    }
+
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("""{ "dashboardUrl": "http://localhost:15295/login?t=abc123" }""")]
+    public void ParseEndpointFromAspirePsJson_WithNonInstanceArray_ReturnsNull(string output)
+    {
+        // Act
+        var result = InvokeJsonParser(output);
+
+        // Assert
+        result.Should().BeNull("only non-empty Aspire ps arrays contain instances");
+    }
+
+    [Theory]
+    [InlineData("not json")]
+    [InlineData("[")]
+    public void ParseEndpointFromAspirePsJson_WithInvalidJson_ReturnsNull(string output)
+    {
+        // Act
+        var result = InvokeJsonParser(output);
+
+        // Assert
+        result.Should().BeNull("invalid JSON should fall back to text parsing");
+    }
+
+    [Fact]
+    public void ParseEndpointFromAspirePsJson_WithNonObjectInstance_ReturnsNull()
+    {
+        // Act
+        var result = InvokeJsonParser("[42]");
+
+        // Assert
+        result.Should().BeNull("unexpected JSON shapes should not throw");
+    }
+
+    [Fact]
     public async Task ConcurrentCommands_HandleCorrectly()
     {
         // Arrange
@@ -334,6 +432,16 @@ public class AspireCommandServiceTests
         duration.Should().BeLessThan(TimeSpan.FromSeconds(15), 
             "command should complete within reasonable timeout");
         result.Should().NotBeNull("should return result even on timeout");
+    }
+
+    private static string? InvokeJsonParser(string output)
+    {
+        var service = new AspireCommandService();
+        var method = typeof(AspireCommandService).GetMethod("ParseEndpointFromAspirePsJson",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        method.Should().NotBeNull("JSON parser should remain available for deterministic branch coverage");
+        return method!.Invoke(service, new[] { output }) as string;
     }
 }
 
