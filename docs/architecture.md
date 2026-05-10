@@ -144,7 +144,7 @@ Auto-reconnect when user opens app or after max backoff
 
 ### Local Development
 - Single Windows machine with .NET 10 SDK
-- Aspire running locally on configurable endpoint (default http://localhost:5000)
+- Aspire running locally on configurable endpoint (default http://localhost:18888)
 - Config file auto-created in user's AppData folder
 - App runs as foreground process or system tray daemon
 
@@ -184,7 +184,7 @@ C:\Users\{Username}\AppData\Local\ElBruno\AspireMonitor\config.json
 Example:
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 2000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,

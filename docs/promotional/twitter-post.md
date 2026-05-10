@@ -154,7 +154,7 @@ Start monitoring your Aspire apps in 30 seconds:
 
 1. `dotnet tool install --global ElBruno.AspireMonitor`
 2. `aspire-monitor`
-3. Enter Aspire endpoint: `http://localhost:5000`
+3. Enter Aspire endpoint: `http://localhost:18888`
 4. Watch real-time metrics in system tray 🟢🟡🔴
 
 Full docs: github.com/elbruno/ElBruno.AspireMonitor

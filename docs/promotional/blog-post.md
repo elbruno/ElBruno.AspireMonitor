@@ -46,7 +46,7 @@ Default thresholds work for most, but your app is unique. Set CPU/memory warning
 
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "aspireEndpoint": "http://localhost:18888",
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,
@@ -78,7 +78,7 @@ dotnet tool install --global ElBruno.AspireMonitor
 aspire-monitor
 ```
 
-That's it. The first time you run it, you'll be prompted for your Aspire endpoint URL (default: `http://localhost:5000`).
+That's it. The first time you run it, you'll be prompted for your Aspire endpoint URL (default: `http://localhost:18888`).
 
 ### Configure (Optional)
 

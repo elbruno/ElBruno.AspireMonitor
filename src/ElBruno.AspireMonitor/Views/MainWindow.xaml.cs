@@ -143,6 +143,10 @@ public partial class MainWindow : Window
             if (settingsWindow.ShowDialog() == true)
             {
                 // Configuration changed, restart polling service
+                if (ViewModel != null)
+                {
+                    ViewModel.HostUrl = _configService.LoadConfiguration().AspireEndpoint;
+                }
                 ViewModel?.Stop();
                 ViewModel?.Start();
             }
@@ -164,6 +168,14 @@ public partial class MainWindow : Window
     }
 
     private void HostUrl_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (ViewModel?.HostUrl != null)
+        {
+            OpenUrl(ViewModel.HostUrl);
+        }
+    }
+
+    private void Dashboard_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel?.HostUrl != null)
         {

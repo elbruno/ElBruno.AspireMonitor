@@ -20,7 +20,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Top Section: Host URL and Status -->
+        <!-- Top Section: Dashboard URL and Status -->
         <Border Grid.Row="0" 
                 BorderBrush="#CCCCCC" 
                 BorderThickness="0,0,0,1" 
@@ -34,6 +34,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
@@ -55,9 +56,17 @@
                            Margin="5,0"
                            MouseLeftButtonDown="HostUrl_Click"/>
 
+                <Button Grid.Row="0"
+                        Grid.Column="2"
+                        Content="Open Dashboard"
+                        Padding="10,4"
+                        Margin="10,0"
+                        VerticalAlignment="Center"
+                        Click="Dashboard_Click"/>
+
                 <!-- Connection Status -->
                 <TextBlock Grid.Row="0"
-                           Grid.Column="2"
+                           Grid.Column="3"
                            Text="{Binding ConnectionStatus}"
                            FontSize="12"
                            Foreground="{Binding OverallStatusColor}"
@@ -67,7 +76,7 @@
                 <!-- Last Updated -->
                 <TextBlock Grid.Row="1"
                            Grid.Column="1"
-                           Grid.ColumnSpan="2"
+                           Grid.ColumnSpan="3"
                            Text="{Binding LastUpdatedText}"
                            FontSize="10"
                            Foreground="#666666"

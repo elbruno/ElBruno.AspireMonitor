@@ -57,6 +57,24 @@
    - Click → open in default browser (Process.Start)
    - Config button → open settings dialog (separate window)
 
+### 2026-05-10 — Dashboard-Aware UI Slice
+
+1. **Endpoint defaults are now dashboard-first:**
+   - `Configuration.DefaultAspireEndpoint` is the shared default (`http://localhost:18888`).
+   - `MainViewModel` now loads `HostUrl` from `IConfigurationService` at startup when available.
+
+2. **User-visible dashboard action added:**
+   - Main window now includes an explicit `Open Dashboard` button beside the clickable host URL.
+   - Settings copy now says `Aspire Dashboard URL` and shows the Aspire 13.3 dashboard port example.
+
+3. **Key files touched:**
+   - `src/ElBruno.AspireMonitor/App.xaml.cs`
+   - `src/ElBruno.AspireMonitor/ViewModels/MainViewModel.cs`
+   - `src/ElBruno.AspireMonitor/Views/MainWindow.xaml`
+   - `src/ElBruno.AspireMonitor/Views/MainWindow.xaml.cs`
+   - `src/ElBruno.AspireMonitor/Views/SettingsWindow.xaml`
+   - `README.md`, `docs/configuration.md`, `docs/troubleshooting.md`
+
 ---
 
 ## Session Log

@@ -4,7 +4,7 @@ namespace ElBruno.AspireMonitor.ViewModels;
 
 public class ConfigurationViewModel : ViewModelBase
 {
-    private string _aspireEndpoint = "http://localhost:15888";
+    private string _aspireEndpoint = Models.Configuration.DefaultAspireEndpoint;
     private int _pollingInterval = 5000;
     private int _cpuThreshold = 70;
     private int _memoryThreshold = 70;

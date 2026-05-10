@@ -1,4 +1,7 @@
 using FluentAssertions;
+using ElBruno.AspireMonitor.Models;
+using ElBruno.AspireMonitor.Services;
+using ElBruno.AspireMonitor.ViewModels;
 using Moq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,6 +14,70 @@ public class IntegrationTests
 {
     private readonly string _healthyJsonPath = Path.Combine("Fixtures", "aspire-response-healthy.json");
     private readonly string _stressedJsonPath = Path.Combine("Fixtures", "aspire-response-stressed.json");
+
+    [Fact]
+    public void Configuration_DefaultAspireEndpoint_UsesDashboardPort()
+    {
+        var configuration = new Configuration();
+
+        configuration.AspireEndpoint.Should().Be(Configuration.DefaultAspireEndpoint);
+    }
+
+    [Fact]
+    public void ViewModels_DefaultAspireEndpoint_StayAligned()
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new Configuration());
+
+        var settingsViewModel = new SettingsViewModel(configService.Object);
+        var configurationViewModel = new ConfigurationViewModel();
+        var mainViewModel = new MainViewModel(null, configService.Object);
+
+        settingsViewModel.AspireEndpoint.Should().Be(Configuration.DefaultAspireEndpoint);
+        configurationViewModel.AspireEndpoint.Should().Be(Configuration.DefaultAspireEndpoint);
+        mainViewModel.HostUrl.Should().Be(Configuration.DefaultAspireEndpoint);
+    }
+
+    [Fact]
+    public void MainViewModel_UsesConfiguredHostUrl_InsteadOfStaleDefault()
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new Configuration
+            {
+                AspireEndpoint = "http://localhost:19999"
+            });
+
+        var mainViewModel = new MainViewModel(null, configService.Object);
+
+        mainViewModel.HostUrl.Should().Be("http://localhost:19999");
+    }
+
+    [Fact]
+    public async Task MainViewModel_LoadsPersistedConfiguration_FromServiceFixture()
+    {
+        var testDirectory = Path.Combine(AppContext.BaseDirectory, $"config-regression-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+
+        var configPath = Path.Combine(testDirectory, "config.json");
+        await File.WriteAllTextAsync(configPath, await File.ReadAllTextAsync(Path.Combine("Fixtures", "config-valid.json")));
+
+        try
+        {
+            var configurationService = new ConfigurationService(configPath);
+            var mainViewModel = new MainViewModel(null, configurationService);
+
+            mainViewModel.HostUrl.Should().Be(Configuration.DefaultAspireEndpoint);
+        }
+        finally
+        {
+            if (Directory.Exists(testDirectory))
+            {
+                Directory.Delete(testDirectory, true);
+            }
+        }
+    }
 
     [Fact]
     public async Task PollingService_WithMockedAspireApi_UpdatesStateCorrectly()

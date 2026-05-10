@@ -36,7 +36,7 @@
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ ● http://localhost:15888          Connected     │
+│ ● http://localhost:18888          Connected     │
 │ Last updated: 14:23:45                          │
 ├─────────────────────────────────────────────────┤
 │ ● webfrontend     CPU: 45.2%  MEM: 62.8%  🔗   │
@@ -60,7 +60,7 @@
 │ Settings                                    │
 ├─────────────────────────────────────────────┤
 │ Aspire Endpoint:                            │
-│ [http://localhost:15888                    ]│
+│ [http://localhost:18888                    ]│
 │                                             │
 │ Polling Interval (ms):                      │
 │ [5000                                      ]│
@@ -168,7 +168,7 @@ public class ResourceMetrics
 
 1. **Luke's Tasks:**
    - Implement `Services/AspireApiService.cs`
-   - Poll Aspire endpoint: `GET http://localhost:15888/api/resources`
+   - Poll Aspire endpoint: `GET http://localhost:18888/api/resources`
    - Map API response to ResourceViewModel properties
    - Handle connection errors (set IsConnected = false)
 

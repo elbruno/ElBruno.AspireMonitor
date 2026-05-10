@@ -21,7 +21,7 @@ dotnet tool install --global dotnet-serve
 
 **Or download directly:** [Latest Release](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest)
 
-Then access your Aspire endpoint (default: `http://localhost:5000`) and start monitoring.
+Then access your Aspire dashboard (default: `http://localhost:18888`) and start monitoring.
 
 ## 🎯 Features
 
@@ -31,6 +31,7 @@ Then access your Aspire endpoint (default: `http://localhost:5000`) and start mo
 | ⚡ **Real-Time Updates** | Automatic polling every 2 seconds (configurable) |
 | 🪟 **System Tray Integration** | Minimal, always-available monitoring in your taskbar |
 | 🔗 **Clickable URLs** | Open resources directly from the app |
+| 🧭 **Open Dashboard** | One-click button opens the configured Aspire dashboard URL |
 | ⚙️ **Configurable Thresholds** | Set CPU/memory warning and critical points |
 | 🔄 **Auto-Reconnect** | Gracefully handles network interruptions |
 | 📊 **Multi-Resource Monitoring** | Track unlimited Aspire resources |
@@ -47,9 +48,9 @@ Then access your Aspire endpoint (default: `http://localhost:5000`) and start mo
 
 Download the latest release from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest) and run `ElBruno.AspireMonitor.exe`.
 
-On first run, you'll be prompted for your Aspire endpoint URL:
+On first run, you'll be prompted for your Aspire dashboard URL:
 ```
-Enter Aspire endpoint (e.g., http://localhost:5000): http://localhost:5000
+Enter Aspire dashboard URL (e.g., http://localhost:18888): http://localhost:18888
 ```
 
 ### System Tray
@@ -69,7 +70,7 @@ Edit configuration at:
 Example:
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 2000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
@@ -141,7 +142,7 @@ Right-click `ElBruno.AspireMonitor.exe` → **Properties** → **Details** tab
 
 ### Can't connect to Aspire?
 
-1. Verify Aspire is running: `http://localhost:5000`
+1. Verify Aspire is running: `http://localhost:18888`
 2. Check configuration file: `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`
 3. See [Troubleshooting Guide](./docs/troubleshooting.md) for more solutions
 

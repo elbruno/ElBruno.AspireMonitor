@@ -1,6 +1,6 @@
 # Squad Decisions — ElBruno.AspireMonitor
 
-**Last Updated:** 2026-04-26 (Session 2 Complete: Phases 2-4)
+**Last Updated:** 2026-05-10 (Phase 1 Dashboard Endpoint Alignment)
 **Phase:** Phases 1-4 Complete → Phase 5 Ready (Review & Release)
 
 ---
@@ -149,7 +149,7 @@
 - **Status:** ✅ APPROVED (Luke, 2026-04-26)
 
 ### Configuration Properties
-- **aspireEndpoint** (string): Aspire API base URL (e.g., "http://localhost:5000")
+- **aspireEndpoint** (string): Aspire dashboard URL (e.g., "http://localhost:18888")
 - **pollingIntervalMs** (int): Polling interval in milliseconds (default: 2000)
 - **cpuThresholdWarning** (int): CPU % warning threshold (default: 70)
 - **cpuThresholdCritical** (int): CPU % critical threshold (default: 90)
@@ -409,3 +409,23 @@
 - Test coverage must reach 80%+ before release
 - All code reviewed by Leia before Phase 5
 - All docs reviewed by Leia before Phase 5
+
+## Phase 1 Dashboard Endpoint Alignment
+
+### Dashboard URL Source of Truth
+- **Decision:** Use `Configuration.DefaultAspireEndpoint` as the single source of truth for the Aspire dashboard URL.
+- **Rationale:** Prevents stale hardcoded URLs from drifting across config, ViewModels, and docs.
+- **Status:** ✅ IMPLEMENTED (Han + Yoda, 2026-05-10)
+- **Files:** `src/ElBruno.AspireMonitor/Models/Configuration.cs`, `src/ElBruno.AspireMonitor/ViewModels/MainViewModel.cs`, `src/ElBruno.AspireMonitor/ViewModels/ConfigurationViewModel.cs`, `src/ElBruno.AspireMonitor/ViewModels/SettingsViewModel.cs`
+
+### Startup Hydration
+- **Decision:** Load `MainViewModel.HostUrl` from `IConfigurationService` at startup when config is available.
+- **Rationale:** Keeps the UI aligned with persisted dashboard settings and avoids stale defaults.
+- **Status:** ✅ IMPLEMENTED (Han, 2026-05-10)
+- **Files:** `src/ElBruno.AspireMonitor/App.xaml.cs`, `src/ElBruno.AspireMonitor/ViewModels/MainViewModel.cs`
+
+### Dashboard Regression Coverage
+- **Decision:** Add fixture-backed regression tests for the dashboard-aware slice.
+- **Rationale:** Catches URL drift in deterministic tests without relying on brittle UI automation.
+- **Status:** ✅ IMPLEMENTED (Yoda, 2026-05-10)
+- **Files:** `src/ElBruno.AspireMonitor.Tests/IntegrationTests.cs`, `src/ElBruno.AspireMonitor.Tests/Services/ConfigurationServiceTests.cs`

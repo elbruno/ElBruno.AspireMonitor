@@ -20,15 +20,15 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Aspire Endpoint -->
+        <!-- Aspire Dashboard URL -->
         <StackPanel Grid.Row="0" Margin="0,0,0,15">
-            <TextBlock Text="Aspire Endpoint:" 
+            <TextBlock Text="Aspire Dashboard URL:" 
                        FontWeight="SemiBold" 
                        Margin="0,0,0,5"/>
             <TextBox Text="{Binding AspireEndpoint, UpdateSourceTrigger=PropertyChanged}"
                      Height="25"
                      Padding="5,3"/>
-            <TextBlock Text="Example: http://localhost:15888" 
+            <TextBlock Text="Example: http://localhost:18888" 
                        FontSize="10" 
                        Foreground="#666666" 
                        Margin="0,3,0,0"/>

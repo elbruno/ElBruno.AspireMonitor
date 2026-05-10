@@ -89,7 +89,7 @@
 
 **Solutions:**
 1. **Verify Aspire is running:**
-   - Open browser: `http://localhost:5000` (or your configured endpoint)
+   - Open browser: `http://localhost:18888` (or your configured endpoint)
    - Should see Aspire dashboard
    - If blank/error, Aspire isn't running
 
@@ -98,17 +98,17 @@
    notepad %APPDATA%\Local\ElBruno\AspireMonitor\config.json
    ```
    Verify `aspireEndpoint` is correct:
-   - ✅ `http://localhost:5000`
-   - ❌ `https://localhost:5000` (HTTPS not supported yet)
-   - ❌ `http://localhost:5000/` (no trailing slash)
+   - ✅ `http://localhost:18888`
+   - ❌ `https://localhost:18888` (HTTPS not supported yet)
+   - ❌ `http://localhost:18888/` (no trailing slash)
 
 3. **Test endpoint directly:**
    ```bash
    # Windows PowerShell
-   Invoke-RestMethod -Uri "http://localhost:5000/api/resources"
+   Invoke-RestMethod -Uri "http://localhost:18888/api/resources"
    
    # Or open in browser
-   http://localhost:5000/api/resources
+   http://localhost:18888/api/resources
    ```
    Should return JSON list of resources.
 
@@ -235,13 +235,13 @@ AspireMonitor auto-creates config on first run. If missing:
    ```json
    // ❌ Wrong — missing comma after "aspireEndpoint"
    {
-     "aspireEndpoint": "http://localhost:5000"
+     "aspireEndpoint": "http://localhost:18888"
      "pollingIntervalMs": 2000
    }
    
    // ✅ Correct
    {
-     "aspireEndpoint": "http://localhost:5000",
+     "aspireEndpoint": "http://localhost:18888",
      "pollingIntervalMs": 2000
    }
    ```
@@ -271,7 +271,7 @@ AspireMonitor auto-creates config on first run. If missing:
 2. **Check Aspire API:**
    Test directly in browser:
    ```
-   http://localhost:5000/api/resources
+   http://localhost:18888/api/resources
    ```
    Should return fresh resource list.
 
@@ -321,7 +321,7 @@ AspireMonitor auto-creates config on first run. If missing:
 3. **Check Aspire API:**
    Is it returning valid resource data?
    ```bash
-   Invoke-RestMethod -Uri "http://localhost:5000/api/resources"
+   Invoke-RestMethod -Uri "http://localhost:18888/api/resources"
    ```
 
 ---
@@ -333,7 +333,7 @@ AspireMonitor auto-creates config on first run. If missing:
 **Solutions:**
 1. **Verify Aspire API returns URLs:**
    ```bash
-   Invoke-RestMethod -Uri "http://localhost:5000/api/resources"
+   Invoke-RestMethod -Uri "http://localhost:18888/api/resources"
    ```
    Each resource should have a valid URL field.
 
@@ -370,7 +370,7 @@ AspireMonitor auto-creates config on first run. If missing:
 2. **Check Aspire API response time:**
    Test in browser:
    ```
-   http://localhost:5000/api/resources
+   http://localhost:18888/api/resources
    ```
    If slow, increase interval.
 

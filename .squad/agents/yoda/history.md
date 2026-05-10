@@ -147,3 +147,17 @@
 3. Measure and report actual code coverage
 4. Add ViewModel integration tests as Han completes UI binding
 5. Approve release only after all tests pass with 80%+ coverage
+
+### 2026-05-10 — Phase 1 Dashboard Regression Coverage
+
+**Work Completed:**
+- ✅ Standardized the default Aspire endpoint to `http://localhost:18888` in `Configuration`
+- ✅ Updated `MainViewModel` to load `HostUrl` from `IConfigurationService`
+- ✅ Aligned `SettingsViewModel`, `ConfigurationViewModel`, and the settings UI example text with the dashboard default
+- ✅ Added regression coverage from persisted config to `MainViewModel`
+- ✅ Verified test suite: 76/76 passing
+
+**Learnings:**
+- Centralizing the default endpoint in `Configuration.DefaultAspireEndpoint` keeps config and view models aligned
+- Fixture-backed configuration loading is the cleanest regression path for dashboard URL changes
+- Direct view-model assertions catch stale hardcoded URLs without brittle UI automation

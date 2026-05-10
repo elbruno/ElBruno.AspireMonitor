@@ -11,7 +11,7 @@ public class MainViewModel : ViewModelBase
 {
     private readonly IAspirePollingService? _pollingService;
     private readonly IConfigurationService? _configService;
-    private string _hostUrl = "http://localhost:15888";
+    private string _hostUrl = Models.Configuration.DefaultAspireEndpoint;
     private string _currentStatus = "Disconnected";
     private bool _isConnected;
     private DateTime _lastUpdated = DateTime.Now;
@@ -30,6 +30,14 @@ public class MainViewModel : ViewModelBase
         
         RefreshCommand = new RelayCommand(_ => RefreshData());
         OpenUrlCommand = new RelayCommand(param => OpenUrl(param?.ToString() ?? string.Empty));
+
+        if (_configService != null)
+        {
+            var configuration = _configService.LoadConfiguration();
+            HostUrl = string.IsNullOrWhiteSpace(configuration.AspireEndpoint)
+                ? Models.Configuration.DefaultAspireEndpoint
+                : configuration.AspireEndpoint;
+        }
         
         if (_pollingService != null)
         {
