@@ -6,7 +6,9 @@ Welcome to the AspireMonitor documentation hub. This directory contains guides f
 
 ### Getting Started
 - **[QUICKSTART.md](./QUICKSTART.md)** — Get up and running in 5 minutes (users)
+- **[What's New in v1.6.0](./whats-new.md)** — Aspire 13.3 alignment, new telemetry, sample harness (NEW!)
 - **[configuration.md](./configuration.md)** — Setup options, environment variables, and customization
+- **[sample-harness.md](./sample-harness.md)** — Maintained Aspire validation harness
 
 ### Architecture & Design
 - **[architecture.md](./architecture.md)** — System design, components, and how they interact
@@ -55,14 +57,18 @@ The **[promotional/](./promotional/)** folder contains templates for blog posts,
 ```
 docs/
 ├── README.md                    ← You are here
+├── whats-new.md                ← What's New in v1.6.0 (NEW!)
 ├── QUICKSTART.md               ← Start here (users)
 ├── API-CONTRACT.md             ← Start here (developers)
 ├── architecture.md             ← System design
 ├── configuration.md            ← Setup & tuning
+├── sample-harness.md           ← Maintained Aspire validation harness
 ├── development-guide.md        ← Contributing
 ├── publishing.md               ← Release process
 ├── troubleshooting.md          ← Problem solving
 ├── wpf-implementation-summary.md
+├── releases/                   ← Release notes per version
+│   └── RELEASE-v1.6.0.md
 └── promotional/                ← Blog, LinkedIn, Twitter templates
     ├── blog-post.md
     ├── linkedin-post.md
@@ -107,4 +113,3 @@ When adding documentation:
 **Last Updated:** 2026-04-27  
 **Version:** 1.0.0  
 **Maintainer:** Chewie (DevRel/Docs Agent)
-

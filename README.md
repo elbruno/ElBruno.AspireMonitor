@@ -21,14 +21,24 @@ ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 
 No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI and opening the Aspire dashboard at the standard default `http://localhost:18888`.
 
+## ✨ What's New in v1.6.0
+
+Now aligned with **Aspire 13.3**, ElBruno.AspireMonitor brings:
+
+- **Standard Dashboard Alignment** — The monitor defaults to the local Aspire dashboard endpoint documented by Aspire 13.3 (`http://localhost:18888`) while preserving user overrides.
+- **Richer Resource Telemetry** — Resource cards now display resource type, disk usage percentage, endpoint counts, and compact environment summaries, giving you more visibility into your services at a glance.
+- **Sample Harness Validation** — A maintained Aspire sample solution (`src/SampleHarness/`) ensures end-to-end and regression validation as Aspire evolves.
+
+See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
+
 ## 🎯 Features
 
 | Feature | Description |
 |---------|-------------|
 | 🟢🟡🔴 **Color-Coded Status** | Visual indicators: Green (<70%), Yellow (70-90%), Red (>90%) |
 | ⚡ **Real-Time Updates** | Automatic polling every 2 seconds (configurable) |
-| 📦 **Rich Resource Telemetry** | See type, disk usage, and endpoint counts at a glance |
-| 🏷️ **Environment Badges** | Compact badges show environment-aware resources |
+| 📦 **Rich Resource Telemetry** | See type, disk usage percentage, and endpoint counts at a glance |
+| 🏷️ **Environment Badges** | Compact badges summarize resource environment variables |
 | 🙈 **Hide Development Resources** | Optionally filter development-only resources from the list |
 | 🧭 **Open Dashboard** | One-click button opens the configured Aspire dashboard URL |
 | 🔄 **Auto-Reconnect** | Gracefully handles network interruptions |
@@ -128,6 +138,7 @@ See [Configuration Guide](./docs/configuration.md) for all options.
 ## 📚 Documentation
 
 - **[Quick Start Guide](./docs/QUICKSTART.md)** — Get up and running in 5 minutes
+- **[What's New in v1.6.0](./docs/whats-new.md)** — Aspire 13.3 alignment, richer telemetry, and sample harness
 - **[Architecture Guide](./docs/architecture.md)** — System design, components, data flow
 - **[API Contract & Services](./docs/API-CONTRACT.md)** — Service layer, data contracts, retry logic
 - **[Configuration Guide](./docs/configuration.md)** — Setup, CLI, advanced options

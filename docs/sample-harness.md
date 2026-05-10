@@ -12,7 +12,7 @@ Having a committed harness means:
 - Every pull request can be validated against a realistic Aspire topology without
   depending on an external project.
 - The monitor's connection, polling, and display logic can be exercised against
-  services whose responses are fully known.
+  services with predictable names, endpoints, and test coverage.
 - New features (e.g. new resource types, new dashboard fields) can be driven by
   first adding them to the harness.
 
@@ -51,11 +51,12 @@ src/SampleHarness/
 ### Start the AppHost
 
 ```bash
-cd src/SampleHarness/SampleHarness.AppHost
+cd src\SampleHarness\SampleHarness.AppHost
 dotnet run
 ```
 
-The Aspire dashboard opens automatically (default: `http://localhost:18888`).
+The local Aspire dashboard is available at the configured dashboard URL
+(default: `http://localhost:18888`).
 
 ### Point AspireMonitor at the harness
 
@@ -76,8 +77,8 @@ Use `DistributedApplicationTestingBuilder` to build the AppHost in memory and as
 that the correct resources are registered — **no Docker or network required**.
 
 ```bash
-cd src/SampleHarness
-dotnet test SampleHarness.Tests/SampleHarness.Tests.csproj
+cd src\SampleHarness
+dotnet test SampleHarness.Tests\SampleHarness.Tests.csproj
 ```
 
 ### In-process endpoint tests
@@ -95,8 +96,8 @@ to hit the service HTTP endpoints directly, also with no external infrastructure
 | Endpoint display | `api-service` and `catalog-api` expose external HTTP endpoints |
 | Worker resource type | `worker-service` is a Project resource with no HTTP endpoint |
 | Resource relationships | Worker declares `WaitFor` + `WithReference` dependencies on both APIs |
-| Polling stability | Worker emits a heartbeat log every 5 s, keeping resource state `Running` |
-| Error detection | Stopping any service surfaces it as `Exited` in the dashboard |
+| Polling stability | Worker emits a heartbeat log every 5 s while it is running |
+| Error detection | Stopping services gives the dashboard and monitor a failure state to display |
 
 ---
 

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Aspire 13.3-aligned dashboard endpoint defaults using `http://localhost:18888`.
-- Rich resource telemetry in the monitor UI, including resource type, disk usage, endpoint counts, and environment badges.
+- Rich resource telemetry in the monitor UI, including resource type, disk usage percentage, endpoint counts, and environment badges.
 - A maintained Aspire sample harness under `src/SampleHarness/` for end-to-end and regression validation.
 
 ### Changed

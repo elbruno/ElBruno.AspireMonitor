@@ -10,8 +10,8 @@ This release brings the monitor forward for Aspire 13.3 with standard dashboard 
 ## What's in 1.6.0
 
 ### Added
-- **Aspire 13.3 dashboard alignment.** The monitor defaults to the standard Aspire dashboard URL, `http://localhost:18888`.
-- **Rich resource telemetry.** Resource cards now surface type, disk usage, endpoint counts, and compact environment badges.
+- **Aspire 13.3 dashboard alignment.** The monitor defaults to the local Aspire dashboard URL documented by Aspire 13.3, `http://localhost:18888`.
+- **Rich resource telemetry.** Resource cards now surface type, disk usage percentage, endpoint counts, and compact environment summaries.
 - **Sample harness.** `src/SampleHarness/` provides a representative Aspire solution for validating monitor behavior across services.
 
 ### Changed
