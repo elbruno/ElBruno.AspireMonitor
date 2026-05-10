@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-05-10
+
+### Added
+- Aspire 13.3-aligned dashboard endpoint defaults using `http://localhost:18888`.
+- Rich resource telemetry in the monitor UI, including resource type, disk usage, endpoint counts, and environment badges.
+- A maintained Aspire sample harness under `src/SampleHarness/` for end-to-end and regression validation.
+
+### Changed
+- Main monitor configuration and settings now preserve the standard Aspire dashboard URL and development-resource filtering option.
+- Documentation and governance now identify the sample harness as the canonical validation target for monitor features.
+
 ## [1.5.0] - 2026-04-27
 
 ### Changed
@@ -16,4 +27,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Notes
 - No public API or NuGet packaging changes. The global tool (`aspiremon`) is published from the same `ElBruno.AspireMonitor.Tool` package, now versioned 1.5.0.
 
+[1.6.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.6.0
 [1.5.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.5.0

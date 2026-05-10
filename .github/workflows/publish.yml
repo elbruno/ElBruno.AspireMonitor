@@ -52,6 +52,9 @@ jobs:
       - name: Unit Tests
         run: dotnet test src/ElBruno.AspireMonitor.Tests/ElBruno.AspireMonitor.Tests.csproj -c Release --no-build --verbosity normal
 
+      - name: SampleHarness Tests
+        run: dotnet test src/SampleHarness/SampleHarness.Tests/SampleHarness.Tests.csproj -c Release --verbosity normal
+
       - name: Pack (publish desktop + pack tool + inject payload)
         shell: pwsh
         run: .\build\Pack-Tool.ps1 -Configuration Release -Version ${{ steps.version.outputs.version }}
