@@ -14,7 +14,7 @@ Point it at your Aspire AppHost folder, pin the resources you care about, and ge
 
 ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 
-1. **Watches a working folder** — point it at the directory containing your Aspire `*.AppHost.csproj`
+1. **Watches a working folder** — point it at your Aspire AppHost folder
 2. **Discovers resources** — shells out to `aspire describe --format json` and parses the result
 3. **Surfaces what matters** — lists every resource in the main window, and pins your chosen ones (with their real URLs) in a compact mini window
 4. **Drives your AppHost** — Start / Stop buttons run `aspire start` and shut it down cleanly, with a live countdown while Aspire spins up
@@ -126,7 +126,7 @@ Example:
 
 | Field | Purpose |
 |---|---|
-| `projectFolder` | Folder containing your Aspire `*.AppHost.csproj` |
+| `projectFolder` | Your Aspire AppHost folder |
 | `aspireEndpoint` | Aspire dashboard URL (default `http://localhost:18888`) |
 | `pollingIntervalMs` | Resource refresh interval (default 5000) |
 | `miniWindowResources` | Comma-separated list of resource name prefixes to pin to the mini window. Empty = mini window only shows the dashboard link. Case-insensitive prefix match (e.g. `web` matches `web-xggqzmyn`) |
