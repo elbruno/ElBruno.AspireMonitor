@@ -21,13 +21,13 @@ ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 
 No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI and opening the Aspire dashboard at the standard default `http://localhost:18888`.
 
-## ✨ What's New in v1.6.0
+## ✨ What's New in v1.7.0
 
-Now aligned with **Aspire 13.3**, ElBruno.AspireMonitor brings:
+ElBruno.AspireMonitor v1.7.0 brings enhanced mini monitor telemetry and improved resilience:
 
-- **Standard Dashboard Alignment** — The monitor defaults to the local Aspire dashboard endpoint documented by Aspire 13.3 (`http://localhost:18888`) while preserving user overrides.
-- **Richer Resource Telemetry** — Resource cards now display resource type, disk usage percentage, endpoint counts, and compact environment summaries, giving you more visibility into your services at a glance.
-- **Sample Harness Validation** — A maintained Aspire sample solution (`src/SampleHarness/`) ensures end-to-end and regression validation as Aspire evolves.
+- **Mini Monitor Pinned-Resource Telemetry** — The mini window now displays CPU, memory, disk, resource type, endpoints, environment, and status for each pinned resource—all without fake GPU metrics.
+- **Telemetry Toggle** — New settings control to show or hide mini monitor telemetry (enabled by default).
+- **Hardened Parsing & CLI Alignment** — Corrected Aspire CLI parsing and start-command documentation; locked Start button behavior with comprehensive test coverage for stability.
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
@@ -55,7 +55,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
 1. **Install** as a .NET global tool: `dotnet tool install --global ElBruno.AspireMonitor`
 2. **Launch** with `aspiremon` from any terminal
-3. **Set working folder** when prompted (point to your Aspire AppHost directory)
+3. **Set working folder** when prompted (point to your Aspire AppHost folder)
 4. **Start monitoring** — Use the Start button in the tray to launch Aspire; the tray icon will turn green with resources listed
 
 **Install as a .NET Global Tool** (recommended):
@@ -94,7 +94,7 @@ aspiremon
 
 On first run, you'll be prompted for your working folder:
 ```
-Enter working folder (path to your Aspire AppHost project):
+Enter working folder (path to your Aspire AppHost folder):
 C:\Projects\MyAspireApp
 ```
 
@@ -137,7 +137,7 @@ See [Configuration Guide](./docs/configuration.md) for all options.
 ## 📚 Documentation
 
 - **[Quick Start Guide](./docs/QUICKSTART.md)** — Get up and running in 5 minutes
-- **[What's New in v1.6.0](./docs/whats-new.md)** — Aspire 13.3 alignment, richer telemetry, and sample harness
+- **[What's New in v1.7.0](./docs/whats-new.md)** — Mini monitor telemetry, telemetry toggle, and hardened parsing
 - **[Architecture Guide](./docs/architecture.md)** — System design, components, data flow
 - **[API Contract & Services](./docs/API-CONTRACT.md)** — Service layer, data contracts, retry logic
 - **[Configuration Guide](./docs/configuration.md)** — Setup, CLI, advanced options

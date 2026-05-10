@@ -1,116 +1,114 @@
-# What's New in ElBruno.AspireMonitor v1.6.0
+# What's New in ElBruno.AspireMonitor v1.7.0
 
 **Release Date:** 2026-05-10  
-**Focus:** Aspire 13.3 alignment, richer telemetry, sample harness validation
+**Focus:** Mini monitor telemetry, telemetry visibility control, hardened CLI parsing, test alignment
 
-ElBruno.AspireMonitor v1.6.0 aligns with the local dashboard default shown in [Aspire 13.3](https://aspire.dev/whats-new/aspire-13-3/), adds richer resource visibility from `aspire describe`, and validates the monitor against a maintained sample harness.
+ElBruno.AspireMonitor v1.7.0 enhances the mini window with rich pinned-resource telemetry, adds a settings toggle to control visibility, and hardens Aspire CLI parsing with comprehensive test coverage.
 
 ## 🎯 What's New
 
-### 1. **Aspire 13.3 Dashboard Alignment**
-
-**What changed:**
-- The monitor now defaults to the Aspire dashboard endpoint used by current local Aspire CLI/dashboard output: `http://localhost:18888`
-- Configuration preserves this URL and any user overrides seamlessly
-- The dashboard link opens the configured local dashboard URL, including saved overrides
-
-**Why it matters:**
-- Aspire 13.3 documents `http://localhost:18888` for the standalone dashboard command
-- The monitor stays in sync with Aspire's defaults, reducing configuration friction
-- Users with custom dashboard URLs keep their existing configuration
-
-**Learn more:** See [Configuration Guide](./configuration.md) to customize the endpoint if needed.
-
----
-
-### 2. **Rich Resource Telemetry in the Monitor UI**
-
-**What's visible now:**
-
-| Telemetry | Description | Example |
-|-----------|-------------|---------|
-| **Resource Type** | Aspire resource type when supplied by CLI output | `project` |
-| **Disk Usage** | Disk usage percentage when supplied by Aspire data | `12.3%` |
-| **Endpoint Count** | Number of exposed ports/routes | `3 endpoints` |
-| **Environment Badges** | Compact environment-variable summary | `Env: Dev` or `Env: 2 vars` |
-| **Live Status** | Color-coded health (green/yellow/red) | 🟢 Green when running and average CPU/MEM <70% |
-
-**Why it matters:**
-- You get more context without opening the Aspire dashboard
-- Quickly identify resource type and health in the main resource list
-- Environment badges help identify development-only resources that can be hidden by configuration
-
-**Example in Practice:**
-```
-🌐 api-service (project)       [12.3% disk] [2 endpoints] [Env: Dev]    🟢
-🌐 catalog-api (project)       [3.7% disk]  [1 endpoint]  [Env: 1 var]  🟢
-⚙️ worker-service (project)    [0.0% disk]  [0 endpoints]               🟡
-```
-
-See [Configuration Guide](./configuration.md) → `hideDevelopmentResources` to filter by environment.
-
----
-
-### 3. **Sample Harness for End-to-End Validation**
+### 1. **Mini Monitor Pinned-Resource Telemetry**
 
 **What's new:**
-- A maintained Aspire sample solution lives in `src/SampleHarness/`
-- Includes two API services and a worker service, with explicit service references and wait dependencies
-- Used for regression testing and feature validation across Aspire versions
+- Each pinned resource in the mini window now displays CPU, memory, disk, resource type, endpoints, environment, and live status
+- Telemetry is shown inline without clutter or fake GPU metrics
+- Mini window remains compact while providing actionable monitoring data at a glance
 
 **Why it matters:**
-- The monitor is validated against a representative Aspire architecture
-- Future Aspire updates can be tested against this harness before release
-- Developers can use it as a reference for setting up test scenarios
+- You can now monitor resource health directly from the mini window without opening the main dashboard
+- Pinned resources show real metrics (CPU %, memory, disk) updated every 5 seconds
+- Environment badges and endpoint counts help you quickly identify service configuration
+
+**Example in the mini window:**
+```
+📌 web-api (project)       [CPU: 12% | Mem: 45% | Disk: 3.2%] [2 endpoints] [Env: Dev]    🟢
+📌 cache-svc (project)     [CPU: 8%  | Mem: 23% | Disk: 0.1%] [1 endpoint]  [Env: Dev]    🟢
+```
+
+**Learn more:** See [Configuration Guide](./configuration.md) → `MiniWindowResources` to pin your monitored resources.
+
+---
+
+### 2. **Telemetry Visibility Toggle (Settings)**
+
+**What changed:**
+- New settings option to show or hide mini monitor telemetry without removing pinned resources
+- Telemetry display is **enabled by default** for all users
+- Toggle is available in Settings → "Show Mini Monitor Telemetry"
+
+**Why it matters:**
+- Some users prefer a minimal pinned window with just resource names and status lights
+- Others want detailed metrics inline; now both preferences are supported
+- Existing pinned resources are preserved when toggling telemetry off
+
+**How to use:**
+1. Open the app Settings
+2. Locate "Show Mini Monitor Telemetry" (enabled by default)
+3. Toggle off if you prefer a compact mini window with names and status only
+4. Changes apply immediately without restart
+
+**Learn more:** See [Configuration Guide](./configuration.md) → `ShowMiniWindowResourceTelemetry` setting.
+
+---
+
+### 3. **Hardened Aspire CLI Parsing & Start-Command Alignment**
+
+**What changed:**
+- Improved parsing of Aspire CLI output from `aspire describe --format json` for robustness
+- Corrected documentation and behavior for `aspire start` command alignment
+- Added comprehensive test coverage for the Start button to prevent regressions
+- Enhanced backend telemetry parsing to handle edge cases in resource and metric payloads
+
+**Why it matters:**
+- The monitor is now more resilient when parsing resources with unusual or optional fields
+- Start button behavior is locked in with automated tests, reducing breakage across Aspire updates
+- Documentation now accurately reflects current Aspire CLI conventions
+
+**How this helps:**
+- If Aspire CLI output changes subtly, the monitor gracefully handles missing or reordered fields
+- The Start button countdown (`⏳ Starting Aspire... (12 / 90s)`) is now thoroughly tested
+- Resource discovery and metric collection are more stable across different Aspire configurations
 
 **Reference:**
-- See [Sample Harness](./sample-harness.md) for structure and services
-- Inspect `src\SampleHarness\SampleHarness.AppHost\AppHost.cs` for the AppHost composition
-- Run tests: `dotnet test src\SampleHarness\SampleHarness.Tests\SampleHarness.Tests.csproj`
+- See [Troubleshooting](./troubleshooting.md) if you encounter parsing issues
+- Review the test suite: `dotnet test src\ElBruno.AspireMonitor.Tests\ElBruno.AspireMonitor.Tests.csproj`
 
 ---
 
 ## 🔄 Upgrade Guide
 
-### For Current Users (v1.5.0 → v1.6.0)
+### For Current Users (v1.6.x → v1.7.0)
 
 1. **Update the global tool:**
    ```bash
    dotnet tool update --global ElBruno.AspireMonitor
    ```
 
-2. **No configuration changes required** — your existing `config.json` is preserved. The new defaults apply only to fresh installations.
+2. **Telemetry visibility is enabled by default** — your mini window will now display metrics for pinned resources. If you prefer the compact view, disable it in Settings → "Show Mini Monitor Telemetry".
 
-3. **If you customized the dashboard endpoint**, verify it still works:
-   - Check Settings → "Aspire Endpoint URL"
-   - Default: `http://localhost:18888`
-   - Custom: (your override persists)
+3. **No configuration changes required** — your existing `config.json` is preserved. Existing pinned resources continue to work.
 
-4. **Try the new telemetry:**
-   - Open the main window (click tray icon)
-   - Check resource rows for new fields: type, disk usage percentage, endpoints, environment summaries
-   - Pin resources in Settings → `MiniWindowResources` to see selected resource names and URLs in the mini window
+4. **Verify Start button behavior:**
+   - Click Start to launch your AppHost
+   - Watch the countdown: `⏳ Starting Aspire... (12 / 90s)`
+   - Resources will appear in the tray and mini window once Aspire starts
+   - This behavior is now locked in with comprehensive tests
 
 ---
 
-## 📊 Feature Alignment with Aspire 13.3
+## 📊 v1.7.0 Improvements & Quality
 
-Aspire 13.3 introduced several major features. Here's what the monitor exposes:
+| Area | Enhancement | Status |
+|------|-------------|--------|
+| **Mini Window Telemetry** | Pinned resources display CPU, memory, disk, type, endpoints, environment, and status | ✅ Delivered |
+| **Telemetry Control** | Settings toggle to show/hide mini monitor metrics (enabled by default) | ✅ Delivered |
+| **CLI Parsing** | Hardened Aspire CLI output parsing for robustness | ✅ Hardened |
+| **Start Button Tests** | Comprehensive test coverage for Start button lifecycle | ✅ Locked in |
+| **Metric Resilience** | Improved handling of resource and metric payloads in edge cases | ✅ Enhanced |
+| **Dashboard Integration** | Compatible with `http://localhost:18888` and custom endpoints | ✅ Working |
+| **Resource Discovery** | Robust `aspire describe --format json` parsing | ✅ Resilient |
 
-| Aspire 13.3 Feature | Monitor Support | Notes |
-|---|---|---|
-| **`aspire destroy` command** | ℹ️ See CLI | Not integrated; use `aspire destroy` directly from CLI |
-| **Browser logs & screenshots** | 📊 Dashboard only | View in the main Aspire dashboard |
-| **`aspire deploy` to Kubernetes** | 📊 Dashboard only | Monitor tracks resources; deployment state visible on dashboard |
-| **Standard dashboard endpoint** | ✅ Implemented | Defaults to `http://localhost:18888` |
-| **Container tunnel (Docker/Podman)** | ℹ️ Transparent | Not directly integrated; monitor consumes resources and endpoints exposed by Aspire CLI output |
-| **JavaScript publishing (Next.js, Vite)** | 📊 Dashboard / CLI | Not JavaScript-specific; monitor can display resources that appear in `aspire describe` output |
-| **`aspire dashboard` standalone** | ℹ️ See CLI | Run separately; point monitor to its endpoint |
-| **Richer resource metadata** | ✅ Implemented | Resource type, disk percentage, endpoint count, environment summary badges |
-
-✅ = Monitor feature  
-📊 = View on Aspire dashboard  
-ℹ️ = Use via CLI or dashboard  
+✅ = Implemented & Tested
 
 ---
 
@@ -124,7 +122,7 @@ Track future improvement areas in [FUTURE-IMPROVEMENTS.md](./FUTURE-IMPROVEMENTS
 
 ---
 
-## 🚀 Quick Start with v1.6.0
+## 🚀 Quick Start with v1.7.0
 
 1. **Install or update:**
    ```bash
@@ -138,11 +136,11 @@ Track future improvement areas in [FUTURE-IMPROVEMENTS.md](./FUTURE-IMPROVEMENTS
    aspiremon
    ```
 
-3. **Point to your Aspire AppHost:** When prompted, enter the path to your `*.AppHost` project
+3. **Point to your Aspire AppHost folder:** When prompted, enter the path to your Aspire AppHost folder
 
-4. **Start monitoring:** Use the Start button in the tray or run `aspire start` in that directory; resources appear in the tray
+4. **Start monitoring:** Use the Start button in the tray; resources appear in the tray and mini window
 
-5. **Explore new telemetry:** Open the main window to see resource types, disk usage percentage, endpoints, and environment summaries
+5. **Explore mini window telemetry:** Open Settings → "Show Mini Monitor Telemetry" (enabled by default) to see or hide CPU, memory, disk, endpoints, and environment for pinned resources
 
 ---
 
@@ -165,5 +163,5 @@ Track future improvement areas in [FUTURE-IMPROVEMENTS.md](./FUTURE-IMPROVEMENTS
 ---
 
 **Last Updated:** 2026-05-10  
-**Version:** 1.6.0  
+**Version:** 1.7.0  
 **Maintained by:** Chewie (DevRel/Docs)
