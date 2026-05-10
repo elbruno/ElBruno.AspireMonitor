@@ -429,3 +429,9 @@
 - **Rationale:** Catches URL drift in deterministic tests without relying on brittle UI automation.
 - **Status:** ✅ IMPLEMENTED (Yoda, 2026-05-10)
 - **Files:** `src/ElBruno.AspireMonitor.Tests/IntegrationTests.cs`, `src/ElBruno.AspireMonitor.Tests/Services/ConfigurationServiceTests.cs`
+
+### Sample Aspire Validation Harness
+- **Decision:** Maintain a tiny Aspire sample solution in-repo as the canonical validation target for AspireMonitor.
+- **Rationale:** Gives the monitor app a stable, repeatable distributed app to exercise in E2E and regression testing.
+- **Status:** 🟡 PLANNED (2026-05-10)
+- **Governance:** Update the sample whenever AspireMonitor features or assumptions change so tests and docs keep reflecting real Aspire behavior.

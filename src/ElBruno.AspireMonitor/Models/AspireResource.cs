@@ -11,7 +11,12 @@ public class AspireResource
     public ResourceStatus Status { get; set; } = ResourceStatus.Unknown;
     [JsonPropertyName("properties")]
     public ResourceMetrics Metrics { get; set; } = new();
+    [JsonPropertyName("environment")]
+    public List<AspireEnvironmentEntry> Environment { get; set; } = new();
     public List<AspireEndpoint> Endpoints { get; set; } = new();
+
+    [JsonIgnore]
+    public bool IsDevelopmentOnly => Environment.Any(environment => environment.IsDevelopmentEnvironment);
 
     public AspireResource()
     {

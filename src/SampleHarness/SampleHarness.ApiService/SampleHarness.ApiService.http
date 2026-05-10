@@ -1,0 +1,6 @@
+@SampleHarness.ApiService_HostAddress = http://localhost:5298
+
+GET {{SampleHarness.ApiService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

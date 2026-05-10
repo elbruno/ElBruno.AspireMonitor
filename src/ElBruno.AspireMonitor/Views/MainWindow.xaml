@@ -141,6 +141,16 @@
                                         <TextBlock Text="ENDPOINTS: " FontSize="11" Foreground="#666666"/>
                                         <TextBlock Text="{Binding EndpointCountText}" FontSize="11" FontWeight="Bold"/>
                                     </StackPanel>
+                                    <Border Background="#EEF2FF"
+                                            CornerRadius="8"
+                                            Padding="6,2"
+                                            Margin="0,0,10,0"
+                                            Visibility="{Binding HasEnvironment, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding EnvironmentSummaryText}"
+                                                  FontSize="10"
+                                                  FontWeight="SemiBold"
+                                                  Foreground="#4F46E5"/>
+                                    </Border>
                                     <TextBlock Style="{StaticResource ClickableUrl}"
                                                Text="{Binding UrlDisplay}"
                                                FontSize="11"

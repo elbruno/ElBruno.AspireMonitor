@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Media;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Models;
@@ -14,6 +16,7 @@ public class ResourceViewModel : ViewModelBase
     private double _diskUsage;
     private int _endpointCount;
     private string? _url;
+    private List<AspireEnvironmentEntry> _environment = new();
 
     public string Name
     {
@@ -147,6 +150,39 @@ public class ResourceViewModel : ViewModelBase
     }
 
     public string EndpointCountText => EndpointCount == 1 ? "1 endpoint" : $"{EndpointCount} endpoints";
+
+    public List<AspireEnvironmentEntry> Environment
+    {
+        get => _environment;
+        set
+        {
+            if (SetProperty(ref _environment, value ?? new List<AspireEnvironmentEntry>()))
+            {
+                OnPropertyChanged(nameof(HasEnvironment));
+                OnPropertyChanged(nameof(EnvironmentSummary));
+                OnPropertyChanged(nameof(EnvironmentSummaryText));
+                OnPropertyChanged(nameof(IsDevelopmentOnly));
+            }
+        }
+    }
+
+    public bool HasEnvironment => Environment.Count > 0;
+
+    public string EnvironmentSummary =>
+        Environment.Count == 0
+            ? string.Empty
+            : string.Join(", ", Environment.Select(environment => environment.DisplayText));
+
+    public string EnvironmentSummaryText =>
+        Environment.Count == 0
+            ? string.Empty
+            : IsDevelopmentOnly
+                ? "Env: Dev"
+                : Environment.Count == 1
+                    ? "Env: 1 var"
+                    : $"Env: {Environment.Count} vars";
+
+    public bool IsDevelopmentOnly => Environment.Any(environment => environment.IsDevelopmentEnvironment);
 
     public string? Url
     {

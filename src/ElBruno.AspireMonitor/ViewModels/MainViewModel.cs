@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Services;
 using ElBruno.AspireMonitor.Models;
@@ -176,26 +177,38 @@ public class MainViewModel : ViewModelBase
 
     private void OnResourcesUpdated(object? sender, List<AspireResource> resources)
     {
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        InvokeOnUiThread(() =>
         {
+            var hideDevelopmentResources = _configService?.LoadConfiguration().HideDevelopmentResources ?? false;
             Resources.Clear();
             foreach (var resource in resources)
             {
                 // Get primary endpoint URL
-                var primaryEndpoint = resource.Endpoints.FirstOrDefault();
+                var endpoints = resource.Endpoints ?? new List<AspireEndpoint>();
+                var primaryEndpoint = endpoints.FirstOrDefault();
                 string? url = primaryEndpoint?.DisplayUrl;
-                
-                Resources.Add(new ResourceViewModel
+
+                var metrics = resource.Metrics ?? new ResourceMetrics();
+                var environment = resource.Environment ?? new List<AspireEnvironmentEntry>();
+                var resourceViewModel = new ResourceViewModel
                 {
                     Name = resource.Name,
                     ResourceType = resource.Type,
                     Status = resource.Status,
-                    CpuUsage = resource.Metrics.CpuUsagePercent,
-                    MemoryUsage = resource.Metrics.MemoryUsagePercent,
-                    DiskUsagePercent = resource.Metrics.DiskUsagePercent,
-                    EndpointCount = resource.Endpoints.Count,
-                    Url = url
-                });
+                    CpuUsage = metrics.CpuUsagePercent,
+                    MemoryUsage = metrics.MemoryUsagePercent,
+                    DiskUsagePercent = metrics.DiskUsagePercent,
+                    EndpointCount = endpoints.Count,
+                    Url = url,
+                    Environment = environment
+                };
+
+                if (hideDevelopmentResources && resourceViewModel.IsDevelopmentOnly)
+                {
+                    continue;
+                }
+                
+                Resources.Add(resourceViewModel);
             }
             
             LastUpdated = DateTime.Now;
@@ -206,7 +219,7 @@ public class MainViewModel : ViewModelBase
 
     private void OnStatusChanged(object? sender, string status)
     {
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        InvokeOnUiThread(() =>
         {
             CurrentStatus = status;
             IsConnected = status == "Connected";
@@ -215,11 +228,24 @@ public class MainViewModel : ViewModelBase
 
     private void OnError(object? sender, string error)
     {
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        InvokeOnUiThread(() =>
         {
             CurrentStatus = $"Error: {error}";
             IsConnected = false;
         });
+    }
+
+    private static void InvokeOnUiThread(Action action)
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+
+        if (dispatcher.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        dispatcher.Invoke(action);
     }
 
     public void Start()
@@ -243,7 +269,15 @@ public class MainViewModel : ViewModelBase
             MemoryUsage = 62.8,
             DiskUsagePercent = 12.5,
             EndpointCount = 1,
-            Url = "http://localhost:5000"
+            Url = "http://localhost:5000",
+            Environment = new List<AspireEnvironmentEntry>
+            {
+                new()
+                {
+                    Name = "ASPNETCORE_ENVIRONMENT",
+                    Value = "Development"
+                }
+            }
         });
 
         Resources.Add(new ResourceViewModel

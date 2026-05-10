@@ -81,6 +81,32 @@
    - `src/ElBruno.AspireMonitor/Views/MainWindow.xaml`
    - `README.md`, `src/ElBruno.AspireMonitor/README.md`, `docs/wpf-implementation-summary.md`
 
+### 2026-05-10 — Environment-Aware Resource Filter Slice
+
+1. **Aspire environment payload is now modeled end-to-end:**
+   - `AspireResource.Environment` captures Aspire's `environment` entries directly.
+   - `ResourceViewModel` derives `HasEnvironment`, `IsDevelopmentOnly`, and a compact badge text.
+
+2. **Development-only resources can be hidden from the UI:**
+   - `Configuration.HideDevelopmentResources` defaults to `false`.
+   - `SettingsViewModel` and `SettingsWindow.xaml` expose a user-facing checkbox for the filter.
+   - `MainViewModel` applies the filter during resource refresh without changing the unfiltered data path.
+
+3. **Compact telemetry layout pattern extended:**
+   - Add the environment badge inline with the resource telemetry row.
+   - Keep the card narrow; use a small badge instead of widening the row.
+
+4. **Key files touched:**
+   - `src/ElBruno.AspireMonitor/Models/AspireResource.cs`
+   - `src/ElBruno.AspireMonitor/Models/AspireEnvironmentEntry.cs`
+   - `src/ElBruno.AspireMonitor/Models/Configuration.cs`
+   - `src/ElBruno.AspireMonitor/ViewModels/MainViewModel.cs`
+   - `src/ElBruno.AspireMonitor/ViewModels/ResourceViewModel.cs`
+   - `src/ElBruno.AspireMonitor/ViewModels/SettingsViewModel.cs`
+   - `src/ElBruno.AspireMonitor/Views/MainWindow.xaml`
+   - `src/ElBruno.AspireMonitor/Views/SettingsWindow.xaml`
+   - `README.md`, `src/ElBruno.AspireMonitor/README.md`, `docs/configuration.md`, `docs/wpf-implementation-summary.md`
+
 ### 2026-05-10 — Dashboard-Aware UI Slice
 
 1. **Endpoint defaults are now dashboard-first:**
@@ -98,8 +124,6 @@
    - `src/ElBruno.AspireMonitor/Views/MainWindow.xaml.cs`
    - `src/ElBruno.AspireMonitor/Views/SettingsWindow.xaml`
    - `README.md`, `docs/configuration.md`, `docs/troubleshooting.md`
-
----
 
 ## Session Log
 

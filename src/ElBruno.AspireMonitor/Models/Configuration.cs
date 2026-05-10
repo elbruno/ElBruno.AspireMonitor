@@ -10,5 +10,6 @@ public class Configuration
     public int CpuThresholdCritical { get; set; } = 90;
     public int MemoryThresholdWarning { get; set; } = 70;
     public int MemoryThresholdCritical { get; set; } = 90;
+    public bool HideDevelopmentResources { get; set; }
     public bool StartWithWindows { get; set; }
 }

@@ -149,6 +149,7 @@ public partial class MainWindow : Window
                 }
                 ViewModel?.Stop();
                 ViewModel?.Start();
+                ViewModel?.RefreshCommand?.Execute(null);
             }
         }
     }

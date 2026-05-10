@@ -13,6 +13,7 @@ public class SettingsViewModel : ViewModelBase
     private int _memoryThresholdWarning = 70;
     private int _memoryThresholdCritical = 90;
     private bool _startWithWindows;
+    private bool _hideDevelopmentResources;
     private string _validationMessage = string.Empty;
 
     public SettingsViewModel(IConfigurationService configService)
@@ -61,6 +62,12 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _startWithWindows;
         set => SetProperty(ref _startWithWindows, value);
+    }
+
+    public bool HideDevelopmentResources
+    {
+        get => _hideDevelopmentResources;
+        set => SetProperty(ref _hideDevelopmentResources, value);
     }
 
     public string ValidationMessage
@@ -147,7 +154,8 @@ public class SettingsViewModel : ViewModelBase
             CpuThresholdCritical = CpuThresholdCritical,
             MemoryThresholdWarning = MemoryThresholdWarning,
             MemoryThresholdCritical = MemoryThresholdCritical,
-            StartWithWindows = StartWithWindows
+            StartWithWindows = StartWithWindows,
+            HideDevelopmentResources = HideDevelopmentResources
         };
 
         _configService.SaveConfiguration(config);
@@ -164,5 +172,6 @@ public class SettingsViewModel : ViewModelBase
         MemoryThresholdWarning = config.MemoryThresholdWarning;
         MemoryThresholdCritical = config.MemoryThresholdCritical;
         StartWithWindows = config.StartWithWindows;
+        HideDevelopmentResources = config.HideDevelopmentResources;
     }
 }

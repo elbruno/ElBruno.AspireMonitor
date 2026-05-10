@@ -1,4 +1,5 @@
 using FluentAssertions;
+using ElBruno.AspireMonitor.Models;
 using ElBruno.AspireMonitor.ViewModels;
 using Xunit;
 
@@ -43,5 +44,105 @@ public class ResourceViewModelTests
 
         singleEndpoint.EndpointCountText.Should().Be("1 endpoint");
         multipleEndpoints.EndpointCountText.Should().Be("2 endpoints");
+    }
+
+    [Fact]
+    public void EnvironmentSummary_FormatsEnvironmentPairs()
+    {
+        var viewModel = new ResourceViewModel
+        {
+            Environment = new List<AspireEnvironmentEntry>
+            {
+                new()
+                {
+                    Name = "ASPNETCORE_ENVIRONMENT",
+                    Value = "Development"
+                },
+                new()
+                {
+                    Name = "DOTNET_ENVIRONMENT",
+                    Value = "Development"
+                }
+            }
+        };
+
+        viewModel.HasEnvironment.Should().BeTrue();
+        viewModel.EnvironmentSummary.Should().Be("ASPNETCORE_ENVIRONMENT=Development, DOTNET_ENVIRONMENT=Development");
+    }
+
+    [Fact]
+    public void IsDevelopmentOnly_ReflectsDevelopmentEnvironment()
+    {
+        var developmentViewModel = new ResourceViewModel
+        {
+            Environment = new List<AspireEnvironmentEntry>
+            {
+                new()
+                {
+                    Name = "ASPNETCORE_ENVIRONMENT",
+                    Value = "Development"
+                }
+            }
+        };
+
+        var productionViewModel = new ResourceViewModel
+        {
+            Environment = new List<AspireEnvironmentEntry>
+            {
+                new()
+                {
+                    Name = "ASPNETCORE_ENVIRONMENT",
+                    Value = "Production"
+                }
+            }
+        };
+
+        developmentViewModel.IsDevelopmentOnly.Should().BeTrue();
+        productionViewModel.IsDevelopmentOnly.Should().BeFalse();
+    }
+
+    [Fact]
+    public void EnvironmentSummaryText_ShowsDevBadge_ForDevelopmentOnlyResources()
+    {
+        var viewModel = new ResourceViewModel
+        {
+            Environment = new List<ElBruno.AspireMonitor.Models.AspireEnvironmentEntry>
+            {
+                new()
+                {
+                    Name = "ASPNETCORE_ENVIRONMENT",
+                    Value = "Development"
+                }
+            }
+        };
+
+        viewModel.HasEnvironment.Should().BeTrue();
+        viewModel.IsDevelopmentOnly.Should().BeTrue();
+        viewModel.EnvironmentSummaryText.Should().Be("Env: Dev");
+    }
+
+    [Fact]
+    public void EnvironmentSummaryText_ShowsCount_ForNonDevelopmentResources()
+    {
+        var viewModel = new ResourceViewModel
+        {
+            Environment = new List<ElBruno.AspireMonitor.Models.AspireEnvironmentEntry>
+            {
+                new()
+                {
+                    Name = "POSTGRES_PASSWORD",
+                    Value = "secret"
+                },
+                new()
+                {
+                    Name = "POSTGRES_DB",
+                    Value = "app"
+                }
+            }
+        };
+
+        viewModel.HasEnvironment.Should().BeTrue();
+        viewModel.IsDevelopmentOnly.Should().BeFalse();
+        viewModel.EnvironmentSummaryText.Should().Be("Env: 2 vars");
     }
 }

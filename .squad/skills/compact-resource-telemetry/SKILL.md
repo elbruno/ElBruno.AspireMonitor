@@ -12,6 +12,7 @@ Use this when a monitoring UI needs to add more metrics to an existing resource 
 ## Patterns
 - Keep the primary status row focused on name, CPU, memory, and the action link.
 - Add a smaller secondary row for supplemental metrics like type, disk usage, and endpoint count.
+- Add compact environment badges for environment-aware resources instead of widening the row.
 - Bind display text from the ViewModel instead of formatting in XAML.
 
 ## Examples
@@ -24,3 +25,4 @@ Use this when a monitoring UI needs to add more metrics to an existing resource 
 - Don't widen the primary row until it wraps awkwardly.
 - Don't invent new telemetry sources just to fill space.
 - Don't put display formatting logic directly in the view.
+- Don't expose raw environment values in the badge if a short summary is enough.

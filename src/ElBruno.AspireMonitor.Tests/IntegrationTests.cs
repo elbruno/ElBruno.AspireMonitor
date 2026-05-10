@@ -174,8 +174,6 @@ public class IntegrationTests
         {
             try
             {
-                _ = Application.Current ?? new Application();
-
                 var pollingService = new Mock<IAspirePollingService>();
                 var configService = new Mock<IConfigurationService>();
                 configService.Setup(service => service.LoadConfiguration())
@@ -198,9 +196,91 @@ public class IntegrationTests
                 viewModel.Resources[0].TypeDisplay.Should().Be("Container");
                 viewModel.Resources[0].DiskUsageText.Should().Be("12.3%");
                 viewModel.Resources[0].EndpointCountText.Should().Be("2 endpoints");
+                viewModel.Resources[0].EnvironmentSummary.Should().Be("ASPNETCORE_ENVIRONMENT=Development, DOTNET_ENVIRONMENT=Development");
+                viewModel.Resources[0].IsDevelopmentOnly.Should().BeTrue();
                 viewModel.Resources[1].TypeDisplay.Should().Be("Project");
                 viewModel.Resources[1].DiskUsageText.Should().Be("3.7%");
                 viewModel.Resources[1].EndpointCountText.Should().Be("1 endpoint");
+                viewModel.Resources[1].EnvironmentSummary.Should().Be("ASPNETCORE_ENVIRONMENT=Production");
+                viewModel.Resources[1].IsDevelopmentOnly.Should().BeFalse();
+            }
+            catch (Exception ex)
+            {
+                failure = ex;
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        failure.Should().BeNull();
+    }
+
+    [Fact]
+    public void MainViewModel_HidesDevelopmentResources_WhenFilterIsEnabled()
+    {
+        Exception? failure = null;
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var configService = new Mock<IConfigurationService>();
+                configService.Setup(service => service.LoadConfiguration())
+                    .Returns(new Configuration
+                    {
+                        HideDevelopmentResources = true
+                    });
+
+                var pollingService = new Mock<IAspirePollingService>();
+                var viewModel = new MainViewModel(pollingService.Object, configService.Object);
+                var resources = LoadTelemetryRichResources();
+
+                pollingService.Raise(service => service.ResourcesUpdated += null, viewModel, resources);
+
+                viewModel.Resources.Should().HaveCount(1);
+                viewModel.Resources[0].Name.Should().Be("worker-service");
+                viewModel.Resources[0].IsDevelopmentOnly.Should().BeFalse();
+            }
+            catch (Exception ex)
+            {
+                failure = ex;
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        failure.Should().BeNull();
+    }
+
+    [Fact]
+    public void MainViewModel_PreservesDevelopmentResources_WhenFilterIsDisabled()
+    {
+        Exception? failure = null;
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var configService = new Mock<IConfigurationService>();
+                configService.Setup(service => service.LoadConfiguration())
+                    .Returns(new Configuration
+                    {
+                        HideDevelopmentResources = false
+                    });
+
+                var pollingService = new Mock<IAspirePollingService>();
+                var viewModel = new MainViewModel(pollingService.Object, configService.Object);
+                var resources = LoadTelemetryRichResources();
+
+                pollingService.Raise(service => service.ResourcesUpdated += null, viewModel, resources);
+
+                viewModel.Resources.Should().HaveCount(2);
+                viewModel.Resources.Should().Contain(resource => resource.Name == "api-service" && resource.IsDevelopmentOnly);
+                viewModel.Resources.Should().Contain(resource => resource.Name == "worker-service" && !resource.IsDevelopmentOnly);
             }
             catch (Exception ex)
             {
@@ -386,5 +466,19 @@ public class IntegrationTests
         public string StatusColor { get; set; } = "Green";
         public Action<string>? OnUrlClick { get; set; }
         public Action<object?>? OpenUrlCommand { get; set; }
+    }
+
+    private static List<AspireResource> LoadTelemetryRichResources()
+    {
+        var telemetryJson = File.ReadAllText(Path.Combine("Fixtures", "aspire-response-telemetry-rich.json"));
+        using var document = JsonDocument.Parse(telemetryJson);
+        var resources = JsonSerializer.Deserialize<List<AspireResource>>(
+            document.RootElement.GetProperty("resources").GetRawText(),
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+        return resources ?? new List<AspireResource>();
     }
 }

@@ -175,3 +175,16 @@
 - Aspire resource payloads expose telemetry under `properties`, so `AspireResource.Metrics` needs `JsonPropertyName("properties")`
 - UI regression tests are deterministic when fixture JSON is deserialized into `AspireResource` and exercised through the polling event path
 - WPF dispatcher-backed view models can be tested reliably on a dedicated STA thread when the test needs `Application.Current`
+
+### 2026-05-10 — Phase 3 Environment Filter Regression Coverage
+
+**Work Completed:**
+- ✅ Mapped Aspire `environment` payloads into `AspireResource.Environment`
+- ✅ Added `ResourceViewModel.EnvironmentSummary` and `IsDevelopmentOnly`
+- ✅ Added integration coverage for hiding development-only resources behind `HideDevelopmentResources`
+- ✅ Kept the telemetry-rich fixture deterministic by marking one resource as development-only and one as production
+
+**Learnings:**
+- Development-only detection should live close to the model so both filtering and UI labels can reuse the same signal
+- Fixture-backed environment arrays are enough to test the filter slice without introducing brittle UI automation
+- `IntegrationTests.cs`, `ViewModels\ResourceViewModelTests.cs`, and `Models\AspireResourceTests.cs` now cover the same slice end-to-end

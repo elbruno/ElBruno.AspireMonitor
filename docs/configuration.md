@@ -36,7 +36,8 @@ Open `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`:
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,
-  "memoryThresholdCritical": 90
+  "memoryThresholdCritical": 90,
+  "hideDevelopmentResources": false
 }
 ```
 
@@ -114,6 +115,21 @@ When any resource exceeds this percentage, the tray icon turns **red** 🔴.
 
 ---
 
+#### `hideDevelopmentResources` (boolean)
+**Default:** false
+
+When enabled, AspireMonitor hides resources whose environment contains `ASPNETCORE_ENVIRONMENT=Development` or `DOTNET_ENVIRONMENT=Development`.
+
+```json
+{
+  "hideDevelopmentResources": true
+}
+```
+
+This is useful when you want the monitor to focus on shared or production-like resources while keeping the underlying data unchanged.
+
+---
+
 #### `memoryThresholdWarning` (integer)
 **Default:** 70 (%)
 
@@ -149,7 +165,8 @@ Memory usage threshold that triggers a red (critical) indicator.
   "cpuThresholdWarning": 75,
   "cpuThresholdCritical": 85,
   "memoryThresholdWarning": 75,
-  "memoryThresholdCritical": 85
+  "memoryThresholdCritical": 85,
+  "hideDevelopmentResources": true
 }
 ```
 

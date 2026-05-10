@@ -54,6 +54,8 @@
 - Clickable URLs (host and resources)
 - Color-coded status indicators (🟢🟡🔴⚪)
 - Rich telemetry rows (type, disk usage, endpoint count)
+- Compact environment badges
+- Optional development-resource filter
 - Real-time updates via data binding
 - System tray integration (minimize/restore)
 
@@ -76,6 +78,7 @@
 │ [70                                        ]│
 │                                             │
 │ [✓] Start with Windows                      │
+│ [✓] Hide development resources              │
 ├─────────────────────────────────────────────┤
 │ Validation errors appear here...            │
 │                                             │
@@ -143,8 +146,15 @@ public class ResourceData
     public string Name { get; set; }
     public string State { get; set; }  // "Running", "Stopped", etc.
     public string? ResourceType { get; set; }
+    public List<ResourceEnvironmentEntry> Environment { get; set; }
     public ResourceMetrics Metrics { get; set; }
     public List<ResourceEndpoint> Endpoints { get; set; }
+}
+
+public class ResourceEnvironmentEntry
+{
+    public string Name { get; set; }
+    public string? Value { get; set; }
 }
 
 public class ResourceEndpoint
@@ -192,6 +202,7 @@ public class ResourceMetrics
    - Create icon assets (Resources/icon.ico with color variants)
    - Implement configuration persistence (JSON file or registry)
    - Update NotifyIcon dynamically based on status color
+   - Add environment-aware resource filtering and badges
 
 3. **Team:**
    - End-to-end testing with real Aspire dashboard

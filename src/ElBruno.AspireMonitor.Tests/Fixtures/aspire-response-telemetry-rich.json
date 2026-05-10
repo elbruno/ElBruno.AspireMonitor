@@ -18,7 +18,17 @@
         "memoryUsage": 512000000,
         "memoryLimit": 2147483648,
         "diskUsage": 12.3
-      }
+      },
+      "environment": [
+        {
+          "name": "ASPNETCORE_ENVIRONMENT",
+          "value": "Development"
+        },
+        {
+          "name": "DOTNET_ENVIRONMENT",
+          "value": "Development"
+        }
+      ]
     },
     {
       "name": "worker-service",
@@ -35,7 +45,13 @@
         "memoryUsage": 256000000,
         "memoryLimit": 1073741824,
         "diskUsage": 3.7
-      }
+      },
+      "environment": [
+        {
+          "name": "ASPNETCORE_ENVIRONMENT",
+          "value": "Production"
+        }
+      ]
     }
   ]
 }
