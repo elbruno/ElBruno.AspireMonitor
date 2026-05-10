@@ -2,7 +2,7 @@
 
 ## Overview
 
-AspireMonitor is a Windows system tray application that provides real-time monitoring of .NET Aspire distributed applications. It enables developers to track CPU, memory, and health status of Aspire resources at a glance through a lightweight, always-available tray icon with color-coded status indicators and clickable resource URLs.
+AspireMonitor is a Windows system tray application that provides real-time monitoring of Aspire distributed applications. It enables developers to track CPU, memory, and health status of Aspire resources at a glance through a lightweight, always-available tray icon with color-coded status indicators and clickable resource URLs.
 
 ## System Architecture
 
@@ -36,7 +36,7 @@ Aspire HTTP API
 #### 2. **AspirePollingService**
 - **Purpose**: Orchestrates continuous monitoring in background thread
 - **Responsibility**:
-  - Runs polling loop at configurable interval (default 2000ms)
+  - Runs polling loop at configurable interval (default 5000ms)
   - Maintains state machine: `Connecting → Connected → Polling → Error → Reconnecting`
   - Triggers UI updates via `OnResourcesUpdated` event
   - Handles connection failures with exponential backoff
@@ -69,7 +69,7 @@ Aspire HTTP API
 - **Dependencies**: FileSystem
 - **Configuration Properties**:
   - `aspireEndpoint`: Aspire API base URL (required)
-  - `pollingIntervalMs`: Refresh interval (default 2000)
+  - `pollingIntervalMs`: Refresh interval (default 5000)
   - `cpuThresholdWarning`: CPU warning % (default 70)
   - `cpuThresholdCritical`: CPU critical % (default 90)
   - `memoryThresholdWarning`: Memory warning % (default 70)
@@ -158,7 +158,7 @@ Auto-reconnect when user opens app or after max backoff
 
 ### Scalability
 - **Resource Count**: Tested with 1000+ resource list items
-- **Polling Interval**: Configurable 500ms-30000ms, default 2000ms balances responsiveness vs. load
+- **Polling Interval**: Configurable 500ms-30000ms, default 5000ms balances responsiveness vs. load
 - **Memory**: Lightweight MVVM binding, minimal memory footprint
 - **CPU**: Polling thread is I/O-bound, low CPU usage between requests
 
@@ -185,7 +185,7 @@ Example:
 ```json
 {
   "aspireEndpoint": "http://localhost:18888",
-  "pollingIntervalMs": 2000,
+  "pollingIntervalMs": 5000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,

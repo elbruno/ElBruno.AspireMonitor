@@ -1,7 +1,7 @@
 # Test Suite Documentation
 
 ## Overview
-Test suite for ElBruno.AspireMonitor - Windows system tray application monitoring .NET Aspire dashboard resources.
+Test suite for ElBruno.AspireMonitor - Windows system tray application monitoring Aspire dashboard resources.
 
 ## Test Strategy
 

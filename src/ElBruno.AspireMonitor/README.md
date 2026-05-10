@@ -2,7 +2,7 @@
 
 ## Overview
 
-WPF-based system tray application for monitoring .NET Aspire resources in real-time.
+WPF-based system tray application for monitoring Aspire resources in real-time.
 
 ## Architecture
 

@@ -37,7 +37,7 @@ Open `src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj` and update:
   <!-- NuGet Package Metadata -->
   <PackageId>ElBruno.AspireMonitor</PackageId>
   <Title>AspireMonitor</Title>
-  <Description>Real-time Windows system tray monitor for .NET Aspire distributed applications</Description>
+  <Description>Real-time Windows system tray monitor for Aspire distributed applications</Description>
   <Authors>Bruno Capuano</Authors>
   <RepositoryUrl>https://github.com/elbruno/ElBruno.AspireMonitor</RepositoryUrl>
   <RepositoryType>git</RepositoryType>

@@ -51,7 +51,7 @@
 
 ## 📝 Release Notes Summary
 
-**ElBruno.AspireMonitor v1.0.0** — Real-time Windows system tray monitor for .NET Aspire distributed applications.
+**ElBruno.AspireMonitor v1.0.0** — Real-time Windows system tray monitor for Aspire distributed applications.
 
 **Key Features:**
 - 🟢🟡🔴 Color-coded status (Green <70%, Yellow 70-90%, Red >90%)

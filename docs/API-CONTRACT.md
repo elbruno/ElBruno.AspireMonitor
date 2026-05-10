@@ -36,7 +36,7 @@ ElBruno.AspireMonitor follows a **layered service architecture**:
                  │
 ┌────────────────▼────────────────────────┐
 │      Aspire HTTP API / File System      │
-│  (http://localhost:5000, AppData)       │
+│  (http://localhost:18888, AppData)      │
 └─────────────────────────────────────────┘
 ```
 
@@ -366,8 +366,8 @@ service.ErrorOccurred += (sender, errorMessage) =>
 
 Controlled by `Configuration.PollingIntervalMs`.
 
-**Default:** 2000ms (2 seconds)  
-**Range:** 1000ms (1 second) to 60000ms (60 seconds)
+**Default:** 5000ms (5 seconds)  
+**Range:** 500ms to 60000ms (60 seconds)
 
 To change:
 ```json
@@ -741,7 +741,7 @@ public class Configuration
 | Property | Type | Default | Range | Description |
 |----------|------|---------|-------|-------------|
 | `aspireEndpoint` | string | — | any URL | Aspire API base URL (required) |
-| `pollingIntervalMs` | int | 2000 | 1000-60000 | Refresh interval in milliseconds |
+| `pollingIntervalMs` | int | 5000 | 500-60000 | Refresh interval in milliseconds |
 | `cpuThresholdWarning` | int | 70 | 0-100 | CPU warning threshold (%) |
 | `cpuThresholdCritical` | int | 90 | 0-100 | CPU critical threshold (%) |
 | `memoryThresholdWarning` | int | 70 | 0-100 | Memory warning threshold (%) |
@@ -752,8 +752,8 @@ public class Configuration
 **Local development:**
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
-  "pollingIntervalMs": 2000,
+  "aspireEndpoint": "http://localhost:18888",
+  "pollingIntervalMs": 5000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,
@@ -764,7 +764,7 @@ public class Configuration
 **Fast polling:**
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 1000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
@@ -776,8 +776,8 @@ public class Configuration
 **Sensitive thresholds:**
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
-  "pollingIntervalMs": 2000,
+  "aspireEndpoint": "http://localhost:18888",
+  "pollingIntervalMs": 5000,
   "cpuThresholdWarning": 50,
   "cpuThresholdCritical": 75,
   "memoryThresholdWarning": 60,
@@ -820,8 +820,8 @@ var defaults = new Configuration();
 // Create configuration
 var config = new Configuration
 {
-    AspireEndpoint = "http://localhost:5000",
-    PollingIntervalMs = 2000
+    AspireEndpoint = "http://localhost:18888",
+    PollingIntervalMs = 5000
 };
 
 // Create services

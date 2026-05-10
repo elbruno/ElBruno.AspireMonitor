@@ -139,7 +139,7 @@ public class AspireCliService
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("not found") || ex.Message.Contains("cannot be executed"))
         {
-            return new ResourceCollection { ErrorMessage = "Aspire CLI not found. Please install .NET Aspire." };
+            return new ResourceCollection { ErrorMessage = "Aspire CLI not found. Please install Aspire." };
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("Command failed"))
         {

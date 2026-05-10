@@ -36,7 +36,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 | Feature | Description |
 |---------|-------------|
 | 🟢🟡🔴 **Color-Coded Status** | Visual indicators: Green (<70%), Yellow (70-90%), Red (>90%) |
-| ⚡ **Real-Time Updates** | Automatic polling every 2 seconds (configurable) |
+| ⚡ **Real-Time Updates** | Automatic polling every 5 seconds (configurable) |
 | 📦 **Rich Resource Telemetry** | See type, disk usage percentage, and endpoint counts at a glance |
 | 🏷️ **Environment Badges** | Compact badges summarize resource environment variables |
 | 🙈 **Hide Development Resources** | Optionally filter development-only resources from the list |
@@ -49,7 +49,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 | ▶️ **Start / Stop controls** | Run or stop your AppHost from the tray. Start stays disabled with a live countdown (`⏳ Starting Aspire... (12 / 90s)`) until resources actually appear |
 | 🛡 **Pinned-resource validation** | Missing pins are skipped, not crashes — the mini window opens with whatever resolved |
 | ⚙️ **Live config reload** | Changes in Settings apply without restarting the app |
-| 🔄 **Configurable polling** | Default 2 second interval, override in config |
+| 🔄 **Configurable polling** | Default 5 second interval, override in config |
 
 ## ⚡ Quick Start
 
@@ -79,7 +79,7 @@ For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
 - **Windows 10 or later** (WPF is Windows-only)
 - **.NET 10 Runtime** ([download](https://dotnet.microsoft.com/en-us/download))
-- **.NET Aspire** running locally on your machine
+- **Aspire** running locally on your machine
 
 ## 🚀 Usage
 
@@ -118,7 +118,7 @@ Example:
 {
   "projectFolder": "C:\\Projects\\MyApp\\src\\MyApp.AppHost",
   "aspireEndpoint": "http://localhost:18888",
-  "pollingIntervalMs": 2000,
+  "pollingIntervalMs": 5000,
   "miniWindowResources": "web, store, gateway",
   "hideDevelopmentResources": false
 }
@@ -128,7 +128,7 @@ Example:
 |---|---|
 | `projectFolder` | Folder containing your Aspire `*.AppHost.csproj` |
 | `aspireEndpoint` | Aspire dashboard URL (default `http://localhost:18888`) |
-| `pollingIntervalMs` | Resource refresh interval (default 2000) |
+| `pollingIntervalMs` | Resource refresh interval (default 5000) |
 | `miniWindowResources` | Comma-separated list of resource name prefixes to pin to the mini window. Empty = mini window only shows the dashboard link. Case-insensitive prefix match (e.g. `web` matches `web-xggqzmyn`) |
 | `hideDevelopmentResources` | Hides resources marked as development-only in Aspire environment metadata |
 

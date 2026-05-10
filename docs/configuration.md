@@ -32,7 +32,7 @@ Open `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`:
 ```json
 {
   "aspireEndpoint": "http://localhost:18888",
-  "pollingIntervalMs": 2000,
+  "pollingIntervalMs": 5000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,
@@ -66,21 +66,21 @@ The HTTP base URL of your Aspire dashboard API.
 ### Optional
 
 #### `pollingIntervalMs` (integer)
-**Default:** 2000 (2 seconds)
+**Default:** 5000 (5 seconds)
 
 How often AspireMonitor fetches updated resource data, in milliseconds.
 
 ```json
 {
-  "pollingIntervalMs": 2000
+  "pollingIntervalMs": 5000
 }
 ```
 
 **Valid Range:** 500-30000ms
 
 - **500ms**: Very responsive, but increases API load
-- **2000ms** (default): Balanced responsiveness and low API load
-- **5000ms**: Lower API load, slight delay in updates
+- **2000ms**: More responsive, with moderate API load
+- **5000ms** (default): Balanced responsiveness and low API load
 - **30000ms**: Minimal API load, may miss rapid changes
 
 ---
@@ -207,7 +207,7 @@ AspireMonitor will regenerate it on next startup with default values.
 ```json
 {
   "aspireEndpoint": "http://localhost:18888",
-  "pollingIntervalMs": 2000,
+  "pollingIntervalMs": 5000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90
 }
@@ -218,7 +218,7 @@ AspireMonitor will regenerate it on next startup with default values.
 ```json
 {
   "aspireEndpoint": "http://aspire-container:5000",
-  "pollingIntervalMs": 2000
+  "pollingIntervalMs": 5000
 }
 ```
 

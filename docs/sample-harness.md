@@ -2,7 +2,7 @@
 
 ## Why it exists
 
-AspireMonitor is a monitor for .NET Aspire applications, so it needs a real Aspire
+AspireMonitor is a monitor for Aspire applications, so it needs a real Aspire
 application to test against. **SampleHarness** is that application: a small, fully
 deterministic Aspire solution that lives alongside the monitor code and serves as the
 **canonical end-to-end validation target** for all AspireMonitor features.
@@ -45,8 +45,7 @@ src/SampleHarness/
 ### Prerequisites
 
 - .NET 10 SDK (or later)
-- [.NET Aspire workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling)
-  or Aspire tooling installed in Visual Studio 2022 17.9+
+- Aspire CLI installed and available on `PATH`
 
 ### Start the AppHost
 

@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 Initial Release
 
-First public release of **ElBruno.AspireMonitor** — Real-time Windows system tray monitor for .NET Aspire distributed applications.
+First public release of **ElBruno.AspireMonitor** — Real-time Windows system tray monitor for Aspire distributed applications.
 
 ### ✨ Features
 
 #### Core Monitoring
 - **Real-Time Polling**: Automatic resource monitoring every 2 seconds (configurable)
 - **Color-Coded Status**: 🟢 Green (<70%), 🟡 Yellow (70-90%), 🔴 Red (>90% or error)
-- **Multi-Resource Tracking**: Monitor unlimited Aspire resources simultaneously
+- **Multi-Resource Tracking**: Monitor unlimited resources simultaneously
 - **Auto-Reconnect**: Graceful handling of network interruptions with exponential backoff
 
 #### User Interface
@@ -70,7 +70,7 @@ First public release of **ElBruno.AspireMonitor** — Real-time Windows system t
 #### Requirements
 - Windows 10 or later
 - .NET 10 Runtime
-- .NET Aspire (running locally or remotely)
+- Aspire (running locally or remotely)
 
 ### 📦 Installation
 

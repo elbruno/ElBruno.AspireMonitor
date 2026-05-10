@@ -8,12 +8,12 @@ Before starting, ensure you have:
 
 - **Windows 10 or later** — WPF is Windows-only
 - **.NET 10 Runtime** — [Download](https://dotnet.microsoft.com/en-us/download)
-- **.NET Aspire running** — Locally or remotely (e.g., `http://localhost:5000`)
+- **Aspire running** — Locally or remotely (default dashboard URL: `http://localhost:18888`)
 
 Verify your setup:
 ```bash
 dotnet --version              # Should be 10.x or higher
-dotnet workload list          # Should include 'aspire'
+aspire --version              # Should show the installed Aspire CLI
 ```
 
 ## 🚀 Installation
@@ -58,11 +58,11 @@ dotnet run
 When you launch AspireMonitor for the first time, it will prompt you:
 
 ```
-Enter Aspire endpoint (e.g., http://localhost:5000): 
+Enter Aspire endpoint (e.g., http://localhost:18888): 
 ```
 
 **Common endpoints:**
-- **Local development**: `http://localhost:5000`
+- **Local development**: `http://localhost:18888`
 - **Remote server**: `http://192.168.1.100:5000`
 - **HTTPS**: `https://aspire.example.com`
 
@@ -78,8 +78,8 @@ All settings are stored at:
 Example configuration:
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
-  "pollingIntervalMs": 2000,
+  "aspireEndpoint": "http://localhost:18888",
+  "pollingIntervalMs": 5000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,
@@ -159,14 +159,14 @@ The tray icon shows the **highest status** across all resources:
 
 Resources in the main window are **clickable URLs**. Click any resource name to open it in your browser:
 
-- Clicking `api-service` → Opens `http://localhost:5000/resources/api-service`
-- Clicking `db-postgres` → Opens `http://localhost:5000/resources/db-postgres`
+- Clicking `api-service` → Opens that resource's endpoint URL, such as `http://localhost:5021`
+- Clicking `db-postgres` → Opens the endpoint Aspire reports for that resource
 
 ## 🔄 Live Polling in Action
 
 AspireMonitor continuously monitors your Aspire resources:
 
-1. **Connects** to your Aspire API (default: every 2 seconds)
+1. **Connects** to your Aspire API (default: every 5 seconds)
 2. **Fetches** resource metrics (CPU, memory, status)
 3. **Evaluates** health against thresholds
 4. **Updates** tray icon and window in real-time
@@ -182,8 +182,8 @@ AspireMonitor continuously monitors your Aspire resources:
 ### "Can't connect to Aspire"
 
 **Check:**
-1. Is Aspire running? `dotnet run` in your Aspire project directory
-2. Is the endpoint correct? Default is usually `http://localhost:5000`
+1. Is Aspire running? Use the Start button or run `aspire start` in your AppHost directory
+2. Is the endpoint correct? Default is usually `http://localhost:18888`
 3. Is the port accessible? Check Windows Firewall settings
 
 **Solution:**
@@ -196,14 +196,14 @@ notepad %APPDATA%\Local\ElBruno\AspireMonitor\config.json
 ### Tray Icon Won't Update
 
 **Check:**
-1. Is polling interval too long? (default 2000ms is fine)
+1. Is polling interval too long? (default 5000ms is fine)
 2. Are thresholds unrealistic? (e.g., warning at 100%)
 3. Is CPU/memory actually available?
 
 **Solution:**
 ```json
 {
-  "pollingIntervalMs": 2000,
+  "pollingIntervalMs": 5000,
   "cpuThresholdWarning": 70,
   "memoryThresholdWarning": 70
 }
@@ -233,8 +233,8 @@ See [Troubleshooting Guide](./troubleshooting.md) for more issues.
 Monitor microservices while coding:
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
-  "pollingIntervalMs": 2000
+  "aspireEndpoint": "http://localhost:18888",
+  "pollingIntervalMs": 5000
 }
 ```
 

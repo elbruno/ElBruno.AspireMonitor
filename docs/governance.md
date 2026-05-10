@@ -12,7 +12,7 @@ requests in this repository.
 
 ### Context
 
-AspireMonitor is a live monitor for .NET Aspire applications. To validate it
+AspireMonitor is a live monitor for Aspire applications. To validate it
 end-to-end a real Aspire solution is needed. Rather than depending on an external
 project, a minimal harness lives inside this repository.
 

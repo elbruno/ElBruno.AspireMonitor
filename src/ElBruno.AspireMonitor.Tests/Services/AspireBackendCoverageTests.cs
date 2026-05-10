@@ -167,8 +167,8 @@ public class AspireCliServiceParsingTests
     }
 
     [Theory]
-    [InlineData("not found", "Aspire CLI not found. Please install .NET Aspire.")]
-    [InlineData("cannot be executed", "Aspire CLI not found. Please install .NET Aspire.")]
+    [InlineData("not found", "Aspire CLI not found. Please install Aspire.")]
+    [InlineData("cannot be executed", "Aspire CLI not found. Please install Aspire.")]
     [InlineData("Command failed: no app", "No Aspire app is currently running.")]
     public async Task ParseResourcesFromDescribeJsonAsync_KnownInvalidOperationErrors_ReturnFriendlyMessages(
         string exceptionMessage,

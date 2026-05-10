@@ -236,13 +236,13 @@ AspireMonitor auto-creates config on first run. If missing:
    // ❌ Wrong — missing comma after "aspireEndpoint"
    {
      "aspireEndpoint": "http://localhost:18888"
-     "pollingIntervalMs": 2000
+     "pollingIntervalMs": 5000
    }
    
    // ✅ Correct
    {
      "aspireEndpoint": "http://localhost:18888",
-     "pollingIntervalMs": 2000
+     "pollingIntervalMs": 5000
    }
    ```
 
@@ -263,7 +263,7 @@ AspireMonitor auto-creates config on first run. If missing:
 1. **Check polling interval:**
    ```json
    {
-     "pollingIntervalMs": 2000
+     "pollingIntervalMs": 5000
    }
    ```
    Is this reasonable (1000-10000ms)?
