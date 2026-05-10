@@ -42,5 +42,5 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
 
-// Expose for WebApplicationFactory
-public partial class Program { }
+// Unique anchor so WebApplicationFactory in tests can reference this project.
+public class ApiServiceProgram { }

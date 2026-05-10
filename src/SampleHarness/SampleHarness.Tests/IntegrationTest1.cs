@@ -87,11 +87,11 @@ public class AppHostTopologyTests
 /// Fast in-process tests for the ApiService using WebApplicationFactory.
 /// No Aspire infrastructure required — these are pure service-level tests.
 /// </summary>
-public class ApiServiceEndpointTests : IClassFixture<WebApplicationFactory<global::Program>>
+public class ApiServiceEndpointTests : IClassFixture<WebApplicationFactory<ApiServiceProgram>>
 {
-    private readonly WebApplicationFactory<global::Program> _factory;
+    private readonly WebApplicationFactory<ApiServiceProgram> _factory;
 
-    public ApiServiceEndpointTests(WebApplicationFactory<global::Program> factory)
+    public ApiServiceEndpointTests(WebApplicationFactory<ApiServiceProgram> factory)
     {
         _factory = factory;
     }

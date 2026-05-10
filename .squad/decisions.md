@@ -433,5 +433,6 @@
 ### Sample Aspire Validation Harness
 - **Decision:** Maintain a tiny Aspire sample solution in-repo as the canonical validation target for AspireMonitor.
 - **Rationale:** Gives the monitor app a stable, repeatable distributed app to exercise in E2E and regression testing.
-- **Status:** 🟡 PLANNED (2026-05-10)
+- **Status:** ✅ IMPLEMENTED (2026-05-10)
+- **Files:** `src/SampleHarness/`, `docs/sample-harness.md`, `docs/governance.md`
 - **Governance:** Update the sample whenever AspireMonitor features or assumptions change so tests and docs keep reflecting real Aspire behavior.

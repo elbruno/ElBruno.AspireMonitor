@@ -60,7 +60,7 @@ never reduce that count or change any test outcome.
 | Component | Target framework | Rationale |
 |---|---|---|
 | Monitor (WPF) | net10.0-windows | Uses WPF; follows latest stable .NET |
-| SampleHarness services | net9.0 | Aspire 13.x templates default; stable LTS |
-| SampleHarness.Tests | net9.0 | Must match AppHost SDK version |
+| SampleHarness services | net10.0 | Matches the Aspire 13.3 C# templates and service-defaults guidance |
+| SampleHarness.Tests | net10.0 | Must match the AppHost SDK and Aspire.Hosting.Testing version |
 
 Upgrading either framework requires updating this table and verifying all tests pass.

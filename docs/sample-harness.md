@@ -44,7 +44,7 @@ src/SampleHarness/
 
 ### Prerequisites
 
-- .NET 9 SDK (or later)
+- .NET 10 SDK (or later)
 - [.NET Aspire workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling)
   or Aspire tooling installed in Visual Studio 2022 17.9+
 
