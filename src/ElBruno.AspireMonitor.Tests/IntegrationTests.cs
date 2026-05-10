@@ -6,6 +6,8 @@ using Moq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
+using System.Threading;
+using System.Windows;
 using Xunit;
 
 namespace ElBruno.AspireMonitor.Tests;
@@ -14,6 +16,7 @@ public class IntegrationTests
 {
     private readonly string _healthyJsonPath = Path.Combine("Fixtures", "aspire-response-healthy.json");
     private readonly string _stressedJsonPath = Path.Combine("Fixtures", "aspire-response-stressed.json");
+    private readonly string _telemetryRichJsonPath = Path.Combine("Fixtures", "aspire-response-telemetry-rich.json");
 
     [Fact]
     public void Configuration_DefaultAspireEndpoint_UsesDashboardPort()
@@ -160,6 +163,56 @@ public class IntegrationTests
         propertyChangedEvents.Should().Contain("Resources", "Resources collection should notify changes");
         propertyChangedEvents.Should().Contain("StatusSummary", "Status summary should update");
         mockViewModel.Resources.Should().NotBeEmpty("resources should be populated");
+    }
+
+    [Fact]
+    public void MainViewModel_PopulatesTelemetryRichResources_WithTypeDiskAndEndpointCount()
+    {
+        Exception? failure = null;
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                _ = Application.Current ?? new Application();
+
+                var pollingService = new Mock<IAspirePollingService>();
+                var configService = new Mock<IConfigurationService>();
+                configService.Setup(service => service.LoadConfiguration())
+                    .Returns(new Configuration());
+
+                var viewModel = new MainViewModel(pollingService.Object, configService.Object);
+                var telemetryJson = File.ReadAllText(_telemetryRichJsonPath);
+                using var document = JsonDocument.Parse(telemetryJson);
+                var resources = JsonSerializer.Deserialize<List<AspireResource>>(
+                    document.RootElement.GetProperty("resources").GetRawText(),
+                    new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                resources.Should().NotBeNull();
+                pollingService.Raise(service => service.ResourcesUpdated += null, viewModel, resources!);
+
+                viewModel.Resources.Should().HaveCount(2);
+                viewModel.Resources[0].TypeDisplay.Should().Be("Container");
+                viewModel.Resources[0].DiskUsageText.Should().Be("12.3%");
+                viewModel.Resources[0].EndpointCountText.Should().Be("2 endpoints");
+                viewModel.Resources[1].TypeDisplay.Should().Be("Project");
+                viewModel.Resources[1].DiskUsageText.Should().Be("3.7%");
+                viewModel.Resources[1].EndpointCountText.Should().Be("1 endpoint");
+            }
+            catch (Exception ex)
+            {
+                failure = ex;
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        failure.Should().BeNull();
     }
 
     [Fact]

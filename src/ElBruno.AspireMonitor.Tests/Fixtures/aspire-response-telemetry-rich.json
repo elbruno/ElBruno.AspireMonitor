@@ -1,0 +1,41 @@
+{
+  "resources": [
+    {
+      "name": "api-service",
+      "resourceType": "Container",
+      "state": "Running",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "endpoints": [
+        {
+          "endpointUrl": "http://localhost:5000"
+        },
+        {
+          "endpointUrl": "https://localhost:5001"
+        }
+      ],
+      "properties": {
+        "cpuUsage": 45.5,
+        "memoryUsage": 512000000,
+        "memoryLimit": 2147483648,
+        "diskUsage": 12.3
+      }
+    },
+    {
+      "name": "worker-service",
+      "resourceType": "Project",
+      "state": "Running",
+      "createdAt": "2024-01-15T10:00:05Z",
+      "endpoints": [
+        {
+          "endpointUrl": "http://localhost:5100"
+        }
+      ],
+      "properties": {
+        "cpuUsage": 15.2,
+        "memoryUsage": 256000000,
+        "memoryLimit": 1073741824,
+        "diskUsage": 3.7
+      }
+    }
+  ]
+}

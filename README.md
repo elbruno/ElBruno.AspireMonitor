@@ -8,7 +8,7 @@
 
 **Real-time Windows system tray monitor for .NET Aspire distributed applications.**
 
-Monitor CPU, memory, and health status of your Aspire resources without leaving your code editor. Get instant visual feedback on resource utilization with color-coded status indicators and clickable URLs—all from a lightweight tray icon.
+Monitor CPU, memory, disk, and health status of your Aspire resources without leaving your code editor. Get instant visual feedback on resource utilization with color-coded status indicators, resource types, endpoint counts, and clickable URLs—all from a lightweight tray icon.
 
 ## ⚡ Quick Start
 
@@ -31,6 +31,7 @@ Then access your Aspire dashboard (default: `http://localhost:18888`) and start 
 | ⚡ **Real-Time Updates** | Automatic polling every 2 seconds (configurable) |
 | 🪟 **System Tray Integration** | Minimal, always-available monitoring in your taskbar |
 | 🔗 **Clickable URLs** | Open resources directly from the app |
+| 📦 **Rich Resource Telemetry** | See type, disk usage, and endpoint counts at a glance |
 | 🧭 **Open Dashboard** | One-click button opens the configured Aspire dashboard URL |
 | ⚙️ **Configurable Thresholds** | Set CPU/memory warning and critical points |
 | 🔄 **Auto-Reconnect** | Gracefully handles network interruptions |

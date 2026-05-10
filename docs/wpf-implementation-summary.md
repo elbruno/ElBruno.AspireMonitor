@@ -14,7 +14,7 @@
 
 **ViewModels:**
 - `ViewModels/MainViewModel.cs` - Main window data binding (host URL, resources, status)
-- `ViewModels/ResourceViewModel.cs` - Individual resource display (CPU, memory, status color)
+- `ViewModels/ResourceViewModel.cs` - Individual resource display (CPU, memory, disk, telemetry rows)
 - `ViewModels/ConfigurationViewModel.cs` - Settings management with validation
 
 **Models:**
@@ -40,8 +40,11 @@
 │ Last updated: 14:23:45                          │
 ├─────────────────────────────────────────────────┤
 │ ● webfrontend     CPU: 45.2%  MEM: 62.8%  🔗   │
+│   Type: Container • Disk: 12.5% • Endpoints: 1  │
 │ ● apiservice      CPU: 28.5%  MEM: 48.3%  🔗   │
+│   Type: Project • Disk: 7.3% • Endpoints: 2     │
 │ ● cache           CPU: 12.1%  MEM: 35.7%       │
+│   Type: Container • Disk: 1.2% • Endpoints: 0   │
 ├─────────────────────────────────────────────────┤
 │                    [Refresh] [Settings] [Close] │
 └─────────────────────────────────────────────────┘
@@ -50,6 +53,7 @@
 **Features:**
 - Clickable URLs (host and resources)
 - Color-coded status indicators (🟢🟡🔴⚪)
+- Rich telemetry rows (type, disk usage, endpoint count)
 - Real-time updates via data binding
 - System tray integration (minimize/restore)
 
@@ -111,7 +115,10 @@ public class MainViewModel : ViewModelBase
                 Status = MapStatus(resource.State),
                 CpuUsage = resource.Metrics.CpuUsage,
                 MemoryUsage = resource.Metrics.MemoryUsage,
-                Url = resource.Endpoints.FirstOrDefault()
+                DiskUsagePercent = resource.Metrics.DiskUsagePercent,
+                ResourceType = resource.Type,
+                EndpointCount = resource.Endpoints.Count,
+                Url = resource.Endpoints.FirstOrDefault()?.DisplayUrl
             });
         }
         
@@ -135,14 +142,22 @@ public class ResourceData
 {
     public string Name { get; set; }
     public string State { get; set; }  // "Running", "Stopped", etc.
+    public string? ResourceType { get; set; }
     public ResourceMetrics Metrics { get; set; }
-    public List<string> Endpoints { get; set; }
+    public List<ResourceEndpoint> Endpoints { get; set; }
+}
+
+public class ResourceEndpoint
+{
+    public string? EndpointUrl { get; set; }
+    public string? ProxyUrl { get; set; }
 }
 
 public class ResourceMetrics
 {
     public double CpuUsage { get; set; }    // 0-100
     public double MemoryUsage { get; set; } // 0-100
+    public double DiskUsagePercent { get; set; } // 0-100
 }
 ```
 

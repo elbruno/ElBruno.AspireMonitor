@@ -43,6 +43,8 @@ src/ElBruno.AspireMonitor/
   - Resource name
   - CPU usage percentage
   - Memory usage percentage
+  - Disk usage percentage
+  - Resource type and endpoint count
   - Clickable URL (if available)
 - **Bottom Section**: Refresh, Settings, Close buttons
 
@@ -86,6 +88,9 @@ The ViewModels are ready to consume data from the Aspire API service:
 - Status (ResourceStatus enum)
 - CpuUsage (double, 0-100)
 - MemoryUsage (double, 0-100)
+- DiskUsagePercent (double, 0-100)
+- ResourceType (string, nullable)
+- EndpointCount (int)
 - Url (string, nullable)
 
 // ConfigurationViewModel:

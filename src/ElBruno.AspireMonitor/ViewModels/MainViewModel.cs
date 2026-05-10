@@ -149,6 +149,7 @@ public class MainViewModel : ViewModelBase
             {
                 resource.CpuUsage = random.Next(0, 100);
                 resource.MemoryUsage = random.Next(0, 100);
+                resource.DiskUsagePercent = random.Next(0, 100);
             }
             OnPropertyChanged(nameof(OverallStatusColor));
         }
@@ -181,14 +182,18 @@ public class MainViewModel : ViewModelBase
             foreach (var resource in resources)
             {
                 // Get primary endpoint URL
-                string? url = resource.Endpoints.Count > 0 ? resource.Endpoints[0] : null;
+                var primaryEndpoint = resource.Endpoints.FirstOrDefault();
+                string? url = primaryEndpoint?.DisplayUrl;
                 
                 Resources.Add(new ResourceViewModel
                 {
                     Name = resource.Name,
+                    ResourceType = resource.Type,
                     Status = resource.Status,
                     CpuUsage = resource.Metrics.CpuUsagePercent,
                     MemoryUsage = resource.Metrics.MemoryUsagePercent,
+                    DiskUsagePercent = resource.Metrics.DiskUsagePercent,
+                    EndpointCount = resource.Endpoints.Count,
                     Url = url
                 });
             }
@@ -232,27 +237,36 @@ public class MainViewModel : ViewModelBase
         Resources.Add(new ResourceViewModel
         {
             Name = "webfrontend",
+            ResourceType = "Container",
             Status = Models.ResourceStatus.Running,
             CpuUsage = 45.2,
             MemoryUsage = 62.8,
+            DiskUsagePercent = 12.5,
+            EndpointCount = 1,
             Url = "http://localhost:5000"
         });
 
         Resources.Add(new ResourceViewModel
         {
             Name = "apiservice",
+            ResourceType = "Project",
             Status = Models.ResourceStatus.Running,
             CpuUsage = 28.5,
             MemoryUsage = 48.3,
+            DiskUsagePercent = 7.3,
+            EndpointCount = 2,
             Url = "http://localhost:5001"
         });
 
         Resources.Add(new ResourceViewModel
         {
             Name = "cache",
+            ResourceType = "Container",
             Status = Models.ResourceStatus.Running,
             CpuUsage = 12.1,
             MemoryUsage = 35.7,
+            DiskUsagePercent = 1.2,
+            EndpointCount = 0,
             Url = null
         });
 

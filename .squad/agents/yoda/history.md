@@ -161,3 +161,17 @@
 - Centralizing the default endpoint in `Configuration.DefaultAspireEndpoint` keeps config and view models aligned
 - Fixture-backed configuration loading is the cleanest regression path for dashboard URL changes
 - Direct view-model assertions catch stale hardcoded URLs without brittle UI automation
+
+### 2026-05-10 — Phase 2 Telemetry Slice Regression Coverage
+
+**Work Completed:**
+- ✅ Added `AspireResource.Type` mapping for `resourceType` JSON
+- ✅ Added `ResourceViewModel` display text for type, disk usage, and endpoint count
+- ✅ Added a telemetry-rich fixture and an STA-backed integration test for `MainViewModel`
+- ✅ Kept the existing `ResourceType`/`DiskUsagePercent` aliases for backward compatibility
+- ✅ Verified test suite: 81/81 passing
+
+**Learnings:**
+- Aspire resource payloads expose telemetry under `properties`, so `AspireResource.Metrics` needs `JsonPropertyName("properties")`
+- UI regression tests are deterministic when fixture JSON is deserialized into `AspireResource` and exercised through the polling event path
+- WPF dispatcher-backed view models can be tested reliably on a dedicated STA thread when the test needs `Application.Current`

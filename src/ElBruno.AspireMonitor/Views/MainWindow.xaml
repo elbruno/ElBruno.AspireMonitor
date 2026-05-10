@@ -118,40 +118,36 @@
                                            VerticalAlignment="Center"
                                            Margin="5,0,10,0"/>
 
-                                <!-- CPU Usage -->
-                                <StackPanel Grid.Column="2" 
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,10,0">
-                                    <TextBlock Text="CPU: " 
-                                               FontSize="11" 
-                                               Foreground="#666666"/>
-                                    <TextBlock Text="{Binding CpuUsageText}" 
-                                               FontSize="11" 
-                                               FontWeight="Bold"/>
-                                </StackPanel>
-
-                                <!-- Memory Usage -->
-                                <StackPanel Grid.Column="3" 
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,10,0">
-                                    <TextBlock Text="MEM: " 
-                                               FontSize="11" 
-                                               Foreground="#666666"/>
-                                    <TextBlock Text="{Binding MemoryUsageText}" 
-                                               FontSize="11" 
-                                               FontWeight="Bold"/>
-                                </StackPanel>
-
-                                <!-- URL (Clickable if available) -->
-                                <TextBlock Grid.Column="4"
-                                           Style="{StaticResource ClickableUrl}"
-                                           Text="{Binding UrlDisplay}"
-                                           FontSize="11"
-                                           VerticalAlignment="Center"
-                                           MouseLeftButtonDown="ResourceUrl_Click"
-                                           Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <WrapPanel Grid.Column="2"
+                                           Grid.ColumnSpan="3"
+                                           VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                        <TextBlock Text="CPU: " FontSize="11" Foreground="#666666"/>
+                                        <TextBlock Text="{Binding CpuUsageText}" FontSize="11" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                        <TextBlock Text="MEM: " FontSize="11" Foreground="#666666"/>
+                                        <TextBlock Text="{Binding MemoryUsageText}" FontSize="11" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                        <TextBlock Text="TYPE: " FontSize="11" Foreground="#666666"/>
+                                        <TextBlock Text="{Binding TypeDisplay}" FontSize="11" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                        <TextBlock Text="DISK: " FontSize="11" Foreground="#666666"/>
+                                        <TextBlock Text="{Binding DiskUsageText}" FontSize="11" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                        <TextBlock Text="ENDPOINTS: " FontSize="11" Foreground="#666666"/>
+                                        <TextBlock Text="{Binding EndpointCountText}" FontSize="11" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource ClickableUrl}"
+                                               Text="{Binding UrlDisplay}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"
+                                               MouseLeftButtonDown="ResourceUrl_Click"
+                                               Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                </WrapPanel>
                             </Grid>
                         </Border>
                     </DataTemplate>

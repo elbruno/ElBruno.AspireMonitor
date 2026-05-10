@@ -37,6 +37,23 @@ public class AspireApiClientTests
     }
 
     [Fact]
+    public async Task AspireResource_Type_MapsFromResourceTypeJson()
+    {
+        var healthyJson = await File.ReadAllTextAsync(_healthyJsonPath);
+        using var document = JsonDocument.Parse(healthyJson);
+        var resources = JsonSerializer.Deserialize<List<ElBruno.AspireMonitor.Models.AspireResource>>(
+            document.RootElement.GetProperty("resources").GetRawText(),
+            new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        resources.Should().NotBeNull();
+        resources.Should().HaveCount(3);
+        resources![0].Type.Should().Be("Container");
+    }
+
+    [Fact]
     public async Task GetResourcesAsync_TimeoutOccurs_HandlesGracefully()
     {
         // Arrange - Mock HttpClient with timeout

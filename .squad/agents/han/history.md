@@ -57,6 +57,30 @@
    - Click → open in default browser (Process.Start)
    - Config button → open settings dialog (separate window)
 
+### 2026-05-10 — Resource Telemetry Slice
+
+1. **Resource cards now show richer telemetry without new APIs:**
+   - `AspireResource.Type` maps from `resourceType` and is surfaced in the card when present.
+   - `ResourceMetrics.DiskUsagePercent` is now bound through `ResourceViewModel`.
+   - Endpoint count is shown as compact text in the resource row.
+
+2. **Endpoint payload shape is now modeled explicitly:**
+   - `AspireResource.Endpoints` uses `AspireEndpoint` objects so dashboard proxy URLs can still be opened.
+   - `MainViewModel` now derives the clickable URL from the first endpoint's display URL.
+
+3. **Compact resource-card layout pattern:**
+   - Keep CPU/MEM in the main row.
+   - Add a smaller telemetry row beneath it for type, disk, and endpoint count.
+   - This preserves readability while adding more signal.
+
+4. **Key files touched:**
+   - `src/ElBruno.AspireMonitor/Models/AspireResource.cs`
+   - `src/ElBruno.AspireMonitor/Models/AspireEndpoint.cs`
+   - `src/ElBruno.AspireMonitor/ViewModels/MainViewModel.cs`
+   - `src/ElBruno.AspireMonitor/ViewModels/ResourceViewModel.cs`
+   - `src/ElBruno.AspireMonitor/Views/MainWindow.xaml`
+   - `README.md`, `src/ElBruno.AspireMonitor/README.md`, `docs/wpf-implementation-summary.md`
+
 ### 2026-05-10 — Dashboard-Aware UI Slice
 
 1. **Endpoint defaults are now dashboard-first:**
