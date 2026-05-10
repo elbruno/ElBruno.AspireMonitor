@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Media;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Models;
@@ -7,17 +9,34 @@ namespace ElBruno.AspireMonitor.ViewModels;
 public class ResourceViewModel : ViewModelBase
 {
     private string _name = string.Empty;
+    private string? _type;
     private ResourceStatus _status = ResourceStatus.Unknown;
     private double _cpuUsage;
     private double _memoryUsage;
+    private double _diskUsage;
+    private int _endpointCount;
     private string? _url;
-    private string? _type;
+    private List<AspireEnvironmentEntry> _environment = new();
     private bool _isSelected;
 
     public string Name
     {
         get => _name;
         set => SetProperty(ref _name, value);
+    }
+
+    public string? Type
+    {
+        get => _type;
+        set
+        {
+            if (SetProperty(ref _type, value))
+            {
+                OnPropertyChanged(nameof(HasResourceType));
+                OnPropertyChanged(nameof(TypeDisplay));
+                OnPropertyChanged(nameof(ResourceTypeText));
+            }
+        }
     }
 
     public ResourceStatus Status
@@ -36,7 +55,6 @@ public class ResourceViewModel : ViewModelBase
     {
         get
         {
-            // Calculate color based on status and resource usage
             if (Status != ResourceStatus.Running)
             {
                 return Status switch
@@ -47,15 +65,14 @@ public class ResourceViewModel : ViewModelBase
                 };
             }
 
-            // If running, check CPU and Memory thresholds
-            double combinedUsage = (CpuUsage + MemoryUsage) / 2;
-            
+            var combinedUsage = (CpuUsage + MemoryUsage) / 2;
+
             if (combinedUsage >= 90)
-                return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF4, 0x43, 0x36)); // Red
+                return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF4, 0x43, 0x36));
             if (combinedUsage >= 70)
-                return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xC1, 0x07)); // Yellow
-            
-            return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4C, 0xAF, 0x50)); // Green
+                return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xC1, 0x07));
+
+            return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4C, 0xAF, 0x50));
         }
     }
 
@@ -85,9 +102,88 @@ public class ResourceViewModel : ViewModelBase
         }
     }
 
+    public double DiskUsage
+    {
+        get => _diskUsage;
+        set
+        {
+            if (SetProperty(ref _diskUsage, value))
+            {
+                OnPropertyChanged(nameof(DiskUsageText));
+            }
+        }
+    }
+
     public string CpuUsageText => $"{CpuUsage:F1}%";
-    
+
     public string MemoryUsageText => $"{MemoryUsage:F1}%";
+
+    public string DiskUsageText => $"{DiskUsage:F1}%";
+
+    public int EndpointCount
+    {
+        get => _endpointCount;
+        set
+        {
+            if (SetProperty(ref _endpointCount, value))
+            {
+                OnPropertyChanged(nameof(EndpointCountText));
+            }
+        }
+    }
+
+    public string TypeDisplay => Type ?? string.Empty;
+
+    public string? ResourceType
+    {
+        get => Type;
+        set => Type = value;
+    }
+
+    public bool HasResourceType => !string.IsNullOrWhiteSpace(Type);
+
+    public string ResourceTypeText => TypeDisplay;
+
+    public double DiskUsagePercent
+    {
+        get => DiskUsage;
+        set => DiskUsage = value;
+    }
+
+    public string EndpointCountText => EndpointCount == 1 ? "1 endpoint" : $"{EndpointCount} endpoints";
+
+    public List<AspireEnvironmentEntry> Environment
+    {
+        get => _environment;
+        set
+        {
+            if (SetProperty(ref _environment, value ?? new List<AspireEnvironmentEntry>()))
+            {
+                OnPropertyChanged(nameof(HasEnvironment));
+                OnPropertyChanged(nameof(EnvironmentSummary));
+                OnPropertyChanged(nameof(EnvironmentSummaryText));
+                OnPropertyChanged(nameof(IsDevelopmentOnly));
+            }
+        }
+    }
+
+    public bool HasEnvironment => Environment.Count > 0;
+
+    public string EnvironmentSummary =>
+        Environment.Count == 0
+            ? string.Empty
+            : string.Join(", ", Environment.Select(environment => environment.DisplayText));
+
+    public string EnvironmentSummaryText =>
+        Environment.Count == 0
+            ? string.Empty
+            : IsDevelopmentOnly
+                ? "Env: Dev"
+                : Environment.Count == 1
+                    ? "Env: 1 var"
+                    : $"Env: {Environment.Count} vars";
+
+    public bool IsDevelopmentOnly => Environment.Any(environment => environment.IsDevelopmentEnvironment);
 
     public string? Url
     {
@@ -100,12 +196,6 @@ public class ResourceViewModel : ViewModelBase
                 OnPropertyChanged(nameof(UrlDisplay));
             }
         }
-    }
-
-    public string? Type
-    {
-        get => _type;
-        set => SetProperty(ref _type, value);
     }
 
     public bool HasUrl => !string.IsNullOrEmpty(Url);

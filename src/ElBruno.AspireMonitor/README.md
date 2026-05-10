@@ -43,6 +43,8 @@ src/ElBruno.AspireMonitor/
   - Resource name
   - CPU usage percentage
   - Memory usage percentage
+  - Disk usage percentage
+  - Resource type, endpoint count, and compact environment badge
   - Clickable URL (if available)
 - **Bottom Section**: Refresh, Settings, Close buttons
 
@@ -58,6 +60,7 @@ src/ElBruno.AspireMonitor/
 - CPU threshold (%)
 - Memory threshold (%)
 - Start with Windows option
+- Hide development resources option
 - Input validation with error messages
 
 ### 4. Data Binding
@@ -86,6 +89,10 @@ The ViewModels are ready to consume data from the Aspire API service:
 - Status (ResourceStatus enum)
 - CpuUsage (double, 0-100)
 - MemoryUsage (double, 0-100)
+- DiskUsagePercent (double, 0-100)
+- ResourceType (string, nullable)
+- Environment (List<AspireEnvironmentEntry>)
+- EndpointCount (int)
 - Url (string, nullable)
 
 // ConfigurationViewModel:

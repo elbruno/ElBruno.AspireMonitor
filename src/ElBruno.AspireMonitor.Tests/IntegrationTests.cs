@@ -1,9 +1,15 @@
 using FluentAssertions;
+using ElBruno.AspireMonitor.Models;
+using ElBruno.AspireMonitor.Services;
+using ElBruno.AspireMonitor.ViewModels;
 using Moq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
+using System.Threading;
+using System.Windows;
 using Xunit;
+using ModelConfiguration = ElBruno.AspireMonitor.Models.Configuration;
 
 namespace ElBruno.AspireMonitor.Tests;
 
@@ -11,6 +17,71 @@ public class IntegrationTests
 {
     private readonly string _healthyJsonPath = Path.Combine("Fixtures", "aspire-response-healthy.json");
     private readonly string _stressedJsonPath = Path.Combine("Fixtures", "aspire-response-stressed.json");
+    private readonly string _telemetryRichJsonPath = Path.Combine("Fixtures", "aspire-response-telemetry-rich.json");
+
+    [Fact]
+    public void Configuration_DefaultAspireEndpoint_UsesDashboardPort()
+    {
+        var configuration = new ModelConfiguration();
+
+        configuration.AspireEndpoint.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
+    }
+
+    [Fact]
+    public void ViewModels_DefaultAspireEndpoint_StayAligned()
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new ModelConfiguration());
+
+        var settingsViewModel = new SettingsViewModel(configService.Object);
+        var configurationViewModel = new ConfigurationViewModel();
+        var mainViewModel = new MainViewModel(null, configService.Object);
+
+        settingsViewModel.AspireEndpoint.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
+        configurationViewModel.AspireEndpoint.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
+        mainViewModel.HostUrl.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
+    }
+
+    [Fact]
+    public void MainViewModel_UsesConfiguredHostUrl_InsteadOfStaleDefault()
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new ModelConfiguration
+            {
+                AspireEndpoint = "http://localhost:19999"
+            });
+
+        var mainViewModel = new MainViewModel(null, configService.Object);
+
+        mainViewModel.HostUrl.Should().Be("http://localhost:19999");
+    }
+
+    [Fact]
+    public async Task MainViewModel_LoadsPersistedConfiguration_FromServiceFixture()
+    {
+        var testDirectory = Path.Combine(AppContext.BaseDirectory, $"config-regression-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+
+        var configPath = Path.Combine(testDirectory, "config.json");
+        await File.WriteAllTextAsync(configPath, await File.ReadAllTextAsync(Path.Combine("Fixtures", "config-valid.json")));
+
+        try
+        {
+            var configurationService = new ConfigurationService(configPath);
+            var mainViewModel = new MainViewModel(null, configurationService);
+
+            mainViewModel.HostUrl.Should().Be(ModelConfiguration.DefaultAspireEndpoint);
+        }
+        finally
+        {
+            if (Directory.Exists(testDirectory))
+            {
+                Directory.Delete(testDirectory, true);
+            }
+        }
+    }
 
     [Fact]
     public async Task PollingService_WithMockedAspireApi_UpdatesStateCorrectly()
@@ -93,6 +164,136 @@ public class IntegrationTests
         propertyChangedEvents.Should().Contain("Resources", "Resources collection should notify changes");
         propertyChangedEvents.Should().Contain("StatusSummary", "Status summary should update");
         mockViewModel.Resources.Should().NotBeEmpty("resources should be populated");
+    }
+
+    [Fact]
+    public void MainViewModel_PopulatesTelemetryRichResources_WithTypeDiskAndEndpointCount()
+    {
+        Exception? failure = null;
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var pollingService = new Mock<IAspirePollingService>();
+                var configService = new Mock<IConfigurationService>();
+                configService.Setup(service => service.LoadConfiguration())
+                    .Returns(new ModelConfiguration());
+
+                var viewModel = new MainViewModel(pollingService.Object, configService.Object);
+                var telemetryJson = File.ReadAllText(_telemetryRichJsonPath);
+                using var document = JsonDocument.Parse(telemetryJson);
+                var resources = JsonSerializer.Deserialize<List<AspireResource>>(
+                    document.RootElement.GetProperty("resources").GetRawText(),
+                    new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                resources.Should().NotBeNull();
+                pollingService.Raise(service => service.ResourcesUpdated += null, viewModel, resources!);
+
+                viewModel.Resources.Should().HaveCount(2);
+                viewModel.Resources[0].TypeDisplay.Should().Be("Container");
+                viewModel.Resources[0].DiskUsageText.Should().Be("12.3%");
+                viewModel.Resources[0].EndpointCountText.Should().Be("2 endpoints");
+                viewModel.Resources[0].EnvironmentSummary.Should().Be("ASPNETCORE_ENVIRONMENT=Development, DOTNET_ENVIRONMENT=Development");
+                viewModel.Resources[0].IsDevelopmentOnly.Should().BeTrue();
+                viewModel.Resources[1].TypeDisplay.Should().Be("Project");
+                viewModel.Resources[1].DiskUsageText.Should().Be("3.7%");
+                viewModel.Resources[1].EndpointCountText.Should().Be("1 endpoint");
+                viewModel.Resources[1].EnvironmentSummary.Should().Be("ASPNETCORE_ENVIRONMENT=Production");
+                viewModel.Resources[1].IsDevelopmentOnly.Should().BeFalse();
+            }
+            catch (Exception ex)
+            {
+                failure = ex;
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        failure.Should().BeNull();
+    }
+
+    [Fact]
+    public void MainViewModel_HidesDevelopmentResources_WhenFilterIsEnabled()
+    {
+        Exception? failure = null;
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var configService = new Mock<IConfigurationService>();
+                configService.Setup(service => service.LoadConfiguration())
+                    .Returns(new ModelConfiguration
+                    {
+                        HideDevelopmentResources = true
+                    });
+
+                var pollingService = new Mock<IAspirePollingService>();
+                var viewModel = new MainViewModel(pollingService.Object, configService.Object);
+                var resources = LoadTelemetryRichResources();
+
+                pollingService.Raise(service => service.ResourcesUpdated += null, viewModel, resources);
+
+                viewModel.Resources.Should().HaveCount(1);
+                viewModel.Resources[0].Name.Should().Be("worker-service");
+                viewModel.Resources[0].IsDevelopmentOnly.Should().BeFalse();
+            }
+            catch (Exception ex)
+            {
+                failure = ex;
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        failure.Should().BeNull();
+    }
+
+    [Fact]
+    public void MainViewModel_PreservesDevelopmentResources_WhenFilterIsDisabled()
+    {
+        Exception? failure = null;
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var configService = new Mock<IConfigurationService>();
+                configService.Setup(service => service.LoadConfiguration())
+                    .Returns(new ModelConfiguration
+                    {
+                        HideDevelopmentResources = false
+                    });
+
+                var pollingService = new Mock<IAspirePollingService>();
+                var viewModel = new MainViewModel(pollingService.Object, configService.Object);
+                var resources = LoadTelemetryRichResources();
+
+                pollingService.Raise(service => service.ResourcesUpdated += null, viewModel, resources);
+
+                viewModel.Resources.Should().HaveCount(2);
+                viewModel.Resources.Should().Contain(resource => resource.Name == "api-service" && resource.IsDevelopmentOnly);
+                viewModel.Resources.Should().Contain(resource => resource.Name == "worker-service" && !resource.IsDevelopmentOnly);
+            }
+            catch (Exception ex)
+            {
+                failure = ex;
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        failure.Should().BeNull();
     }
 
     [Fact]
@@ -266,5 +467,19 @@ public class IntegrationTests
         public string StatusColor { get; set; } = "Green";
         public Action<string>? OnUrlClick { get; set; }
         public Action<object?>? OpenUrlCommand { get; set; }
+    }
+
+    private static List<AspireResource> LoadTelemetryRichResources()
+    {
+        var telemetryJson = File.ReadAllText(Path.Combine("Fixtures", "aspire-response-telemetry-rich.json"));
+        using var document = JsonDocument.Parse(telemetryJson);
+        var resources = JsonSerializer.Deserialize<List<AspireResource>>(
+            document.RootElement.GetProperty("resources").GetRawText(),
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+        return resources ?? new List<AspireResource>();
     }
 }

@@ -22,7 +22,7 @@ aspire-monitor
 The first time you run AspireMonitor, it will prompt you to enter the Aspire endpoint URL:
 
 ```
-Enter Aspire endpoint (e.g., http://localhost:5000): http://localhost:5000
+Enter Aspire dashboard URL (e.g., http://localhost:18888): http://localhost:18888
 ```
 
 ### Step 3: Verify Configuration
@@ -31,12 +31,13 @@ Open `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`:
 
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 2000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,
-  "memoryThresholdCritical": 90
+  "memoryThresholdCritical": 90,
+  "hideDevelopmentResources": false
 }
 ```
 
@@ -45,18 +46,18 @@ Open `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`:
 ### Required
 
 #### `aspireEndpoint` (string)
-**Default:** None (must be set)
+**Default:** `http://localhost:18888`
 
 The HTTP base URL of your Aspire dashboard API.
 
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000"
+  "aspireEndpoint": "http://localhost:18888"
 }
 ```
 
 **Examples:**
-- Local development: `http://localhost:5000`
+- Local development: `http://localhost:18888`
 - Remote machine: `http://192.168.1.100:5000`
 - Docker container: `http://aspire-dashboard:5000`
 
@@ -114,6 +115,21 @@ When any resource exceeds this percentage, the tray icon turns **red** 🔴.
 
 ---
 
+#### `hideDevelopmentResources` (boolean)
+**Default:** false
+
+When enabled, AspireMonitor hides resources whose environment contains `ASPNETCORE_ENVIRONMENT=Development` or `DOTNET_ENVIRONMENT=Development`.
+
+```json
+{
+  "hideDevelopmentResources": true
+}
+```
+
+This is useful when you want the monitor to focus on shared or production-like resources while keeping the underlying data unchanged.
+
+---
+
 #### `memoryThresholdWarning` (integer)
 **Default:** 70 (%)
 
@@ -144,12 +160,13 @@ Memory usage threshold that triggers a red (critical) indicator.
 
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 3000,
   "cpuThresholdWarning": 75,
   "cpuThresholdCritical": 85,
   "memoryThresholdWarning": 75,
-  "memoryThresholdCritical": 85
+  "memoryThresholdCritical": 85,
+  "hideDevelopmentResources": true
 }
 ```
 
@@ -189,7 +206,7 @@ AspireMonitor will regenerate it on next startup with default values.
 
 ```json
 {
-  "aspireEndpoint": "http://localhost:5000",
+  "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 2000,
   "cpuThresholdWarning": 70,
   "cpuThresholdCritical": 90
@@ -247,7 +264,7 @@ AspireMonitor will regenerate it on next startup with default values.
 - Include the port number
 - No trailing slash
 
-Example: ✅ `http://localhost:5000` vs ❌ `http://localhost:5000/`
+Example: ✅ `http://localhost:18888` vs ❌ `http://localhost:18888/`
 
 ### "Configuration not persisting"
 
@@ -260,7 +277,7 @@ Example: ✅ `http://localhost:5000` vs ❌ `http://localhost:5000/`
 ### "Tray icon stays gray"
 
 **Solution:** Verify Aspire is running and endpoint is correct:
-1. Open browser: `http://localhost:5000` (or your configured endpoint)
+1. Open browser: `http://localhost:18888` (or your configured endpoint)
 2. If Aspire dashboard loads, check configuration
 3. Increase `pollingIntervalMs` if API is slow
 

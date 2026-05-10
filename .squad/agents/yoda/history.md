@@ -437,6 +437,52 @@ Phase 4 test suite complete. 223 comprehensive tests written and verified (100% 
 
 ## Next Actions
 
+1. ✅ Phase 2 tests complete - awaiting Luke's service implementation
+2. Run test suite against real services when available
+3. Measure and report actual code coverage
+4. Add ViewModel integration tests as Han completes UI binding
+5. Approve release only after all tests pass with 80%+ coverage
+
+### 2026-05-10 — Phase 1 Dashboard Regression Coverage
+
+**Work Completed:**
+- ✅ Standardized the default Aspire endpoint to `http://localhost:18888` in `Configuration`
+- ✅ Updated `MainViewModel` to load `HostUrl` from `IConfigurationService`
+- ✅ Aligned `SettingsViewModel`, `ConfigurationViewModel`, and the settings UI example text with the dashboard default
+- ✅ Added regression coverage from persisted config to `MainViewModel`
+- ✅ Verified test suite: 76/76 passing
+
+**Learnings:**
+- Centralizing the default endpoint in `Configuration.DefaultAspireEndpoint` keeps config and view models aligned
+- Fixture-backed configuration loading is the cleanest regression path for dashboard URL changes
+- Direct view-model assertions catch stale hardcoded URLs without brittle UI automation
+
+### 2026-05-10 — Phase 2 Telemetry Slice Regression Coverage
+
+**Work Completed:**
+- ✅ Added `AspireResource.Type` mapping for `resourceType` JSON
+- ✅ Added `ResourceViewModel` display text for type, disk usage, and endpoint count
+- ✅ Added a telemetry-rich fixture and an STA-backed integration test for `MainViewModel`
+- ✅ Kept the existing `ResourceType`/`DiskUsagePercent` aliases for backward compatibility
+- ✅ Verified test suite: 81/81 passing
+
+**Learnings:**
+- Aspire resource payloads expose telemetry under `properties`, so `AspireResource.Metrics` needs `JsonPropertyName("properties")`
+- UI regression tests are deterministic when fixture JSON is deserialized into `AspireResource` and exercised through the polling event path
+- WPF dispatcher-backed view models can be tested reliably on a dedicated STA thread when the test needs `Application.Current`
+
+### 2026-05-10 — Phase 3 Environment Filter Regression Coverage
+
+**Work Completed:**
+- ✅ Mapped Aspire `environment` payloads into `AspireResource.Environment`
+- ✅ Added `ResourceViewModel.EnvironmentSummary` and `IsDevelopmentOnly`
+- ✅ Added integration coverage for hiding development-only resources behind `HideDevelopmentResources`
+- ✅ Kept the telemetry-rich fixture deterministic by marking one resource as development-only and one as production
+
+**Learnings:**
+- Development-only detection should live close to the model so both filtering and UI labels can reuse the same signal
+- Fixture-backed environment arrays are enough to test the filter slice without introducing brittle UI automation
+- `IntegrationTests.cs`, `ViewModels\ResourceViewModelTests.cs`, and `Models\AspireResourceTests.cs` now cover the same slice end-to-end
 1. ✅ Phase 2 tests complete - services implemented
 2. ✅ Phase 3 UI tests written - awaiting Han's implementation
 3. Run AppStartupTests against Han's implementation

@@ -8,7 +8,7 @@
 
 **A Windows system tray monitor for Aspire distributed applications.**
 
-Point it at your Aspire AppHost folder, pin the resources you care about, and get a compact mini window with live URLs and Start/Stop controls — without leaving the tray.
+Point it at your Aspire AppHost folder, pin the resources you care about, and get CPU, memory, disk, resource type, environment badges, endpoint counts, live URLs, and Start/Stop controls from the tray.
 
 ## What It Does
 
@@ -19,12 +19,20 @@ ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 3. **Surfaces what matters** — lists every resource in the main window, and pins your chosen ones (with their real URLs) in a compact mini window
 4. **Drives your AppHost** — Start / Stop buttons run `aspire run` and shut it down cleanly, with a live countdown while Aspire spins up
 
-No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI.
+No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI and opening the Aspire dashboard at the standard default `http://localhost:18888`.
 
 ## 🎯 Features
 
 | Feature | Description |
 |---------|-------------|
+| 🟢🟡🔴 **Color-Coded Status** | Visual indicators: Green (<70%), Yellow (70-90%), Red (>90%) |
+| ⚡ **Real-Time Updates** | Automatic polling every 2 seconds (configurable) |
+| 📦 **Rich Resource Telemetry** | See type, disk usage, and endpoint counts at a glance |
+| 🏷️ **Environment Badges** | Compact badges show environment-aware resources |
+| 🙈 **Hide Development Resources** | Optionally filter development-only resources from the list |
+| 🧭 **Open Dashboard** | One-click button opens the configured Aspire dashboard URL |
+| 🔄 **Auto-Reconnect** | Gracefully handles network interruptions |
+| 📊 **Multi-Resource Monitoring** | Track unlimited Aspire resources |
 | 🪟 **Tray + main window + mini window** | Click the tray icon for the full resource list; the mini window pins just what you care about |
 | 📌 **Pinned resources** | Comma-separated `MiniWindowResources` setting pins resources by name prefix (case-insensitive — `web` matches Aspire's `web-xggqzmyn` replicas) |
 | 🔗 **Full URLs inline** | Pinned resources show their actual endpoint (`http://localhost:5021`), not a generic "Open" link |
@@ -55,7 +63,7 @@ aspiremon
 The tool is Windows-only (the underlying app is WPF). Requires the [.NET 10 Runtime](https://dotnet.microsoft.com/en-us/download).
 
 **Or download the executable** from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest).
-
+For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
 ## 📋 Requirements
@@ -99,19 +107,21 @@ Open the in-app **Settings** dialog, or edit:
 Example:
 ```json
 {
-  "WorkingFolder": "C:\\Projects\\MyApp\\src\\MyApp.AppHost",
-  "AspireHostUrl": "http://localhost:18888",
-  "PollingIntervalMs": 2000,
-  "MiniWindowResources": "web, store, gateway"
+  "projectFolder": "C:\\Projects\\MyApp\\src\\MyApp.AppHost",
+  "aspireEndpoint": "http://localhost:18888",
+  "pollingIntervalMs": 2000,
+  "miniWindowResources": "web, store, gateway",
+  "hideDevelopmentResources": false
 }
 ```
 
 | Field | Purpose |
 |---|---|
-| `WorkingFolder` | Folder containing your Aspire `*.AppHost.csproj` |
-| `AspireHostUrl` | Aspire dashboard URL (default `http://localhost:18888`) |
-| `PollingIntervalMs` | Resource refresh interval (default 2000) |
-| `MiniWindowResources` | Comma-separated list of resource name prefixes to pin to the mini window. Empty = mini window only shows the dashboard link. Case-insensitive prefix match (e.g. `web` matches `web-xggqzmyn`) |
+| `projectFolder` | Folder containing your Aspire `*.AppHost.csproj` |
+| `aspireEndpoint` | Aspire dashboard URL (default `http://localhost:18888`) |
+| `pollingIntervalMs` | Resource refresh interval (default 2000) |
+| `miniWindowResources` | Comma-separated list of resource name prefixes to pin to the mini window. Empty = mini window only shows the dashboard link. Case-insensitive prefix match (e.g. `web` matches `web-xggqzmyn`) |
+| `hideDevelopmentResources` | Hides resources marked as development-only in Aspire environment metadata |
 
 See [Configuration Guide](./docs/configuration.md) for all options.
 

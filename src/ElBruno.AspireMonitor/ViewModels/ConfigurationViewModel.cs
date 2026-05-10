@@ -4,6 +4,7 @@ namespace ElBruno.AspireMonitor.ViewModels;
 
 public class ConfigurationViewModel : ViewModelBase
 {
+    private string _aspireEndpoint = Models.Configuration.DefaultAspireEndpoint;
     private int _pollingInterval = 5000;
     private int _cpuThreshold = 70;
     private int _memoryThreshold = 70;
@@ -14,6 +15,12 @@ public class ConfigurationViewModel : ViewModelBase
     {
         get => _pollingInterval;
         set => SetProperty(ref _pollingInterval, value);
+    }
+
+    public string AspireEndpoint
+    {
+        get => _aspireEndpoint;
+        set => SetProperty(ref _aspireEndpoint, string.IsNullOrWhiteSpace(value) ? Models.Configuration.DefaultAspireEndpoint : value);
     }
 
     public int CpuThreshold

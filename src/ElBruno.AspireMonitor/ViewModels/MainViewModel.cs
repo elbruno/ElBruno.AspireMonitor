@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using ElBruno.AspireMonitor.Infrastructure;
 using ElBruno.AspireMonitor.Services;
 using ElBruno.AspireMonitor.Models;
@@ -20,7 +21,7 @@ public class MainViewModel : ViewModelBase
     private ObservableCollection<ResourceViewModel> _resources = new();
     private string _projectFolder = string.Empty;
     private string _miniWindowResourcesSetting = string.Empty;
-    private string _hostUrl = "http://localhost:18888";
+    private string _hostUrl = Configuration.DefaultAspireEndpoint;
     private bool _isExecutingCommand;
     private string _commandStatus = string.Empty;
     private MiniMonitorViewModel? _miniMonitorViewModel;
@@ -51,6 +52,9 @@ public class MainViewModel : ViewModelBase
         if (_configService != null)
         {
             var config = _configService.LoadConfiguration();
+            HostUrl = string.IsNullOrWhiteSpace(config.AspireEndpoint)
+                ? Configuration.DefaultAspireEndpoint
+                : config.AspireEndpoint;
             ProjectFolder = config.ProjectFolder ?? string.Empty;
             MiniWindowResourcesSetting = config.MiniWindowResources ?? string.Empty;
         }
@@ -268,6 +272,7 @@ public class MainViewModel : ViewModelBase
             {
                 resource.CpuUsage = random.Next(0, 100);
                 resource.MemoryUsage = random.Next(0, 100);
+                resource.DiskUsagePercent = random.Next(0, 100);
             }
             OnPropertyChanged(nameof(OverallStatusColor));
         }
@@ -286,36 +291,49 @@ public class MainViewModel : ViewModelBase
                 UseShellExecute = true
             });
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail for now
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Failed to open URL '{url}': {ex.Message}");
         }
     }
 
     private void OnResourcesUpdated(object? sender, List<AspireResource> resources)
     {
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        InvokeOnUiThread(() =>
         {
+            var hideDevelopmentResources = _configService?.LoadConfiguration().HideDevelopmentResources ?? false;
             System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnResourcesUpdated received: {resources.Count} resources");
 
             Resources.Clear();
             foreach (var resource in resources)
             {
                 // Get primary endpoint URL
-                string? url = resource.Endpoints.Count > 0 ? resource.Endpoints[0] : null;
-                
-                var vm = new ResourceViewModel
+                var endpoints = resource.Endpoints ?? new List<AspireEndpoint>();
+                var primaryEndpoint = endpoints.FirstOrDefault();
+                string? url = primaryEndpoint?.DisplayUrl;
+
+                var metrics = resource.Metrics ?? new ResourceMetrics();
+                var environment = resource.Environment ?? new List<AspireEnvironmentEntry>();
+                var resourceViewModel = new ResourceViewModel
                 {
                     Name = resource.Name,
+                    ResourceType = resource.Type,
                     Status = resource.Status,
-                    CpuUsage = resource.Metrics.CpuUsagePercent,
-                    MemoryUsage = resource.Metrics.MemoryUsagePercent,
+                    CpuUsage = metrics.CpuUsagePercent,
+                    MemoryUsage = metrics.MemoryUsagePercent,
+                    DiskUsagePercent = metrics.DiskUsagePercent,
+                    EndpointCount = endpoints.Count,
                     Url = url,
-                    Type = resource.Type
+                    Environment = environment
                 };
 
-                Resources.Add(vm);
-                System.Diagnostics.Debug.WriteLine($"[MainViewModel]   Added resource: {resource.Name} (CPU: {resource.Metrics.CpuUsagePercent:F1}%, Mem: {resource.Metrics.MemoryUsagePercent:F1}%)");
+                if (hideDevelopmentResources && resourceViewModel.IsDevelopmentOnly)
+                {
+                    continue;
+                }
+                
+                Resources.Add(resourceViewModel);
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel]   Added resource: {resource.Name} (CPU: {metrics.CpuUsagePercent:F1}%, Mem: {metrics.MemoryUsagePercent:F1}%)");
             }
             
             LastUpdated = DateTime.Now;
@@ -351,7 +369,7 @@ public class MainViewModel : ViewModelBase
 
     private void OnStatusChanged(object? sender, string status)
     {
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        InvokeOnUiThread(() =>
         {
             System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnStatusChanged: {status}");
             CurrentStatus = status;
@@ -361,7 +379,7 @@ public class MainViewModel : ViewModelBase
             // so we re-detect it when Aspire starts again.
             if (status == "Not Running")
             {
-                HostUrl = "http://localhost:18888";
+                HostUrl = Configuration.DefaultAspireEndpoint;
                 _hostUrlDetected = false;
             }
         });
@@ -369,12 +387,25 @@ public class MainViewModel : ViewModelBase
 
     private void OnError(object? sender, string error)
     {
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        InvokeOnUiThread(() =>
         {
             System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnError: {error}");
             CurrentStatus = $"Error: {error}";
             IsConnected = false;
         });
+    }
+
+    private static void InvokeOnUiThread(Action action)
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+
+        if (dispatcher.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        dispatcher.Invoke(action);
     }
 
     private async Task DetectAndUpdateHostUrlAsync()
@@ -562,27 +593,44 @@ public class MainViewModel : ViewModelBase
         Resources.Add(new ResourceViewModel
         {
             Name = "webfrontend",
+            ResourceType = "Container",
             Status = Models.ResourceStatus.Running,
             CpuUsage = 45.2,
             MemoryUsage = 62.8,
-            Url = "http://localhost:5000"
+            DiskUsagePercent = 12.5,
+            EndpointCount = 1,
+            Url = "http://localhost:5000",
+            Environment = new List<AspireEnvironmentEntry>
+            {
+                new()
+                {
+                    Name = "ASPNETCORE_ENVIRONMENT",
+                    Value = "Development"
+                }
+            }
         });
 
         Resources.Add(new ResourceViewModel
         {
             Name = "apiservice",
+            ResourceType = "Project",
             Status = Models.ResourceStatus.Running,
             CpuUsage = 28.5,
             MemoryUsage = 48.3,
+            DiskUsagePercent = 7.3,
+            EndpointCount = 2,
             Url = "http://localhost:5001"
         });
 
         Resources.Add(new ResourceViewModel
         {
             Name = "cache",
+            ResourceType = "Container",
             Status = Models.ResourceStatus.Running,
             CpuUsage = 12.1,
             MemoryUsage = 35.7,
+            DiskUsagePercent = 1.2,
+            EndpointCount = 0,
             Url = null
         });
 

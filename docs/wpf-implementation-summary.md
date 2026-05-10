@@ -14,7 +14,7 @@
 
 **ViewModels:**
 - `ViewModels/MainViewModel.cs` - Main window data binding (host URL, resources, status)
-- `ViewModels/ResourceViewModel.cs` - Individual resource display (CPU, memory, status color)
+- `ViewModels/ResourceViewModel.cs` - Individual resource display (CPU, memory, disk, telemetry rows)
 - `ViewModels/ConfigurationViewModel.cs` - Settings management with validation
 
 **Models:**
@@ -36,12 +36,15 @@
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ ● http://localhost:15888          Connected     │
+│ ● http://localhost:18888          Connected     │
 │ Last updated: 14:23:45                          │
 ├─────────────────────────────────────────────────┤
 │ ● webfrontend     CPU: 45.2%  MEM: 62.8%  🔗   │
+│   Type: Container • Disk: 12.5% • Endpoints: 1  │
 │ ● apiservice      CPU: 28.5%  MEM: 48.3%  🔗   │
+│   Type: Project • Disk: 7.3% • Endpoints: 2     │
 │ ● cache           CPU: 12.1%  MEM: 35.7%       │
+│   Type: Container • Disk: 1.2% • Endpoints: 0   │
 ├─────────────────────────────────────────────────┤
 │                    [Refresh] [Settings] [Close] │
 └─────────────────────────────────────────────────┘
@@ -50,6 +53,9 @@
 **Features:**
 - Clickable URLs (host and resources)
 - Color-coded status indicators (🟢🟡🔴⚪)
+- Rich telemetry rows (type, disk usage, endpoint count)
+- Compact environment badges
+- Optional development-resource filter
 - Real-time updates via data binding
 - System tray integration (minimize/restore)
 
@@ -60,7 +66,7 @@
 │ Settings                                    │
 ├─────────────────────────────────────────────┤
 │ Aspire Endpoint:                            │
-│ [http://localhost:15888                    ]│
+│ [http://localhost:18888                    ]│
 │                                             │
 │ Polling Interval (ms):                      │
 │ [5000                                      ]│
@@ -72,6 +78,7 @@
 │ [70                                        ]│
 │                                             │
 │ [✓] Start with Windows                      │
+│ [✓] Hide development resources              │
 ├─────────────────────────────────────────────┤
 │ Validation errors appear here...            │
 │                                             │
@@ -111,7 +118,10 @@ public class MainViewModel : ViewModelBase
                 Status = MapStatus(resource.State),
                 CpuUsage = resource.Metrics.CpuUsage,
                 MemoryUsage = resource.Metrics.MemoryUsage,
-                Url = resource.Endpoints.FirstOrDefault()
+                DiskUsagePercent = resource.Metrics.DiskUsagePercent,
+                ResourceType = resource.Type,
+                EndpointCount = resource.Endpoints.Count,
+                Url = resource.Endpoints.FirstOrDefault()?.DisplayUrl
             });
         }
         
@@ -135,14 +145,29 @@ public class ResourceData
 {
     public string Name { get; set; }
     public string State { get; set; }  // "Running", "Stopped", etc.
+    public string? ResourceType { get; set; }
+    public List<ResourceEnvironmentEntry> Environment { get; set; }
     public ResourceMetrics Metrics { get; set; }
-    public List<string> Endpoints { get; set; }
+    public List<ResourceEndpoint> Endpoints { get; set; }
+}
+
+public class ResourceEnvironmentEntry
+{
+    public string Name { get; set; }
+    public string? Value { get; set; }
+}
+
+public class ResourceEndpoint
+{
+    public string? EndpointUrl { get; set; }
+    public string? ProxyUrl { get; set; }
 }
 
 public class ResourceMetrics
 {
     public double CpuUsage { get; set; }    // 0-100
     public double MemoryUsage { get; set; } // 0-100
+    public double DiskUsagePercent { get; set; } // 0-100
 }
 ```
 
@@ -168,7 +193,7 @@ public class ResourceMetrics
 
 1. **Luke's Tasks:**
    - Implement `Services/AspireApiService.cs`
-   - Poll Aspire endpoint: `GET http://localhost:15888/api/resources`
+   - Poll Aspire endpoint: `GET http://localhost:18888/api/resources`
    - Map API response to ResourceViewModel properties
    - Handle connection errors (set IsConnected = false)
 
@@ -177,6 +202,7 @@ public class ResourceMetrics
    - Create icon assets (Resources/icon.ico with color variants)
    - Implement configuration persistence (JSON file or registry)
    - Update NotifyIcon dynamically based on status color
+   - Add environment-aware resource filtering and badges
 
 3. **Team:**
    - End-to-end testing with real Aspire dashboard

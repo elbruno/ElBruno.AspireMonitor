@@ -89,7 +89,6 @@
                            Margin="26,0,0,0"/>
             </StackPanel>
         </Border>
-
         <!-- Top Section: Host URL and Status -->
         <Border Grid.Row="2"
                 BorderBrush="#CCCCCC" 
@@ -101,10 +100,12 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -128,9 +129,17 @@
                            Margin="5,0"
                            MouseLeftButtonDown="HostUrl_Click"/>
 
+                <Button Grid.Row="0"
+                        Grid.Column="2"
+                        Content="Open Dashboard"
+                        Padding="10,4"
+                        Margin="10,0"
+                        VerticalAlignment="Center"
+                        Click="Dashboard_Click"/>
+
                 <!-- Connection Status -->
                 <TextBlock Grid.Row="0"
-                           Grid.Column="2"
+                           Grid.Column="3"
                            Text="{Binding ConnectionStatus}"
                            FontSize="12"
                            Foreground="{Binding OverallStatusColor}"
@@ -139,7 +148,7 @@
 
                 <!-- Start Button -->
                 <Button Grid.Row="0"
-                        Grid.Column="3"
+                        Grid.Column="4"
                         Content="▶ Start"
                         Width="70"
                         Height="24"
@@ -151,7 +160,7 @@
 
                 <!-- Stop Button -->
                 <Button Grid.Row="0"
-                        Grid.Column="4"
+                        Grid.Column="5"
                         Content="⏹ Stop"
                         Width="70"
                         Height="24"
@@ -164,7 +173,7 @@
                 <!-- Last Updated -->
                 <TextBlock Grid.Row="1"
                            Grid.Column="1"
-                           Grid.ColumnSpan="4"
+                           Grid.ColumnSpan="5"
                            Text="{Binding LastUpdatedText}"
                            FontSize="10"
                            Foreground="#666666"
@@ -173,7 +182,7 @@
                 <!-- Command Status -->
                 <TextBlock Grid.Row="2"
                            Grid.Column="3"
-                           Grid.ColumnSpan="2"
+                           Grid.ColumnSpan="3"
                            Text="{Binding CommandStatus}"
                            FontSize="11"
                            Foreground="#D32F2F"
@@ -250,13 +259,45 @@
                                                 <TextBlock Text="{Binding Name}"
                                                            FontSize="13"
                                                            FontWeight="SemiBold"/>
-                                                <TextBlock Text="{Binding Url}"
-                                                           FontSize="9"
-                                                           Foreground="#2196F3"
-                                                           TextDecorations="Underline"
-                                                           Cursor="Hand"
-                                                           MouseLeftButtonDown="ResourceUrl_Click"
-                                                           Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                <WrapPanel Margin="0,3,0,0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="CPU: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding CpuUsageText}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="MEM: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding MemoryUsageText}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="TYPE: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding TypeDisplay}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="DISK: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding DiskUsageText}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                                        <TextBlock Text="ENDPOINTS: " FontSize="9" Foreground="#666666"/>
+                                                        <TextBlock Text="{Binding EndpointCountText}" FontSize="9" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <Border Background="#EEF2FF"
+                                                            CornerRadius="8"
+                                                            Padding="6,1"
+                                                            Margin="0,0,10,0"
+                                                            Visibility="{Binding HasEnvironment, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <TextBlock Text="{Binding EnvironmentSummaryText}"
+                                                                   FontSize="9"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="#4F46E5"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Url}"
+                                                               FontSize="9"
+                                                               Foreground="#2196F3"
+                                                               TextDecorations="Underline"
+                                                               Cursor="Hand"
+                                                               MouseLeftButtonDown="ResourceUrl_Click"
+                                                               Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                </WrapPanel>
                                             </StackPanel>
 
                                             <!-- State -->

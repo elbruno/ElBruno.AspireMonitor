@@ -192,13 +192,13 @@ public class AspireCliService
                     {
                         var url = entry.GetString();
                         if (!string.IsNullOrWhiteSpace(url))
-                            resource.Endpoints.Add(url);
+                            resource.Endpoints.Add(new AspireEndpoint { EndpointUrl = url });
                     }
                     else if (entry.ValueKind == JsonValueKind.Object && entry.TryGetProperty("url", out var urlEl))
                     {
                         var url = urlEl.GetString();
                         if (!string.IsNullOrWhiteSpace(url))
-                            resource.Endpoints.Add(url);
+                            resource.Endpoints.Add(new AspireEndpoint { EndpointUrl = url });
                     }
                 }
             }
@@ -211,13 +211,31 @@ public class AspireCliService
                     {
                         var url = endpoint.GetString();
                         if (!string.IsNullOrWhiteSpace(url))
-                            resource.Endpoints.Add(url);
+                            resource.Endpoints.Add(new AspireEndpoint { EndpointUrl = url });
                     }
                     else if (endpoint.TryGetProperty("url", out var urlEl))
                     {
                         var url = urlEl.GetString();
                         if (!string.IsNullOrWhiteSpace(url))
-                            resource.Endpoints.Add(url);
+                            resource.Endpoints.Add(new AspireEndpoint { EndpointUrl = url });
+                    }
+                    else if (endpoint.ValueKind == JsonValueKind.Object)
+                    {
+                        var endpointUrl = endpoint.TryGetProperty("endpointUrl", out var endpointUrlEl)
+                            ? endpointUrlEl.GetString()
+                            : null;
+                        var proxyUrl = endpoint.TryGetProperty("proxyUrl", out var proxyUrlEl)
+                            ? proxyUrlEl.GetString()
+                            : null;
+
+                        if (!string.IsNullOrWhiteSpace(endpointUrl) || !string.IsNullOrWhiteSpace(proxyUrl))
+                        {
+                            resource.Endpoints.Add(new AspireEndpoint
+                            {
+                                EndpointUrl = endpointUrl,
+                                ProxyUrl = proxyUrl
+                            });
+                        }
                     }
                 }
             }
@@ -226,7 +244,7 @@ public class AspireCliService
                 resource.Metrics.CpuUsagePercent = cpu;
 
             if (element.TryGetProperty("memory", out var memEl) && memEl.TryGetDouble(out var mem))
-                resource.Metrics.MemoryUsagePercent = mem;
+                resource.Metrics.MemoryUsage = mem;
 
             return resource;
         }

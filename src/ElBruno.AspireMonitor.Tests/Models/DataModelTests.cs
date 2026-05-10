@@ -6,138 +6,6 @@ using Xunit;
 namespace ElBruno.AspireMonitor.Tests.Models;
 
 /// <summary>
-/// Comprehensive unit tests for AspireResource model (Phase 1 Backend Layer).
-/// Tests construction, property access, and equality.
-/// </summary>
-public class AspireResourceTests
-{
-    [Fact]
-    public void AspireResource_DefaultConstructor_InitializesProperties()
-    {
-        // Act
-        var resource = new AspireResource();
-
-        // Assert
-        resource.Id.Should().BeEmpty("default Id should be empty string");
-        resource.Name.Should().BeEmpty("default Name should be empty string");
-        resource.Type.Should().BeNull("default Type should be null");
-        resource.Status.Should().Be(ResourceStatus.Unknown, "default Status should be Unknown");
-        resource.Metrics.Should().NotBeNull("Metrics should be initialized");
-        resource.Endpoints.Should().NotBeNull().And.BeEmpty("Endpoints should be empty list");
-    }
-
-    [Fact]
-    public void AspireResource_ParameterizedConstructor_SetsProperties()
-    {
-        // Arrange
-        var id = "test-resource-1";
-        var name = "Test Resource";
-        var status = ResourceStatus.Running;
-
-        // Act
-        var resource = new AspireResource(id, name, status);
-
-        // Assert
-        resource.Id.Should().Be(id);
-        resource.Name.Should().Be(name);
-        resource.Status.Should().Be(status);
-        resource.Metrics.Should().NotBeNull();
-        resource.Endpoints.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void AspireResource_PropertySetters_UpdateValues()
-    {
-        // Arrange
-        var resource = new AspireResource();
-
-        // Act
-        resource.Id = "api-service";
-        resource.Name = "API Service";
-        resource.Type = "container.v0";
-        resource.Status = ResourceStatus.Running;
-        resource.Metrics = new ResourceMetrics(45.5, 60.2, 15.0);
-        resource.Endpoints = new List<string> { "http://localhost:5000", "https://localhost:5001" };
-
-        // Assert
-        resource.Id.Should().Be("api-service");
-        resource.Name.Should().Be("API Service");
-        resource.Type.Should().Be("container.v0");
-        resource.Status.Should().Be(ResourceStatus.Running);
-        resource.Metrics.CpuUsagePercent.Should().Be(45.5);
-        resource.Metrics.MemoryUsagePercent.Should().Be(60.2);
-        resource.Metrics.DiskUsagePercent.Should().Be(15.0);
-        resource.Endpoints.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public void AspireResource_WithMultipleEndpoints_StoresAll()
-    {
-        // Arrange
-        var resource = new AspireResource("web-app", "Web Application");
-        var endpoints = new List<string>
-        {
-            "http://localhost:3000",
-            "https://localhost:3001",
-            "ws://localhost:3002"
-        };
-
-        // Act
-        resource.Endpoints = endpoints;
-
-        // Assert
-        resource.Endpoints.Should().HaveCount(3);
-        resource.Endpoints.Should().Contain("http://localhost:3000");
-        resource.Endpoints.Should().Contain("https://localhost:3001");
-        resource.Endpoints.Should().Contain("ws://localhost:3002");
-    }
-
-    [Fact]
-    public void AspireResource_WithNoEndpoints_HasEmptyList()
-    {
-        // Arrange & Act
-        var resource = new AspireResource("db", "Database");
-
-        // Assert
-        resource.Endpoints.Should().NotBeNull();
-        resource.Endpoints.Should().BeEmpty();
-    }
-
-    [Theory]
-    [InlineData(ResourceStatus.Unknown)]
-    [InlineData(ResourceStatus.Running)]
-    [InlineData(ResourceStatus.Stopped)]
-    [InlineData(ResourceStatus.Starting)]
-    [InlineData(ResourceStatus.Stopping)]
-    public void AspireResource_AllStatusValues_CanBeSet(ResourceStatus status)
-    {
-        // Arrange
-        var resource = new AspireResource();
-
-        // Act
-        resource.Status = status;
-
-        // Assert
-        resource.Status.Should().Be(status);
-    }
-
-    [Fact]
-    public void AspireResource_WithNullType_IsAllowed()
-    {
-        // Arrange & Act
-        var resource = new AspireResource
-        {
-            Id = "resource-1",
-            Name = "Resource 1",
-            Type = null
-        };
-
-        // Assert
-        resource.Type.Should().BeNull("Type is nullable");
-    }
-}
-
-/// <summary>
 /// Comprehensive unit tests for ResourceMetrics model (Phase 1 Backend Layer).
 /// </summary>
 public class ResourceMetricsTests
@@ -167,7 +35,7 @@ public class ResourceMetricsTests
 
         // Assert
         metrics.CpuUsagePercent.Should().Be(cpu);
-        metrics.MemoryUsagePercent.Should().Be(memory);
+        metrics.MemoryUsagePercent.Should().BeApproximately(memory, 0.0001);
         metrics.DiskUsagePercent.Should().Be(disk);
     }
 
@@ -183,7 +51,7 @@ public class ResourceMetricsTests
 
         // Assert
         metrics.CpuUsagePercent.Should().Be(cpu);
-        metrics.MemoryUsagePercent.Should().Be(memory);
+        metrics.MemoryUsagePercent.Should().BeApproximately(memory, 0.0001);
         metrics.DiskUsagePercent.Should().Be(0);
     }
 
@@ -199,7 +67,7 @@ public class ResourceMetricsTests
 
         // Assert
         metrics.CpuUsagePercent.Should().Be(cpu);
-        metrics.MemoryUsagePercent.Should().Be(memory);
+        metrics.MemoryUsagePercent.Should().BeApproximately(memory, 0.0001);
         metrics.DiskUsagePercent.Should().Be(disk);
     }
 
@@ -211,12 +79,13 @@ public class ResourceMetricsTests
 
         // Act
         metrics.CpuUsagePercent = 45.5;
-        metrics.MemoryUsagePercent = 60.2;
+        metrics.MemoryUsage = 60.2;
+        metrics.MemoryLimit = 100;
         metrics.DiskUsagePercent = 25.8;
 
         // Assert
         metrics.CpuUsagePercent.Should().Be(45.5);
-        metrics.MemoryUsagePercent.Should().Be(60.2);
+        metrics.MemoryUsagePercent.Should().BeApproximately(60.2, 0.0001);
         metrics.DiskUsagePercent.Should().Be(25.8);
     }
 

@@ -1,0 +1,17 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.3.0">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>fd5e9217-9c4d-454e-96b9-fc0c77eb6b19</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SampleHarness.ApiService\SampleHarness.ApiService.csproj" />
+    <ProjectReference Include="..\SampleHarness.CatalogApi\SampleHarness.CatalogApi.csproj" />
+    <ProjectReference Include="..\SampleHarness.WorkerService\SampleHarness.WorkerService.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -97,8 +97,13 @@ public partial class MainWindow : Window
                     (System.Windows.Application.Current as App)?.UpdateAspireWorkingDirectory(updatedConfig.ProjectFolder);
                 }
                 // Configuration changed, restart polling service
+                if (ViewModel != null)
+                {
+                    ViewModel.HostUrl = _configService.LoadConfiguration().AspireEndpoint;
+                }
                 ViewModel?.Stop();
                 ViewModel?.Start();
+                ViewModel?.RefreshCommand?.Execute(null);
             }
         }
     }
@@ -172,6 +177,14 @@ public partial class MainWindow : Window
     }
 
     private void HostUrl_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (ViewModel?.HostUrl != null)
+        {
+            OpenUrl(ViewModel.HostUrl);
+        }
+    }
+
+    private void Dashboard_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel?.HostUrl != null)
         {

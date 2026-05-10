@@ -7,8 +7,10 @@ namespace ElBruno.AspireMonitor.ViewModels;
 public class SettingsViewModel : ViewModelBase
 {
     private readonly IConfigurationService _configService;
+    private string _aspireEndpoint = Models.Configuration.DefaultAspireEndpoint;
     private int _pollingInterval = 5000;
     private bool _startWithWindows;
+    private bool _hideDevelopmentResources;
     private string _projectFolder = string.Empty;
     private string _miniWindowResources = string.Empty;
     private string _validationMessage = string.Empty;
@@ -29,6 +31,18 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _startWithWindows;
         set => SetProperty(ref _startWithWindows, value);
+    }
+
+    public string AspireEndpoint
+    {
+        get => _aspireEndpoint;
+        set => SetProperty(ref _aspireEndpoint, string.IsNullOrWhiteSpace(value) ? Models.Configuration.DefaultAspireEndpoint : value);
+    }
+
+    public bool HideDevelopmentResources
+    {
+        get => _hideDevelopmentResources;
+        set => SetProperty(ref _hideDevelopmentResources, value);
     }
 
     public string ProjectFolder
@@ -80,8 +94,10 @@ public class SettingsViewModel : ViewModelBase
 
         var config = new Models.Configuration
         {
+            AspireEndpoint = AspireEndpoint,
             PollingIntervalMs = PollingInterval,
             StartWithWindows = StartWithWindows,
+            HideDevelopmentResources = HideDevelopmentResources,
             ProjectFolder = ProjectFolder ?? string.Empty,
             MiniWindowResources = MiniWindowResources ?? string.Empty
         };
@@ -93,8 +109,12 @@ public class SettingsViewModel : ViewModelBase
     {
         var config = _configService.LoadConfiguration();
         
+        AspireEndpoint = string.IsNullOrWhiteSpace(config.AspireEndpoint)
+            ? Models.Configuration.DefaultAspireEndpoint
+            : config.AspireEndpoint;
         PollingInterval = config.PollingIntervalMs;
         StartWithWindows = config.StartWithWindows;
+        HideDevelopmentResources = config.HideDevelopmentResources;
         ProjectFolder = config.ProjectFolder ?? string.Empty;
         MiniWindowResources = config.MiniWindowResources ?? string.Empty;
     }

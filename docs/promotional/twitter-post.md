@@ -67,8 +67,18 @@ Pinned resources now show their actual URLs (`http://localhost:5021`) instead of
 
 Now you can tell three pinned web services apart.
 
-Novel concept.
-
 github.com/elbruno/ElBruno.AspireMonitor
+
+#aspire #dotnet
+
+---
+
+## Tweet 6: Rich Telemetry
+
+AspireMonitor now surfaces more than "running":
+
+CPU, memory, disk, resource type, endpoint counts, environment badges, real URLs, and the Aspire dashboard default (`http://localhost:18888`).
+
+Less tab switching. More signal.
 
 #aspire #dotnet
