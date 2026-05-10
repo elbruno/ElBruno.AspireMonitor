@@ -17,7 +17,7 @@ ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 1. **Watches a working folder** — point it at the directory containing your Aspire `*.AppHost.csproj`
 2. **Discovers resources** — shells out to `aspire describe --format json` and parses the result
 3. **Surfaces what matters** — lists every resource in the main window, and pins your chosen ones (with their real URLs) in a compact mini window
-4. **Drives your AppHost** — Start / Stop buttons run `aspire run` and shut it down cleanly, with a live countdown while Aspire spins up
+4. **Drives your AppHost** — Start / Stop buttons run `aspire start` and shut it down cleanly, with a live countdown while Aspire spins up
 
 No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI and opening the Aspire dashboard at the standard default `http://localhost:18888`.
 
@@ -56,7 +56,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 1. **Install** as a .NET global tool: `dotnet tool install --global ElBruno.AspireMonitor`
 2. **Launch** with `aspiremon` from any terminal
 3. **Set working folder** when prompted (point to your Aspire AppHost directory)
-4. **Start monitoring** — Run `aspire run` from that directory; the tray icon will turn green with resources listed
+4. **Start monitoring** — Use the Start button in the tray to launch Aspire; the tray icon will turn green with resources listed
 
 **Install as a .NET Global Tool** (recommended):
 
@@ -73,7 +73,6 @@ aspiremon
 The tool is Windows-only (the underlying app is WPF). Requires the [.NET 10 Runtime](https://dotnet.microsoft.com/en-us/download).
 
 **Or download the executable** from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest).
-For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 
 ## 📋 Requirements
@@ -105,7 +104,7 @@ C:\Projects\MyAspireApp
 - **Double-click** — toggle the main window
 - **Right-click** — context menu (Settings, Mini window, Exit)
 
-The app watches your working folder. When `aspire run` is active, resources appear automatically.
+The app watches your working folder. When Aspire is running, resources appear automatically.
 
 ### Configuration
 
@@ -194,7 +193,7 @@ dotnet tool list --global
 
 ### Aspire instance not found?
 
-1. Verify Aspire is running: `aspire run` in your working folder
+1. Start Aspire using the Start button in the tray, or run `aspire start` in your working folder
 2. Check the working folder setting in config: `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`
 3. See [Troubleshooting Guide](./docs/troubleshooting.md) for more solutions
 

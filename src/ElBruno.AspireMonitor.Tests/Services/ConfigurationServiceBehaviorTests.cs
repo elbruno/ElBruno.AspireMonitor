@@ -32,6 +32,7 @@ public class ConfigurationServiceBehaviorTests : IDisposable
 
         File.Exists(_configPath).Should().BeTrue();
         config.PollingIntervalMs.Should().Be(5000);
+        config.ShowMiniWindowResourceTelemetry.Should().BeTrue();
         service.GetConfiguration().Should().BeSameAs(config);
     }
 
@@ -60,6 +61,35 @@ public class ConfigurationServiceBehaviorTests : IDisposable
         reloaded.MemoryThresholdCritical.Should().Be(88);
         reloaded.StartWithWindows.Should().BeTrue();
         reloaded.ProjectFolder.Should().Be(@"C:\Code\App");
+    }
+
+    [Fact]
+    public void Constructor_WithExistingConfigMissingTelemetryToggle_UsesDefaultTrue()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
+        File.WriteAllText(_configPath, """
+        {
+          "AspireEndpoint": "http://localhost:18888",
+          "PollingIntervalMs": 5000,
+          "CpuThresholdWarning": 70,
+          "CpuThresholdCritical": 90,
+          "MemoryThresholdWarning": 70,
+          "MemoryThresholdCritical": 90,
+          "MiniWindowResources": "api"
+        }
+        """);
+
+        var config = new ConfigurationService(_configPath).LoadConfiguration();
+
+        config.ShowMiniWindowResourceTelemetry.Should().BeTrue();
+    }
+
+    [Fact]
+    public void NewConfiguration_DefaultsMiniWindowResourceTelemetryToVisible()
+    {
+        var config = new ElBruno.AspireMonitor.Models.Configuration();
+
+        config.ShowMiniWindowResourceTelemetry.Should().BeTrue();
     }
 
     [Fact]

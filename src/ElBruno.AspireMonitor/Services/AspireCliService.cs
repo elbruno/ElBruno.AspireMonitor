@@ -180,6 +180,11 @@ public class AspireCliService
                 var state = stateEl.GetString();
                 resource.Status = ParseResourceStatus(state);
             }
+            else if (element.TryGetProperty("status", out var statusEl))
+            {
+                var status = statusEl.GetString();
+                resource.Status = ParseResourceStatus(status);
+            }
 
             // Aspire emits "urls": [ { "name": "...", "url": "http://..." } ].
             // Older/alternative shape used "endpoints" (string[] or [{url:...}]).
@@ -240,11 +245,8 @@ public class AspireCliService
                 }
             }
 
-            if (element.TryGetProperty("cpu", out var cpuEl) && cpuEl.TryGetDouble(out var cpu))
-                resource.Metrics.CpuUsagePercent = cpu;
-
-            if (element.TryGetProperty("memory", out var memEl) && memEl.TryGetDouble(out var mem))
-                resource.Metrics.MemoryUsage = mem;
+            ParseMetrics(element, resource.Metrics);
+            ParseEnvironment(element, resource.Environment);
 
             return resource;
         }
@@ -252,6 +254,107 @@ public class AspireCliService
         {
             System.Diagnostics.Debug.WriteLine($"[AspireCliService] Failed to parse resource: {ex.Message}");
             return null;
+        }
+    }
+
+    private static void ParseMetrics(JsonElement element, ResourceMetrics metrics)
+    {
+        if (element.TryGetProperty("properties", out var propertiesEl) && propertiesEl.ValueKind == JsonValueKind.Object)
+        {
+            ApplyMetricsObject(propertiesEl, metrics);
+        }
+
+        if (element.TryGetProperty("metrics", out var metricsEl) && metricsEl.ValueKind == JsonValueKind.Object)
+        {
+            ApplyMetricsObject(metricsEl, metrics);
+        }
+
+        if (element.TryGetProperty("cpu", out var cpuEl) && cpuEl.TryGetDouble(out var cpu))
+            metrics.CpuUsagePercent = cpu;
+
+        if (element.TryGetProperty("memory", out var memEl) && memEl.TryGetDouble(out var mem))
+            metrics.MemoryUsage = mem;
+
+        if (element.TryGetProperty("disk", out var diskEl) && diskEl.TryGetDouble(out var disk))
+            metrics.DiskUsagePercent = disk;
+    }
+
+    private static void ApplyMetricsObject(JsonElement metricsElement, ResourceMetrics metrics)
+    {
+        if (TryGetDouble(metricsElement, "cpuUsage", out var cpuUsage) ||
+            TryGetDouble(metricsElement, "cpuUsagePercent", out cpuUsage))
+        {
+            metrics.CpuUsagePercent = cpuUsage;
+        }
+
+        if (TryGetDouble(metricsElement, "memoryLimit", out var memoryLimit))
+        {
+            metrics.MemoryLimit = memoryLimit;
+        }
+
+        if (TryGetDouble(metricsElement, "memoryUsage", out var memoryUsage))
+        {
+            metrics.MemoryUsage = memoryUsage;
+        }
+        else if (TryGetDouble(metricsElement, "memoryUsagePercent", out var memoryUsagePercent))
+        {
+            metrics.MemoryUsage = memoryUsagePercent;
+            metrics.MemoryLimit = 100;
+        }
+
+        if (TryGetDouble(metricsElement, "diskUsage", out var diskUsage) ||
+            TryGetDouble(metricsElement, "diskUsagePercent", out diskUsage))
+        {
+            metrics.DiskUsagePercent = diskUsage;
+        }
+    }
+
+    private static bool TryGetDouble(JsonElement element, string propertyName, out double value)
+    {
+        value = default;
+
+        return element.TryGetProperty(propertyName, out var property)
+            && property.ValueKind == JsonValueKind.Number
+            && property.TryGetDouble(out value);
+    }
+
+    private static void ParseEnvironment(JsonElement element, List<AspireEnvironmentEntry> environment)
+    {
+        if (!element.TryGetProperty("environment", out var environmentEl))
+            return;
+
+        if (environmentEl.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var entry in environmentEl.EnumerateArray())
+            {
+                if (entry.ValueKind == JsonValueKind.Object)
+                {
+                    var name = entry.TryGetProperty("name", out var nameEl) ? nameEl.GetString() : null;
+                    var value = entry.TryGetProperty("value", out var valueEl) ? valueEl.GetString() : null;
+
+                    if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(value))
+                    {
+                        environment.Add(new AspireEnvironmentEntry
+                        {
+                            Name = name,
+                            Value = value
+                        });
+                    }
+                }
+            }
+        }
+        else if (environmentEl.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var entry in environmentEl.EnumerateObject())
+            {
+                environment.Add(new AspireEnvironmentEntry
+                {
+                    Name = entry.Name,
+                    Value = entry.Value.ValueKind == JsonValueKind.String
+                        ? entry.Value.GetString()
+                        : entry.Value.ToString()
+                });
+            }
         }
     }
 

@@ -871,3 +871,74 @@ The strongest engagement hooks across all platforms:
 - Twitter tweets: under 280 chars (already was; just less bloat per post)
 
 **Status:** ✅ COMPLETE — All 3 files rewritten for viral energy + concision
+
+---
+
+### 2026-05-10 — Documentation Audit: aspire start vs aspire run
+
+**Context:** Bruno requested comprehensive audit of user-facing documentation to ensure all references to Aspire CLI commands reflect the current implementation. The app's Start button runs `aspire start` (not `aspire run`), but several doc files still incorrectly stated the deprecated command.
+
+**Code Verification:**
+- ✅ Confirmed via `AspireCommandService.cs` (line 27): Start button runs `Arguments = "start"` (aspire start)
+- ✅ Confirmed via `AspireCommandService.cs` (line 74): Stop button runs `Arguments = "stop --all --non-interactive"` (aspire stop)
+- ✅ Confirmed via `MainViewModel.cs`: Error message states "Start Aspire with: aspire start"
+
+**Files Audited & Fixed:**
+
+1. **README.md** (5 fixes)
+   - Line 20: "Start / Stop buttons run `aspire run`" → "`aspire start`"
+   - Line 59: "Run `aspire run` from that directory" → "Use the Start button in the tray to launch Aspire"
+   - Line 77: Removed duplicate "For detailed setup instructions, see [Quick Start Guide]" line
+   - Line 108: "When `aspire run` is active" → "When Aspire is running"
+   - Line 197: "Verify Aspire is running: `aspire run`" → "Start Aspire using the Start button in the tray, or run `aspire start`"
+
+2. **docs/whats-new.md** (1 fix)
+   - Line 143: "Run `aspire run`" → "Use the Start button in the tray or run `aspire start`"
+
+3. **DEBUGGING_ENHANCEMENTS.md** (2 fixes)
+   - Line 210: "Start it with `aspire run`" → "Start it with the Start button in the tray, or run `aspire start`"
+   - Line 251: "Start Aspire application with `aspire run`" → "Start Aspire application with the Start button in the tray, or with `aspire start`"
+
+4. **docs/FUTURE-IMPROVEMENTS.md** (2 updates)
+   - Item 3.10: Updated section heading "Auto-Launch with `aspire run`" → "`aspire start`" (for consistency with actual implementation)
+   - Item 3.11: Marked as ✅ Implemented (moved from future proposal to completion); updated description from "Call `aspire run`" → "`aspire start`"; added status: "Now available in v1.6.0"
+   - Line 337 table: Updated from "Launch `aspire run` from Tray" → "Launch `aspire start` from Tray (✅ Complete)"
+
+**Remaining References to `aspire run` (Verified Acceptable):**
+
+After final audit, remaining mentions of `aspire run` in codebase are:
+- `.squad/decisions.md` (squad history archive — per task directive, do not touch)
+- `.squad/agents/chewie/history.md` (squad history archive — per task directive, do not touch)
+- `.squad/agents/luke/history.md` (squad history archive — per task directive, do not touch)
+- `.squad/agents/leia/history.md` (squad history archive — per task directive, do not touch)
+- `.squad/decisions/archive-*.md` (squad decisions archive — per task directive, do not touch)
+- `.github/skills/aspire/SKILL.md` (skill documentation correctly instructs: "NEVER use `aspire run` at all. **To restart, just run `aspire start` again**")
+
+**Writing Standard Captured:**
+
+**Command Naming Standard:**
+- ✅ Rule: Current Aspire CLI command is `aspire start` (not `aspire run`)
+- ✅ Apply to: All user-facing documentation, guides, troubleshooting, and promotional content
+- ✅ Reason: `aspire run` is deprecated; codebase uses `aspire start` exclusively (confirmed via AspireCommandService.cs:27)
+- ✅ Exception: Squad history/decisions archives are append-only; do not rewrite historical references
+- ✅ When referencing the Start button feature: prefer "Start button in the tray" over CLI command when possible, as it's the primary UX
+- ✅ When showing CLI alternative: always use `aspire start`, never `aspire run`
+
+**Quality Checklist:**
+- ✅ README.md: 5 corrections made; all references to app's Start button now accurate
+- ✅ docs/whats-new.md: 1 correction made; v1.6.0 guidance accurate
+- ✅ DEBUGGING_ENHANCEMENTS.md: 2 corrections made; troubleshooting guidance accurate
+- ✅ docs/FUTURE-IMPROVEMENTS.md: 2 updates made; Item 3.11 marked complete (reflects reality)
+- ✅ docs/QUICKSTART.md: Audited, no changes needed (already correct)
+- ✅ docs/troubleshooting.md: Audited, no changes needed (already correct)
+- ✅ .github/skills/aspire/SKILL.md: Verified correct (explicitly forbids `aspire run`)
+- ✅ Code verification: AspireCommandService.cs confirms Start button uses `aspire start`
+- ✅ Remaining `aspire run` references all in squad history (acceptable per task directive)
+
+**Cross-File Impact Summary:**
+- README.md now guides users to use the Start button (preferred UX) or `aspire start` (CLI alternative)
+- Documentation consistently reflects v1.6.0 reality: Start/Stop controls work via `aspire start` and `aspire stop --all --non-interactive`
+- No more `aspire run` in current/future user-facing docs
+- FUTURE-IMPROVEMENTS.md updated to reflect that item 3.11 (Launch from Tray) is now complete
+
+**Status:** ✅ COMPLETE — All user-facing documentation updated; `aspire start` command now consistent across README, guides, and troubleshooting

@@ -1180,3 +1180,10 @@ Participated in parallel multi-agent session with Han (implementation) and Lando
 **Status:** ⚠️ VALIDATED BUT BLOCKED — All functional tests pass; coverage gate undefined
 
 ---
+### 2026-05-10T15:41:06.295-04:00 — Mini Monitor Telemetry Toggle Validation
+
+- Added QA coverage for the mini-window telemetry toggle defaulting visible for new and legacy configs.
+- Added SettingsViewModel load/save tests for the telemetry toggle.
+- Tightened mini monitor tests so toggling MainViewModel settings refreshes pinned rows, hiding telemetry only while preserving identity, URL/fallback, and missing-resource behavior.
+- Added a guard that no GPU telemetry appears until a real backend metric source exists.
+- Validation: focused telemetry/config tests passed; full solution test suite passed (372/372).

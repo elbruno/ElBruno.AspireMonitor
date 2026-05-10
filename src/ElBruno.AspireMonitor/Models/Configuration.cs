@@ -14,4 +14,5 @@ public class Configuration
     public int MemoryThresholdCritical { get; set; } = 90;
     public bool HideDevelopmentResources { get; set; }
     public string MiniWindowResources { get; set; } = string.Empty;
+    public bool ShowMiniWindowResourceTelemetry { get; set; } = true;
 }

@@ -207,7 +207,7 @@ The following log messages should appear:
 **Check debug output for:**
 - Does "AspireApiClient" show "HTTP Request Exception" or "Request timeout"?
 - Is the endpoint correct? (should be https://localhost:17195 or similar)
-- Is Aspire actually running? Start it with `aspire run`
+- Is Aspire actually running? Start it with the Start button in the tray, or run `aspire start`
 
 **Solution:** 
 - Verify Aspire is running on the correct port
@@ -248,7 +248,7 @@ The following log messages should appear:
 ✅ UI displays resources correctly when available
 
 ## Next Steps
-1. Start Aspire application with `aspire run` in a sample project
+1. Start Aspire application with the Start button in the tray, or with `aspire start` in a sample project
 2. Launch the mini monitor from system tray
 3. Watch debug output for the diagnostic messages above
 4. Verify resources appear in mini monitor after a few seconds

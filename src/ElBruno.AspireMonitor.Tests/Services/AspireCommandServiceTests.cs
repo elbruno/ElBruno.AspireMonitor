@@ -14,6 +14,25 @@ namespace ElBruno.AspireMonitor.Tests.Services;
 public class AspireCommandServiceTests
 {
     [Fact]
+    public void CreateStartProcessStartInfo_UsesAspireStart()
+    {
+        // Arrange
+        var workingFolder = Environment.CurrentDirectory;
+
+        // Act
+        var processInfo = AspireCommandService.CreateStartProcessStartInfo(workingFolder);
+
+        // Assert
+        processInfo.FileName.Should().Be("aspire");
+        processInfo.Arguments.Should().Be("start", "the UI Start button must run 'aspire start', not 'aspire run'");
+        processInfo.WorkingDirectory.Should().Be(workingFolder);
+        processInfo.UseShellExecute.Should().BeFalse();
+        processInfo.CreateNoWindow.Should().BeTrue();
+        processInfo.RedirectStandardOutput.Should().BeTrue();
+        processInfo.RedirectStandardError.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task StartAspireAsync_WithValidFolder_ReturnsTrue()
     {
         // Arrange

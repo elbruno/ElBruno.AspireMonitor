@@ -92,6 +92,7 @@ public partial class MainWindow : Window
                     var updatedConfig = configService.LoadConfiguration();
                     ViewModel.ProjectFolder = updatedConfig.ProjectFolder ?? string.Empty;
                     ViewModel.MiniWindowResourcesSetting = updatedConfig.MiniWindowResources ?? string.Empty;
+                    ViewModel.ShowMiniWindowResourceTelemetry = updatedConfig.ShowMiniWindowResourceTelemetry;
                     // Push the new working directory into the Aspire CLI service
                     // so 'aspire describe' runs from the correct folder.
                     (System.Windows.Application.Current as App)?.UpdateAspireWorkingDirectory(updatedConfig.ProjectFolder);
@@ -99,7 +100,7 @@ public partial class MainWindow : Window
                 // Configuration changed, restart polling service
                 if (ViewModel != null)
                 {
-                    ViewModel.HostUrl = _configService.LoadConfiguration().AspireEndpoint;
+                    ViewModel.HostUrl = configService!.LoadConfiguration().AspireEndpoint;
                 }
                 ViewModel?.Stop();
                 ViewModel?.Start();

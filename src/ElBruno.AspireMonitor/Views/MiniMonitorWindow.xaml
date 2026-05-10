@@ -164,9 +164,14 @@
                           Visibility="{Binding HasPinnedResources, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="18"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
                             <!-- Pin icon for found resources, warning icon for missing -->
-                            <TextBlock FontSize="10" Margin="0,0,6,0" VerticalAlignment="Center">
+                            <TextBlock Grid.Column="0" FontSize="10" Margin="0,2,6,0" VerticalAlignment="Top">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Text" Value="📌"/>
@@ -178,61 +183,112 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                            <!-- Resource name -->
-                            <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" 
-                                       VerticalAlignment="Center" Margin="0,0,8,0">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="#333333"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMissing}" Value="True">
-                                                <Setter Property="Foreground" Value="#999999"/>
-                                                <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                                <TextBlock.ToolTip>
-                                    <TextBlock>
+
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <WrapPanel>
+                                    <!-- Resource name -->
+                                    <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" Margin="0,0,8,0">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Text" Value="{Binding Name}"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsMissing}" Value="True">
-                                                        <Setter Property="Text" Value="Configured in settings but not present in the running Aspire app"/>
+                                                        <Setter Property="Foreground" Value="#999999"/>
+                                                        <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                        <TextBlock.ToolTip>
+                                            <TextBlock>
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="{Binding Name}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsMissing}" Value="True">
+                                                                <Setter Property="Text" Value="Configured in settings but not present in the running Aspire app"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </TextBlock.ToolTip>
+                                    </TextBlock>
+                                    <!-- Show hyperlink if resource has URL -->
+                                    <TextBlock FontSize="10"
+                                               MaxWidth="330"
+                                               TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <Hyperlink NavigateUri="{Binding Url}"
+                                                   RequestNavigate="ResourceLink_RequestNavigate"
+                                                   Foreground="#1565C0"
+                                                   TextDecorations="None">
+                                            <Run Text="{Binding Url, Mode=OneWay}"/>
+                                        </Hyperlink>
+                                    </TextBlock>
+                                    <!-- Show fallback text if no URL -->
+                                    <TextBlock Text="{Binding FallbackText}" FontSize="10"
+                                               FontStyle="Italic" VerticalAlignment="Center"
+                                               Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#999999"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsMissing}" Value="True">
+                                                        <Setter Property="Foreground" Value="#CC0000"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
-                                </TextBlock.ToolTip>
-                            </TextBlock>
-                            <!-- Show hyperlink if resource has URL -->
-                            <TextBlock FontSize="10" VerticalAlignment="Center"
-                                       Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Hyperlink NavigateUri="{Binding Url}"
-                                           RequestNavigate="ResourceLink_RequestNavigate"
-                                           Foreground="#1565C0"
-                                           TextDecorations="None">
-                                    <Run Text="{Binding Url, Mode=OneWay}"/>
-                                </Hyperlink>
-                            </TextBlock>
-                            <!-- Show fallback text if no URL -->
-                            <TextBlock Text="{Binding FallbackText}" FontSize="10" 
-                                       FontStyle="Italic" VerticalAlignment="Center"
-                                       Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="#999999"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMissing}" Value="True">
-                                                <Setter Property="Foreground" Value="#CC0000"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </StackPanel>
+                                </WrapPanel>
+
+                                <WrapPanel Margin="0,2,0,0"
+                                           Visibility="{Binding HasTelemetry, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                        <Ellipse Width="7"
+                                                 Height="7"
+                                                 Fill="{Binding ResourceStatusColor}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,4,0"/>
+                                        <TextBlock Text="{Binding ResourceStatusText}" FontSize="9" Foreground="#666666"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding CpuUsageText, StringFormat='CPU {0}'}"
+                                               FontSize="9"
+                                               Foreground="#666666"
+                                               Margin="0,0,10,0"/>
+                                    <TextBlock Text="{Binding MemoryUsageText, StringFormat='MEM {0}'}"
+                                               FontSize="9"
+                                               Foreground="#666666"
+                                               Margin="0,0,10,0"/>
+                                    <TextBlock Text="{Binding DiskUsageText, StringFormat='DISK {0}'}"
+                                               FontSize="9"
+                                               Foreground="#666666"
+                                               Margin="0,0,10,0"/>
+                                    <TextBlock Text="{Binding TypeDisplay, StringFormat='TYPE {0}'}"
+                                               FontSize="9"
+                                               Foreground="#666666"
+                                               Margin="0,0,10,0"
+                                               Visibility="{Binding HasType, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <TextBlock Text="{Binding EndpointCountText}"
+                                               FontSize="9"
+                                               Foreground="#666666"
+                                               Margin="0,0,10,0"
+                                               Visibility="{Binding HasEndpointCount, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <Border Background="#EEF2FF"
+                                            CornerRadius="7"
+                                            Padding="5,0"
+                                            Visibility="{Binding HasEnvironment, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding EnvironmentSummaryText}"
+                                                   FontSize="9"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#4F46E5"/>
+                                    </Border>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

@@ -1090,3 +1090,14 @@ If backend later adds:
 
 **Reference:** .squad/decisions.md → Validation & Quality Decisions; .squad/agents/han/history.md
 
+
+### 2026-05-10T15:38:39.203-04:00 — Mini monitor telemetry source
+
+## Learnings
+- Mini monitor resource items already carry CPU, memory, disk, type, endpoint count, environment summary, and status fields from `ResourceViewModel`; UI can bind these without backend GPU support.
+- No active GPU telemetry exists in Aspire Monitor's models/parser/fixtures today. Do not show GPU until a real Aspire/API data source is added.
+
+### 2026-05-10T15:41:06.295-04:00 — Aspire start command verification
+
+## Learnings
+- The UI Start button path is MiniMonitorWindow/MainWindow binding → `MainViewModel.StartAspireCommand` → `IAspireCommandService.StartAspireAsync` → `aspire start`. Keep this behavior locked with focused tests so docs and code do not regress to `aspire run`.

@@ -140,7 +140,7 @@ Track future improvement areas in [FUTURE-IMPROVEMENTS.md](./FUTURE-IMPROVEMENTS
 
 3. **Point to your Aspire AppHost:** When prompted, enter the path to your `*.AppHost` project
 
-4. **Start monitoring:** Run `aspire run` in that directory; resources appear in the tray
+4. **Start monitoring:** Use the Start button in the tray or run `aspire start` in that directory; resources appear in the tray
 
 5. **Explore new telemetry:** Open the main window to see resource types, disk usage percentage, endpoints, and environment summaries
 

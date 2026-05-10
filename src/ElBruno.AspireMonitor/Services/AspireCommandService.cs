@@ -21,16 +21,7 @@ public class AspireCommandService : IAspireCommandService
                 return false;
             }
 
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = "aspire",
-                Arguments = "start",
-                WorkingDirectory = workingFolder,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+            var processInfo = CreateStartProcessStartInfo(workingFolder);
 
             using (var process = Process.Start(processInfo))
             {
@@ -58,6 +49,20 @@ public class AspireCommandService : IAspireCommandService
             System.Diagnostics.Debug.WriteLine($"[AspireCommandService] Error starting aspire: {ex.Message}");
             return false;
         }
+    }
+
+    internal static ProcessStartInfo CreateStartProcessStartInfo(string workingFolder)
+    {
+        return new ProcessStartInfo
+        {
+            FileName = "aspire",
+            Arguments = "start",
+            WorkingDirectory = workingFolder,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
     }
 
     /// <summary>

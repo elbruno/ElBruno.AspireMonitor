@@ -341,25 +341,15 @@ public class MiniWindowResourcesTests
         }
 
         // Act — change the setting to also include backend
-        // Simulate MainViewModel.MiniWindowResourcesSetting property change
-        var settingProp = mainVm.GetType().GetProperty("MiniWindowResourcesSetting");
-        if (settingProp != null)
-        {
-            settingProp.SetValue(mainVm, "web, backend");
-            // Trigger PropertyChanged via reflection since OnPropertyChanged is protected
-            var onPropertyChangedMethod = mainVm.GetType().GetMethod("OnPropertyChanged",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            onPropertyChangedMethod?.Invoke(mainVm, new object[] { "MiniWindowResourcesSetting" });
-        }
+        mainVm.MiniWindowResourcesSetting = "web, backend";
 
         // Assert
-        if (pinnedResources != null)
-        {
-            // This test will pass once Han's implementation adds the live update subscription
-            // For now, we document the expected behavior
-            pinnedResources.Count.Should().BeGreaterOrEqualTo(1,
-                "PinnedResources should refresh when MiniWindowResourcesSetting changes (live update)");
-        }
+        pinnedResources.Should().NotBeNull();
+        var refreshedPinnedResources = pinnedResources!;
+        refreshedPinnedResources.Should().HaveCount(2,
+            "PinnedResources should refresh when MiniWindowResourcesSetting changes");
+        GetPropertyValue<string>(refreshedPinnedResources[0], "Name").Should().Be("web-app");
+        GetPropertyValue<string>(refreshedPinnedResources[1], "Name").Should().Be("backend-svc");
     }
 
     #endregion
@@ -537,6 +527,197 @@ public class MiniWindowResourcesTests
         }
     }
 
+    [Fact]
+    public void PinnedResources_MatchingResource_CopiesCompactTelemetry()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("api");
+        var mainVm = new MainViewModel(null, configService.Object, null);
+
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "api-service",
+            Url = "http://localhost:5002",
+            Type = "Project",
+            Status = ResourceStatus.Running,
+            CpuUsage = 12.3,
+            MemoryUsage = 45.6,
+            DiskUsage = 7.8,
+            EndpointCount = 2,
+            Environment = new List<AspireEnvironmentEntry>
+            {
+                new() { Name = "ASPNETCORE_ENVIRONMENT", Value = "Development" }
+            }
+        });
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var pinnedResources = GetPinnedResourcesCollection(miniVm);
+
+        pinnedResources.Should().HaveCount(1);
+        var item = pinnedResources![0];
+        GetPropertyValue<bool>(item, "HasTelemetry").Should().BeTrue();
+        GetPropertyValue<string>(item, "ResourceStatusText").Should().Be("Running");
+        GetPropertyValue<string>(item, "CpuUsageText").Should().Be("12.3%");
+        GetPropertyValue<string>(item, "MemoryUsageText").Should().Be("45.6%");
+        GetPropertyValue<string>(item, "DiskUsageText").Should().Be("7.8%");
+        GetPropertyValue<string>(item, "TypeDisplay").Should().Be("Project");
+        GetPropertyValue<string>(item, "EndpointCountText").Should().Be("2 endpoints");
+        GetPropertyValue<string>(item, "EnvironmentSummaryText").Should().Be("Env: Dev");
+    }
+
+    [Fact]
+    public void PinnedResources_TelemetryDisabled_HidesTelemetryButKeepsResourceDetails()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("api", showTelemetry: false);
+        var mainVm = new MainViewModel(null, configService.Object, null);
+
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "api-service",
+            Url = "http://localhost:5002",
+            Type = "Project",
+            Status = ResourceStatus.Running,
+            CpuUsage = 12.3,
+            MemoryUsage = 45.6,
+            DiskUsage = 7.8
+        });
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var pinnedResources = GetPinnedResourcesCollection(miniVm);
+
+        pinnedResources.Should().HaveCount(1);
+        var item = pinnedResources![0];
+        GetPropertyValue<string>(item, "Name").Should().Be("api-service");
+        GetPropertyValue<bool>(item, "HasUrl").Should().BeTrue();
+        GetPropertyValue<string>(item, "Url").Should().Be("http://localhost:5002");
+        GetPropertyValue<bool>(item, "HasTelemetry").Should().BeFalse();
+        GetPropertyValue<string>(item, "CpuUsageText").Should().Be("12.3%");
+    }
+
+    [Fact]
+    public void PinnedResources_TelemetryDisabled_PreservesLinkFallbackAndMissingRows()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("api, worker, missing", showTelemetry: false);
+        var mainVm = new MainViewModel(null, configService.Object, null);
+
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "api-service",
+            Url = "http://localhost:5002",
+            Type = "Project",
+            Status = ResourceStatus.Running,
+            CpuUsage = 12.3
+        });
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "worker-service",
+            Url = null,
+            Type = "Worker",
+            Status = ResourceStatus.Running,
+            MemoryUsage = 45.6
+        });
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var pinnedResources = GetPinnedResourcesCollection(miniVm);
+
+        pinnedResources.Should().HaveCount(3);
+        pinnedResources![0].Name.Should().Be("api-service");
+        pinnedResources[0].HasUrl.Should().BeTrue();
+        pinnedResources[0].Url.Should().Be("http://localhost:5002");
+        pinnedResources[0].HasTelemetry.Should().BeFalse();
+
+        pinnedResources[1].Name.Should().Be("worker-service");
+        pinnedResources[1].HasUrl.Should().BeFalse();
+        pinnedResources[1].FallbackText.Should().Be("Worker");
+        pinnedResources[1].HasTelemetry.Should().BeFalse();
+
+        pinnedResources[2].Name.Should().Be("missing");
+        pinnedResources[2].IsMissing.Should().BeTrue();
+        pinnedResources[2].FallbackText.Should().Be("not found");
+        pinnedResources[2].HasTelemetry.Should().BeFalse();
+    }
+
+    [Fact]
+    public void PinnedResources_MatchingResource_DoesNotExposeFakeGpuTelemetry()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("api");
+        var mainVm = new MainViewModel(null, configService.Object, null);
+
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "api-service",
+            Status = ResourceStatus.Running,
+            CpuUsage = 12.3,
+            MemoryUsage = 45.6,
+            DiskUsage = 7.8
+        });
+
+        // Act
+        var miniVm = new MiniMonitorViewModel(mainVm);
+
+        // Assert
+        var item = GetPinnedResourcesCollection(miniVm)!.Single();
+        typeof(MiniResourceItem).GetProperties()
+            .Select(property => property.Name)
+            .Should().NotContain(name => name.Contains("Gpu", StringComparison.OrdinalIgnoreCase),
+                "GPU telemetry must not appear until backed by a real Aspire metric source");
+
+        new[]
+        {
+            item.ResourceStatusText,
+            item.CpuUsageText,
+            item.MemoryUsageText,
+            item.DiskUsageText,
+            item.TypeDisplay,
+            item.EndpointCountText,
+            item.EnvironmentSummaryText
+        }.Should().NotContain(text => text.Contains("GPU", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void PinnedResources_LiveUpdate_ChangingTelemetryVisibilityTriggersRefresh()
+    {
+        // Arrange
+        var configService = CreateConfigWithMiniResources("api");
+        var mainVm = new MainViewModel(null, configService.Object, null);
+
+        mainVm.Resources.Add(new ResourceViewModel
+        {
+            Name = "api-service",
+            Status = ResourceStatus.Running,
+            CpuUsage = 12.3
+        });
+
+        var miniVm = new MiniMonitorViewModel(mainVm);
+        GetPinnedResourcesCollection(miniVm)![0].HasTelemetry.Should().BeTrue();
+
+        // Act
+        mainVm.ShowMiniWindowResourceTelemetry = false;
+
+        // Assert
+        var item = GetPinnedResourcesCollection(miniVm)![0];
+        item.Name.Should().Be("api-service");
+        item.HasTelemetry.Should().BeFalse();
+
+        // Act again — toggle back on from the MainViewModel setting
+        mainVm.ShowMiniWindowResourceTelemetry = true;
+
+        // Assert again
+        GetPinnedResourcesCollection(miniVm)![0].HasTelemetry.Should().BeTrue();
+    }
+
     #endregion
 
     #region Helper Methods
@@ -560,11 +741,15 @@ public class MiniWindowResourcesTests
     /// <summary>
     /// Creates a mocked configuration service with MiniWindowResources set.
     /// </summary>
-    private static Mock<IConfigurationService> CreateConfigWithMiniResources(string resources)
+    private static Mock<IConfigurationService> CreateConfigWithMiniResources(string resources, bool showTelemetry = true)
     {
         var configService = new Mock<IConfigurationService>();
         configService.Setup(s => s.LoadConfiguration())
-            .Returns(new AppConfig { MiniWindowResources = resources });
+            .Returns(new AppConfig
+            {
+                MiniWindowResources = resources,
+                ShowMiniWindowResourceTelemetry = showTelemetry
+            });
         return configService;
     }
 

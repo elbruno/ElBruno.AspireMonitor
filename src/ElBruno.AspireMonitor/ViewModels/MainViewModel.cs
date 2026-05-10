@@ -21,6 +21,7 @@ public class MainViewModel : ViewModelBase
     private ObservableCollection<ResourceViewModel> _resources = new();
     private string _projectFolder = string.Empty;
     private string _miniWindowResourcesSetting = string.Empty;
+    private bool _showMiniWindowResourceTelemetry = true;
     private string _hostUrl = Configuration.DefaultAspireEndpoint;
     private bool _isExecutingCommand;
     private string _commandStatus = string.Empty;
@@ -57,6 +58,7 @@ public class MainViewModel : ViewModelBase
                 : config.AspireEndpoint;
             ProjectFolder = config.ProjectFolder ?? string.Empty;
             MiniWindowResourcesSetting = config.MiniWindowResources ?? string.Empty;
+            ShowMiniWindowResourceTelemetry = config.ShowMiniWindowResourceTelemetry;
         }
         
         if (_pollingService != null)
@@ -186,6 +188,12 @@ public class MainViewModel : ViewModelBase
     {
         get => _miniWindowResourcesSetting;
         set => SetProperty(ref _miniWindowResourcesSetting, value);
+    }
+
+    public bool ShowMiniWindowResourceTelemetry
+    {
+        get => _showMiniWindowResourceTelemetry;
+        set => SetProperty(ref _showMiniWindowResourceTelemetry, value);
     }
 
     public string ProjectFolderDisplay => PathHumanizer.Humanize(_projectFolder, 50);

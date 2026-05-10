@@ -113,6 +113,14 @@
                        Foreground="#666666" 
                        Margin="0,3,0,0"
                        TextWrapping="Wrap"/>
+            <CheckBox Content="Show resource telemetry in mini window"
+                      IsChecked="{Binding ShowMiniWindowResourceTelemetry}"
+                      Margin="0,8,0,0"/>
+            <TextBlock Text="When enabled, pinned resources include compact status, CPU, memory, disk, type, endpoint, and environment details."
+                       FontSize="10"
+                       Foreground="#666666"
+                       Margin="18,3,0,0"
+                       TextWrapping="Wrap"/>
         </StackPanel>
 
         <!-- Hide Development Resources -->

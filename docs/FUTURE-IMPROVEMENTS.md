@@ -162,13 +162,13 @@ ElBruno.AspireMonitor v1.3.0 is a stable, Windows-only WPF system tray applicati
 
 ---
 
-### 3.10 Auto-Launch with `aspire run` or IDE Integration
+### 3.10 Auto-Launch with `aspire start` or IDE Integration
 
 | Field | Value |
 |-------|-------|
 | **Theme** | Operator Experience |
 | **Problem** | Users must manually launch `aspiremon` before monitoring. |
-| **Proposed Approach** | **Option A:** VS/Rider extension that auto-launches monitor when Aspire project runs. **Option B:** Shell alias/script that wraps `aspire run && aspiremon`. **Option C:** Windows startup shortcut with config-specified default folder. |
+| **Proposed Approach** | **Option A:** VS/Rider extension that auto-launches monitor when Aspire project runs. **Option B:** Shell alias/script that wraps `aspire start && aspiremon`. **Option C:** Windows startup shortcut with config-specified default folder. |
 | **Effort** | S (Option C) to L (Option A) |
 | **Impact** | Medium — convenience for frequent users |
 | **Risks** | IDE extensions require separate maintenance; Option C simplest. |
@@ -176,17 +176,14 @@ ElBruno.AspireMonitor v1.3.0 is a stable, Windows-only WPF system tray applicati
 
 ---
 
-### 3.11 Launch `aspire run` from Tray
+### 3.11 Launch `aspire start` from Tray (✅ Implemented)
 
 | Field | Value |
 |-------|-------|
 | **Theme** | Operator Experience |
-| **Problem** | Users must switch to terminal to start Aspire. |
-| **Proposed Approach** | Add "Start AppHost" context menu item. Call `aspire run` via `AspireCliService.ExecuteCommandAsync` with configured working folder. Show output in a small log window or toast. |
-| **Effort** | S (2-3 days) |
-| **Impact** | Medium — single-pane-of-glass experience |
-| **Risks** | Long-running process management; need "Stop AppHost" too. |
-| **Dependencies** | None |
+| **Status** | ✅ **Completed in v1.6.0** — Start/Stop controls now available in tray (uses `aspire start` and `aspire stop --all --non-interactive`) |
+| **Previously Proposed** | Add "Start AppHost" context menu item. Call `aspire start` via `AspireCommandService.StartAspireAsync()` with configured working folder. Show output in a small log window or toast. |
+| **Impact** | High — single-pane-of-glass experience. Start button stays disabled with live countdown (`⏳ Starting Aspire... (12 / 90s)`) until resources appear. Stop button cleanly shuts down all instances. |
 
 ---
 
@@ -337,7 +334,7 @@ ElBruno.AspireMonitor v1.3.0 is a stable, Windows-only WPF system tray applicati
 | **3.12 winget/Chocolatey/Scoop** | Expands discoverability significantly |
 | **3.13 Code Signing** | Removes SmartScreen friction for new users |
 | **3.4 Multi-Instance Monitoring** | Power-user feature; builds on 3.3 |
-| **3.11 Launch `aspire run` from Tray** | Single-pane-of-glass convenience |
+| **3.11 Launch `aspire start` from Tray (✅ Complete)** | Now available in v1.6.0; Start/Stop controls in tray |
 
 ### 🔵 Later / Aspirational
 

@@ -1925,3 +1925,26 @@ public class MiniResourceItem {
 **Watch-outs:**
 - When deleting rows, count Grid.Row references carefully — easy to leave two children on the same row (overlap).
 - Keep MainViewModel.StartAspireCommand / StopAspireCommand bindings exact; CanExecute logic still gates enabled state.
+
+### 2026-05-10T15:38:39.203-04:00 — Mini Monitor Telemetry Slice
+
+1. **Pinned mini resources now copy compact telemetry from `ResourceViewModel`:**
+   - CPU, memory, disk, status text/color, type, endpoint count, and environment badge are captured in `MiniResourceItem`.
+   - Missing resources remain warning-only and do not show stale telemetry.
+
+2. **Mini monitor layout pattern:**
+   - Keep the first row focused on resource name plus clickable URL/fallback.
+   - Add a small wrapping telemetry row underneath so the mini window stays narrow.
+
+3. **GPU handling:**
+   - Do not show GPU until the backend model exposes a real GPU field; avoid placeholder or inferred values.
+
+### 2026-05-10T15:41:06.295-04:00 — Mini Monitor Telemetry Toggle
+
+1. **Pinned mini-resource telemetry is user-configurable:**
+   - `Configuration.ShowMiniWindowResourceTelemetry` defaults to `true`, so existing config files missing the property keep showing telemetry.
+   - `MainViewModel.ShowMiniWindowResourceTelemetry` is the UI contract that lets `MiniMonitorViewModel` refresh when settings change.
+
+2. **Hide telemetry without hiding pins:**
+   - Keep pinned resource name, URL/fallback text, found/no-url/missing state visible.
+   - Gate only the compact telemetry row via `MiniResourceItem.HasTelemetry`; do not clear or invent telemetry values.

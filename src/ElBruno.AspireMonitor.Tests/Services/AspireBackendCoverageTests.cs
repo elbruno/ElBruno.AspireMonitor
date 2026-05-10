@@ -57,6 +57,88 @@ public class AspireCliServiceParsingTests
         result.Resources[1].Endpoints[2].ProxyUrl.Should().Be("http://localhost:7002");
     }
 
+    [Fact]
+    public async Task ParseResourcesFromDescribeJsonAsync_MapsTelemetryRichResourceShape()
+    {
+        var json = """
+        {
+          "resources": [
+            {
+              "name": "api-service",
+              "resourceType": "Container",
+              "state": "Running",
+              "endpoints": [
+                { "endpointUrl": "http://localhost:5000" },
+                { "endpointUrl": "https://localhost:5001" }
+              ],
+              "properties": {
+                "cpuUsage": 45.5,
+                "memoryUsage": 512000000,
+                "memoryLimit": 2147483648,
+                "diskUsage": 12.3
+              },
+              "environment": [
+                { "name": "ASPNETCORE_ENVIRONMENT", "value": "Development" }
+              ]
+            }
+          ]
+        }
+        """;
+
+        var service = new JsonAspireCliService(json);
+
+        var result = await service.ParseResourcesFromDescribeJsonAsync();
+
+        var resource = result.Resources.Should().ContainSingle().Subject;
+        resource.Type.Should().Be("Container");
+        resource.Status.Should().Be(ResourceStatus.Running);
+        resource.Metrics.CpuUsagePercent.Should().Be(45.5);
+        resource.Metrics.MemoryUsage.Should().Be(512000000);
+        resource.Metrics.MemoryLimit.Should().Be(2147483648);
+        resource.Metrics.MemoryUsagePercent.Should().BeApproximately(23.8418579, 0.0001);
+        resource.Metrics.DiskUsagePercent.Should().Be(12.3);
+        resource.Endpoints.Should().HaveCount(2);
+        resource.Environment.Should().ContainSingle()
+            .Which.IsDevelopmentEnvironment.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ParseResourcesFromDescribeJsonAsync_MapsLegacyMetricsAndEnvironmentObject()
+    {
+        var json = """
+        {
+          "resources": [
+            {
+              "id": "apiservice",
+              "name": "apiservice",
+              "type": "project.v0",
+              "status": "Running",
+              "metrics": {
+                "cpuUsagePercent": 25.5,
+                "memoryUsagePercent": 40.2,
+                "diskUsagePercent": 15.0
+              },
+              "environment": {
+                "DOTNET_ENVIRONMENT": "Production"
+              }
+            }
+          ]
+        }
+        """;
+
+        var service = new JsonAspireCliService(json);
+
+        var result = await service.ParseResourcesFromDescribeJsonAsync();
+
+        var resource = result.Resources.Should().ContainSingle().Subject;
+        resource.Status.Should().Be(ResourceStatus.Running);
+        resource.Metrics.CpuUsagePercent.Should().Be(25.5);
+        resource.Metrics.MemoryUsagePercent.Should().Be(40.2);
+        resource.Metrics.DiskUsagePercent.Should().Be(15.0);
+        resource.Environment.Should().ContainSingle(entry =>
+            entry.Name == "DOTNET_ENVIRONMENT" && entry.Value == "Production");
+    }
+
     [Theory]
     [InlineData("starting", ResourceStatus.Starting)]
     [InlineData("stopped", ResourceStatus.Stopped)]

@@ -22,6 +22,27 @@ public class MiniResourceItem
     public string FallbackText { get; set; } = "";
     public PinnedResourceStatus Status { get; set; } = PinnedResourceStatus.Found;
     public bool IsMissing => Status == PinnedResourceStatus.Missing;
+    public string ResourceStatusText { get; set; } = "";
+    public System.Windows.Media.Brush ResourceStatusColor { get; set; } = System.Windows.Media.Brushes.Gray;
+    public string CpuUsageText { get; set; } = "";
+    public string MemoryUsageText { get; set; } = "";
+    public string DiskUsageText { get; set; } = "";
+    public string TypeDisplay { get; set; } = "";
+    public string EndpointCountText { get; set; } = "";
+    public string EnvironmentSummaryText { get; set; } = "";
+    public bool ShowTelemetryDetails { get; set; } = true;
+    public bool HasType => !string.IsNullOrWhiteSpace(TypeDisplay);
+    public bool HasEndpointCount => !string.IsNullOrWhiteSpace(EndpointCountText);
+    public bool HasEnvironment => !string.IsNullOrWhiteSpace(EnvironmentSummaryText);
+    public bool HasTelemetry => ShowTelemetryDetails
+        && !IsMissing
+        && (!string.IsNullOrWhiteSpace(ResourceStatusText)
+            || !string.IsNullOrWhiteSpace(CpuUsageText)
+            || !string.IsNullOrWhiteSpace(MemoryUsageText)
+            || !string.IsNullOrWhiteSpace(DiskUsageText)
+            || HasType
+            || HasEndpointCount
+            || HasEnvironment);
 }
 
 public class MiniMonitorViewModel : ViewModelBase
@@ -196,7 +217,8 @@ public class MiniMonitorViewModel : ViewModelBase
             e.PropertyName == nameof(MainViewModel.ProjectFolder) ||
             e.PropertyName == nameof(MainViewModel.IsConnected) ||
             e.PropertyName == nameof(MainViewModel.HostUrl) ||
-            e.PropertyName == nameof(MainViewModel.MiniWindowResourcesSetting))
+            e.PropertyName == nameof(MainViewModel.MiniWindowResourcesSetting) ||
+            e.PropertyName == nameof(MainViewModel.ShowMiniWindowResourceTelemetry))
         {
             System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] Triggering UI update due to {e.PropertyName} change");
             UpdateMiniMonitorData();
@@ -363,7 +385,16 @@ public class MiniMonitorViewModel : ViewModelBase
                     var item = new MiniResourceItem
                     {
                         Name = match.Name,
-                        Url = match.Url
+                        Url = match.Url,
+                        ResourceStatusText = match.StatusText,
+                        ResourceStatusColor = match.StatusColor,
+                        CpuUsageText = match.CpuUsageText,
+                        MemoryUsageText = match.MemoryUsageText,
+                        DiskUsageText = match.DiskUsageText,
+                        TypeDisplay = match.TypeDisplay,
+                        EndpointCountText = match.EndpointCount > 0 ? match.EndpointCountText : string.Empty,
+                        EnvironmentSummaryText = match.EnvironmentSummaryText,
+                        ShowTelemetryDetails = _mainViewModel.ShowMiniWindowResourceTelemetry
                     };
 
                     if (!item.HasUrl)
