@@ -937,3 +937,11 @@ Do not proceed to NuGet publish for v1.6.0. Document blocker for Phase 6 pre-rel
 3. **Configuration Pattern:** Bool settings follow established pattern in Configuration.cs (default value, validation)
 4. **User Expectations:** Default = "safe" (show essential resources only); opt-in for power users (all types)
 5. **Regression Prevention:** Test mini monitor display unchanged when filter = false (old behavior preserved)
+
+### 2026-05-11 — v1.8.0 Release
+
+- Merged PR #2 (`feature/main-resource-filter-setting`) into `main` with a squash merge after the clean PR state and successful `Squad CI / test` check.
+- Prepared v1.8.0 package metadata for both the WPF app and global tool, updated CHANGELOG, and added `docs\releases\RELEASE-v1.8.0.md`.
+- Validation passed before release: `dotnet test .\ElBruno.AspireMonitor.slnx --no-restore --verbosity minimal` and `dotnet test src\SampleHarness\SampleHarness.Tests\SampleHarness.Tests.csproj`.
+- Published GitHub release `v1.8.0`; `.github\workflows\publish.yml` run 25695791337 completed successfully.
+- NuGet.org indexed `ElBruno.AspireMonitor` 1.8.0 after a short delay; workflow artifact contained `ElBruno.AspireMonitor.1.8.0.nupkg`.
