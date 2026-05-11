@@ -863,3 +863,77 @@ Do not proceed to NuGet publish for v1.6.0. Document blocker for Phase 6 pre-rel
 - Released ElBruno.AspireMonitor v1.7.0 from `main` after validating build, unit tests, coverage gate, SampleHarness tests, and tool packaging.
 - GitHub release publishing via `.github\workflows\publish.yml` completed successfully and NuGet.org indexed `ElBruno.AspireMonitor` 1.7.0 after a short delay.
 - Keep release notes in `docs\releases\RELEASE-vX.Y.Z.md` and point `<PackageReleaseNotes>` to the matching GitHub release tag.
+
+---
+
+### 2026-05-11 — v1.7.0 Resource Filter Feature Planning (Session 12)
+
+**Context:**
+- v1.2.0 released and stable on NuGet (273 tests passing)
+- Feature request: Add configurable bool setting to control mini monitor resource filtering
+- Goal: Show only endpoint-bearing resources by default, allow users to opt into viewing all resource types
+- Secondary: Fix app version display from hardcoded "v1.0.0" to match 1.7.0
+
+**Analysis Completed:**
+
+1. **Current State Assessment** ✅
+   - Version mismatch: .csproj = 1.6.0, VersionHelper reads assembly version (correct pattern)
+   - VersionHelper fallback = "v1.0.0" (hardcoded as safety net) — should not display if assembly version set
+   - Mini monitor displays all resources currently (no type filtering)
+   - Configuration.cs already has bool settings pattern established
+   - MiniMonitorViewModel filters by pinned resources, not by type
+
+2. **Feature Scope Definition** ✅
+   - Add `ShowAllResourceTypes: bool` to Configuration.cs (default: false)
+   - Create ResourceFilterService.cs with IsMainResource() logic
+   - Main resources = those with Endpoints (Endpoints.Count > 0) OR ShowAllResourceTypes = true
+   - Update .csproj versions to 1.7.0 (Version, AssemblyVersion, FileVersion)
+   - Add UI toggle in SettingsWindow with helpful tooltip
+
+3. **Architecture Review** ✅
+   - **Impact:** Low — new bool property, non-breaking filter logic
+   - **Integration Point:** MainViewModel.Resources filtering (after pinned resource logic)
+   - **Persistence:** Existing Configuration file (JSON) — no schema changes needed
+   - **Default Behavior:** Unchanged (false = show only endpoint resources)
+   - **Testing:** Unit test filter service, integration test settings persistence, UI regression test
+   - **Filtering Order:** Get all → Apply pinned matching → Apply type filter
+
+4. **PR Readiness Constraints Identified** ✅
+   - ✅ No hardcoded strings in filter logic (use resource type constants)
+   - ✅ MVVM binding (no code-behind for filter toggle)
+   - ✅ Configuration validation on load
+   - ✅ Backward compatible (default false matches current behavior)
+   - ✅ Filter applied AFTER pinned resource matching (user selections preserved)
+   - ✅ Version strings synchronized across all files
+   - ⚠️ Documentation: Update README config section, update CHANGELOG for 1.7.0
+   - ⚠️ Tests: Filter service unit tests, settings persistence tests, mini monitor regression test
+
+**Implementation Plan Document Created:**
+- `.squad/decisions/inbox/leia-resource-filter-plan.md`
+- 5-phase checklist: Configuration → Filtering Service → ViewModel Integration → UI → Testing
+- PR readiness constraints documented
+- Regression risk assessment (low, additive feature)
+
+**Team Coordination Required:**
+- Han (Frontend): Settings UI checkbox + binding
+- Luke (Backend): ResourceFilterService + settings persistence
+- Yoda (QA): Unit tests for filter, integration tests for settings, UI regression
+- Leia (Release): Version bump coordination, PR readiness review
+
+**Key Technical Decisions Made:**
+
+1. **Filter Logic Location:** ResourceFilterService.cs (pure, testable)
+2. **Default Behavior:** ShowAllResourceTypes = false (only show endpoint-bearing resources)
+3. **Resource Type Detection:** Check `Endpoints.Count > 0` (simple, reliable)
+4. **Version Fix:** Update all three version fields in .csproj to 1.7.0 (matches Tool project)
+5. **Configuration Pattern:** Follow existing bool settings in Configuration.cs (JSON serialization, validation)
+
+**Status:** ✅ COMPLETE — Implementation plan defined and ready for team handoff
+
+**Key Learnings for Future Sessions:**
+
+1. **Version Synchronization:** VersionHelper reads assembly version, not hardcoded fallback — must update .csproj
+2. **Filter Architecture:** Pure function (ResourceFilterService) easier to test than embedded logic
+3. **Configuration Pattern:** Bool settings follow established pattern in Configuration.cs (default value, validation)
+4. **User Expectations:** Default = "safe" (show essential resources only); opt-in for power users (all types)
+5. **Regression Prevention:** Test mini monitor display unchanged when filter = false (old behavior preserved)

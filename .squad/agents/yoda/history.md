@@ -1187,3 +1187,9 @@ Participated in parallel multi-agent session with Han (implementation) and Lando
 - Tightened mini monitor tests so toggling MainViewModel settings refreshes pinned rows, hiding telemetry only while preserving identity, URL/fallback, and missing-resource behavior.
 - Added a guard that no GPU telemetry appears until a real backend metric source exists.
 - Validation: focused telemetry/config tests passed; full solution test suite passed (372/372).
+
+### 2026-05-11T16:10:08.288-04:00 — Mini Monitor Main-Resource Filter and Version Metadata Tests
+- Added focused QA coverage for the persisted mini monitor main-resource filter defaulting enabled for new and legacy configurations.
+- Covered default filtered pinned-resource behavior, disabled-filter behavior, and live MainViewModel toggle refresh for endpoint-bearing vs. non-endpoint replicas.
+- Added version metadata tests to keep MainViewModel and MiniMonitorViewModel aligned with VersionHelper and csproj Version/AssemblyVersion/FileVersion values.
+- Validation: focused tests passed via `dotnet test src\ElBruno.AspireMonitor.Tests\ElBruno.AspireMonitor.Tests.csproj --filter "FullyQualifiedName~MiniWindowResourceFilteringTests|FullyQualifiedName~ConfigurationMainResourceFilterTests|FullyQualifiedName~VersionMetadataTests" --no-restore --verbosity quiet`.

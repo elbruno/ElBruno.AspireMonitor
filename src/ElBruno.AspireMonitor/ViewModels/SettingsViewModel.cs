@@ -12,6 +12,7 @@ public class SettingsViewModel : ViewModelBase
     private bool _startWithWindows;
     private bool _hideDevelopmentResources;
     private bool _showMiniWindowResourceTelemetry = true;
+    private bool _showOnlyMainMiniWindowResources = true;
     private string _projectFolder = string.Empty;
     private string _miniWindowResources = string.Empty;
     private string _validationMessage = string.Empty;
@@ -64,6 +65,12 @@ public class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _showMiniWindowResourceTelemetry, value);
     }
 
+    public bool ShowOnlyMainMiniWindowResources
+    {
+        get => _showOnlyMainMiniWindowResources;
+        set => SetProperty(ref _showOnlyMainMiniWindowResources, value);
+    }
+
     public string ValidationMessage
     {
         get => _validationMessage;
@@ -107,7 +114,8 @@ public class SettingsViewModel : ViewModelBase
             HideDevelopmentResources = HideDevelopmentResources,
             ProjectFolder = ProjectFolder ?? string.Empty,
             MiniWindowResources = MiniWindowResources ?? string.Empty,
-            ShowMiniWindowResourceTelemetry = ShowMiniWindowResourceTelemetry
+            ShowMiniWindowResourceTelemetry = ShowMiniWindowResourceTelemetry,
+            ShowOnlyMainMiniWindowResources = ShowOnlyMainMiniWindowResources
         };
 
         _configService.SaveConfiguration(config);
@@ -126,5 +134,6 @@ public class SettingsViewModel : ViewModelBase
         ProjectFolder = config.ProjectFolder ?? string.Empty;
         MiniWindowResources = config.MiniWindowResources ?? string.Empty;
         ShowMiniWindowResourceTelemetry = config.ShowMiniWindowResourceTelemetry;
+        ShowOnlyMainMiniWindowResources = config.ShowOnlyMainMiniWindowResources;
     }
 }
