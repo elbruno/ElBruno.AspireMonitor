@@ -12,7 +12,7 @@ namespace SampleHarness.Tests;
 public class AppHostTopologyTests
 {
     [Fact]
-    public async Task AppHost_RegistersExactlyThreeNamedResources()
+    public async Task AppHost_RegistersNamedResourcesForMiniMonitorFiltering()
     {
         // Arrange & Act
         await using var app = await DistributedApplicationTestingBuilder
@@ -20,11 +20,15 @@ public class AppHostTopologyTests
 
         var resources = app.Resources.ToList();
 
-        // Assert – three service resources must always be present
+        // Assert – service resources and the no-endpoint duplicate probe must always be present
         resources.Should().Contain(r => r.Name == "api-service",
             "AppHost must register api-service");
         resources.Should().Contain(r => r.Name == "catalog-api",
             "AppHost must register catalog-api");
+        resources.Should().Contain(r => r.Name == "filter-probe-api",
+            "AppHost must register an endpoint-bearing web project for mini monitor filtering");
+        resources.Should().Contain(r => r.Name == "filter-probe-api-executable",
+            "AppHost must register a no-endpoint executable with the same prefix to cover duplicate filtering");
         resources.Should().Contain(r => r.Name == "worker-service",
             "AppHost must register worker-service");
     }
@@ -53,6 +57,25 @@ public class AppHostTopologyTests
             .FirstOrDefault(r => r.Name == "catalog-api");
 
         catalogApi.Should().NotBeNull("catalog-api must be present in the topology");
+    }
+
+    [Fact]
+    public async Task AppHost_FilterProbeApi_HasEndpointBearingProjectAndNoEndpointExecutable()
+    {
+        await using var app = await DistributedApplicationTestingBuilder
+            .CreateAsync<Projects.SampleHarness_AppHost>();
+
+        var filterProbeApi = app.Resources
+            .OfType<IResourceWithEndpoints>()
+            .FirstOrDefault(r => r.Name == "filter-probe-api");
+        var executable = app.Resources.FirstOrDefault(r => r.Name == "filter-probe-api-executable");
+
+        filterProbeApi.Should().NotBeNull("filter-probe-api must be the endpoint-bearing project entry");
+        executable.Should().NotBeNull("filter-probe-api-executable must be the paired no-endpoint entry");
+        filterProbeApi!.Annotations.OfType<EndpointAnnotation>().Should().NotBeEmpty(
+            "the filter probe web project must expose endpoints");
+        executable!.Annotations.OfType<EndpointAnnotation>().Should().BeEmpty(
+            "the mini monitor needs a same-prefix resource without endpoints to hide by default");
     }
 
     [Fact]
@@ -197,5 +220,32 @@ public class CatalogApiEndpointTests
         var response = await client.GetAsync("/api/products/9999");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+}
+
+/// <summary>
+/// Fast in-process tests for the filter probe web project used by mini monitor resource filtering.
+/// </summary>
+public class FilterProbeApiEndpointTests
+    : IClassFixture<WebApplicationFactory<FilterProbeApiProgram>>
+{
+    private readonly WebApplicationFactory<FilterProbeApiProgram> _factory;
+
+    public FilterProbeApiEndpointTests(WebApplicationFactory<FilterProbeApiProgram> factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task GetRoot_ReturnsOkWithServiceName()
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("service").GetString().Should().Be("filter-probe-api");
+        body.GetProperty("status").GetString().Should().Be("healthy");
     }
 }

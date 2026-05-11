@@ -1948,3 +1948,16 @@ public class MiniResourceItem {
 2. **Hide telemetry without hiding pins:**
    - Keep pinned resource name, URL/fallback text, found/no-url/missing state visible.
    - Gate only the compact telemetry row via `MiniResourceItem.HasTelemetry`; do not clear or invent telemetry values.
+
+### 2026-05-11 — Mini Window Resource Filter Settings
+
+1. **Mini monitor resource filtering is now user-configurable from Settings:**
+   - `SettingsViewModel.ShowOnlyMainMiniWindowResources` loads and saves the persisted configuration value.
+   - `SettingsWindow.xaml` adds a checkbox near mini window resource settings to choose endpoint/main resources only vs all matching entries.
+
+2. **Settings dialog changes apply immediately:**
+   - `MainWindow.xaml.cs` pushes the saved filter value into `MainViewModel.ShowOnlyMainMiniWindowResources` after OK closes the dialog.
+   - This keeps `MiniMonitorViewModel` live refresh behavior aligned with saved settings.
+
+3. **Focused coverage added:**
+   - `SettingsViewModelTelemetryTests` now covers loading and saving the main-resource filter toggle.

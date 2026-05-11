@@ -22,6 +22,7 @@
     <ProjectReference Include="..\SampleHarness.AppHost\SampleHarness.AppHost.csproj" />
     <ProjectReference Include="..\SampleHarness.ApiService\SampleHarness.ApiService.csproj" />
     <ProjectReference Include="..\SampleHarness.CatalogApi\SampleHarness.CatalogApi.csproj" />
+    <ProjectReference Include="..\SampleHarness.FilterProbeApi\SampleHarness.FilterProbeApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>

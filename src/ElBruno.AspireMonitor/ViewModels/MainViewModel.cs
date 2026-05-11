@@ -22,6 +22,7 @@ public class MainViewModel : ViewModelBase
     private string _projectFolder = string.Empty;
     private string _miniWindowResourcesSetting = string.Empty;
     private bool _showMiniWindowResourceTelemetry = true;
+    private bool _showOnlyMainMiniWindowResources = true;
     private string _hostUrl = Configuration.DefaultAspireEndpoint;
     private bool _isExecutingCommand;
     private string _commandStatus = string.Empty;
@@ -59,6 +60,7 @@ public class MainViewModel : ViewModelBase
             ProjectFolder = config.ProjectFolder ?? string.Empty;
             MiniWindowResourcesSetting = config.MiniWindowResources ?? string.Empty;
             ShowMiniWindowResourceTelemetry = config.ShowMiniWindowResourceTelemetry;
+            ShowOnlyMainMiniWindowResources = config.ShowOnlyMainMiniWindowResources;
         }
         
         if (_pollingService != null)
@@ -196,6 +198,12 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _showMiniWindowResourceTelemetry, value);
     }
 
+    public bool ShowOnlyMainMiniWindowResources
+    {
+        get => _showOnlyMainMiniWindowResources;
+        set => SetProperty(ref _showOnlyMainMiniWindowResources, value);
+    }
+
     public string ProjectFolderDisplay => PathHumanizer.Humanize(_projectFolder, 50);
 
     public string HostUrl
@@ -267,6 +275,8 @@ public class MainViewModel : ViewModelBase
 
     private void RefreshData()
     {
+        ReloadMiniWindowConfiguration();
+
         if (_pollingService != null)
         {
             _ = _pollingService.RefreshAsync();
@@ -309,7 +319,9 @@ public class MainViewModel : ViewModelBase
     {
         InvokeOnUiThread(() =>
         {
-            var hideDevelopmentResources = _configService?.LoadConfiguration().HideDevelopmentResources ?? false;
+            var config = _configService?.LoadConfiguration();
+            var hideDevelopmentResources = config?.HideDevelopmentResources ?? false;
+            ReloadMiniWindowConfiguration(config);
             System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnResourcesUpdated received: {resources.Count} resources");
 
             Resources.Clear();
@@ -373,6 +385,17 @@ public class MainViewModel : ViewModelBase
                 }
             }
         });
+    }
+
+    private void ReloadMiniWindowConfiguration(Configuration? config = null)
+    {
+        if (_configService == null)
+            return;
+
+        config ??= _configService.LoadConfiguration();
+        MiniWindowResourcesSetting = config.MiniWindowResources ?? string.Empty;
+        ShowMiniWindowResourceTelemetry = config.ShowMiniWindowResourceTelemetry;
+        ShowOnlyMainMiniWindowResources = config.ShowOnlyMainMiniWindowResources;
     }
 
     private void OnStatusChanged(object? sender, string status)
