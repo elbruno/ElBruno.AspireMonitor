@@ -1961,3 +1961,19 @@ public class MiniResourceItem {
 
 3. **Focused coverage added:**
    - `SettingsViewModelTelemetryTests` now covers loading and saving the main-resource filter toggle.
+
+### 2026-05-11T17:50:12.055-04:00 — Aspire State Notifications
+1. **State notifications reuse App-owned tray icon:**
+   - Keep notification delivery in `App.xaml.cs` alongside the single `NotifyIcon`; do not create another tray owner from windows or services.
+   - Track the last `MainViewModel.IsConnected` value and only show balloon tips when running/not-running actually changes.
+2. **User toggle defaults enabled:**
+   - `Configuration.EnableAspireStateNotifications` defaults to `true` so existing configs opt in unless users disable it in Settings.
+   - Read the saved setting at notification time so Settings changes take effect after OK without restarting the app.
+
+### 2026-05-11T17:50:12.055-04:00 — Notification Release Blockers Revision
+1. **Documented JSON field is the persisted contract:**
+   - Keep the C# property named `EnableAspireStateNotifications`, but serialize it as `notifyOnStateChange` so manual config edits match README, changelog, and release notes.
+   - Configuration tests now verify both reading the documented field and writing default/saved config with the documented JSON name.
+2. **Release docs corrected:**
+   - README release heading is aligned to v1.9.0.
+   - v1.9.0 release notes link back to the repo changelog from `docs\releases\`.

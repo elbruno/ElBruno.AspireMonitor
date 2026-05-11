@@ -21,13 +21,13 @@ ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 
 No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI and opening the Aspire dashboard at the standard default `http://localhost:18888`.
 
-## ✨ What's New in v1.7.0
+## ✨ What's New in v1.9.0
 
-ElBruno.AspireMonitor v1.7.0 brings enhanced mini monitor telemetry and improved resilience:
+ElBruno.AspireMonitor v1.9.0 adds state-change notifications and improved mini-window filtering:
 
-- **Mini Monitor Pinned-Resource Telemetry** — The mini window now displays CPU, memory, disk, resource type, endpoints, environment, and status for each pinned resource—all without fake GPU metrics.
-- **Telemetry Toggle** — New settings control to show or hide mini monitor telemetry (enabled by default).
-- **Hardened Parsing & CLI Alignment** — Corrected Aspire CLI parsing and start-command documentation; locked Start button behavior with comprehensive test coverage for stability.
+- **Aspire State-Change Notifications** — Get Windows notifications when your Aspire instance starts or stops (enabled by default in Settings).
+- **Mini Monitor Main-Resource Filter** — Filter the mini window to show only main resources (those with endpoints) while preserving the full resource list in settings.
+- **Settings Enhancements** — New toggle for state notifications and resource filtering, both with sensible defaults.
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
@@ -35,6 +35,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
 | Feature | Description |
 |---------|-------------|
+| 🔔 **State-Change Notifications** | Windows notifications when Aspire starts or stops (configurable via Settings toggle, enabled by default) |
 | 🟢🟡🔴 **Color-Coded Status** | Visual indicators: Green (<70%), Yellow (70-90%), Red (>90%) |
 | ⚡ **Real-Time Updates** | Automatic polling every 5 seconds (configurable) |
 | 📦 **Rich Resource Telemetry** | See type, disk usage percentage, and endpoint counts at a glance |
@@ -120,7 +121,8 @@ Example:
   "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 5000,
   "miniWindowResources": "web, store, gateway",
-  "hideDevelopmentResources": false
+  "hideDevelopmentResources": false,
+  "notifyOnStateChange": true
 }
 ```
 
@@ -131,6 +133,7 @@ Example:
 | `pollingIntervalMs` | Resource refresh interval (default 5000) |
 | `miniWindowResources` | Comma-separated list of resource name prefixes to pin to the mini window. Empty = mini window only shows the dashboard link. Case-insensitive prefix match (e.g. `web` matches `web-xggqzmyn`) |
 | `hideDevelopmentResources` | Hides resources marked as development-only in Aspire environment metadata |
+| `notifyOnStateChange` | Windows notification when Aspire state changes running ↔ not running (default true) |
 
 See [Configuration Guide](./docs/configuration.md) for all options.
 

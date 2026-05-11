@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ElBruno.AspireMonitor.Models;
+using AppConfig = ElBruno.AspireMonitor.Models.Configuration;
 using ElBruno.AspireMonitor.Services;
 using FluentAssertions;
 using Xunit;
@@ -292,7 +293,31 @@ public class AspirePollingServiceCoverageTests
         service.State.Should().Be(PollingServiceState.Error);
         errors.Should().ContainSingle().Which.Should().Be("Polling error: boom");
     }
+
+    [Fact]
+    public async Task RefreshAsync_RaisesAspireRunningStateChangedOnlyAfterEstablishedStateChanges()
+    {
+        var cli = new QueueAspireCliService(
+            new ResourceCollection(new List<AspireResource> { new() { Name = "api", Status = ResourceStatus.Running } }),
+            new ResourceCollection { ErrorMessage = "No Aspire app is currently running." },
+            new ResourceCollection { ErrorMessage = "No Aspire app is currently running." },
+            new ResourceCollection(new List<AspireResource> { new() { Name = "api", Status = ResourceStatus.Running } }));
+        using var service = new AspirePollingService(cli, 60_000);
+        var stateChanges = new List<bool>();
+        service.AspireRunningStateChanged += (_, args) => stateChanges.Add(args.IsRunning);
+
+        service.Start();
+        await service.RefreshAsync();
+        stateChanges.Should().BeEmpty("the first poll establishes the baseline state");
+
+        await service.RefreshAsync();
+        await service.RefreshAsync();
+        await service.RefreshAsync();
+
+        stateChanges.Should().Equal(false, true);
+    }
 }
+
 
 public class AspireLiveLogsServiceTests
 {
@@ -508,3 +533,4 @@ public class AspireCliServiceCommandExecutionTests
             .WithMessage("Failed to parse JSON output from command:*");
     }
 }
+

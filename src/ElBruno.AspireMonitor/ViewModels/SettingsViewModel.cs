@@ -13,6 +13,7 @@ public class SettingsViewModel : ViewModelBase
     private bool _hideDevelopmentResources;
     private bool _showMiniWindowResourceTelemetry = true;
     private bool _showOnlyMainMiniWindowResources = true;
+    private bool _enableAspireStateNotifications = true;
     private string _projectFolder = string.Empty;
     private string _miniWindowResources = string.Empty;
     private string _validationMessage = string.Empty;
@@ -71,6 +72,12 @@ public class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _showOnlyMainMiniWindowResources, value);
     }
 
+    public bool EnableAspireStateNotifications
+    {
+        get => _enableAspireStateNotifications;
+        set => SetProperty(ref _enableAspireStateNotifications, value);
+    }
+
     public string ValidationMessage
     {
         get => _validationMessage;
@@ -115,7 +122,8 @@ public class SettingsViewModel : ViewModelBase
             ProjectFolder = ProjectFolder ?? string.Empty,
             MiniWindowResources = MiniWindowResources ?? string.Empty,
             ShowMiniWindowResourceTelemetry = ShowMiniWindowResourceTelemetry,
-            ShowOnlyMainMiniWindowResources = ShowOnlyMainMiniWindowResources
+            ShowOnlyMainMiniWindowResources = ShowOnlyMainMiniWindowResources,
+            EnableAspireStateNotifications = EnableAspireStateNotifications
         };
 
         _configService.SaveConfiguration(config);
@@ -135,5 +143,6 @@ public class SettingsViewModel : ViewModelBase
         MiniWindowResources = config.MiniWindowResources ?? string.Empty;
         ShowMiniWindowResourceTelemetry = config.ShowMiniWindowResourceTelemetry;
         ShowOnlyMainMiniWindowResources = config.ShowOnlyMainMiniWindowResources;
+        EnableAspireStateNotifications = config.EnableAspireStateNotifications;
     }
 }

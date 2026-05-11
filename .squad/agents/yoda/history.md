@@ -1193,3 +1193,8 @@ Participated in parallel multi-agent session with Han (implementation) and Lando
 - Covered default filtered pinned-resource behavior, disabled-filter behavior, and live MainViewModel toggle refresh for endpoint-bearing vs. non-endpoint replicas.
 - Added version metadata tests to keep MainViewModel and MiniMonitorViewModel aligned with VersionHelper and csproj Version/AssemblyVersion/FileVersion values.
 - Validation: focused tests passed via `dotnet test src\ElBruno.AspireMonitor.Tests\ElBruno.AspireMonitor.Tests.csproj --filter "FullyQualifiedName~MiniWindowResourceFilteringTests|FullyQualifiedName~ConfigurationMainResourceFilterTests|FullyQualifiedName~VersionMetadataTests" --no-restore --verbosity quiet`.
+
+### 2026-05-11 — Aspire state notification test coverage
+
+- Added deterministic Aspire state-change notification tests through a notification sink abstraction, avoiding real Windows balloon notifications in unit tests.
+- Covered no initial spam, running/not-running transitions, duplicate suppression, disabled setting suppression, and config/settings persistence including legacy config defaults.

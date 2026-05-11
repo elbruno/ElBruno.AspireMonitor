@@ -82,4 +82,42 @@ public class SettingsViewModelTelemetryTests
         saved.Should().NotBeNull();
         saved!.ShowOnlyMainMiniWindowResources.Should().Be(showOnlyMainResources);
     }
+
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Constructor_LoadsAspireStateNotificationToggle_FromConfig(bool enableNotifications)
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new AppConfig { EnableAspireStateNotifications = enableNotifications });
+
+        var viewModel = new SettingsViewModel(configService.Object);
+
+        viewModel.EnableAspireStateNotifications.Should().Be(enableNotifications);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SaveSettings_PersistsAspireStateNotificationToggle(bool enableNotifications)
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new AppConfig());
+        AppConfig? saved = null;
+        configService.Setup(service => service.SaveConfiguration(It.IsAny<AppConfig>()))
+            .Callback<AppConfig>(configuration => saved = configuration);
+
+        var viewModel = new SettingsViewModel(configService.Object)
+        {
+            EnableAspireStateNotifications = enableNotifications
+        };
+
+        viewModel.SaveSettings();
+
+        saved.Should().NotBeNull();
+        saved!.EnableAspireStateNotifications.Should().Be(enableNotifications);
+    }
 }

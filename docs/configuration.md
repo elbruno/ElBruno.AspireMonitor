@@ -37,7 +37,8 @@ Open `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`:
   "cpuThresholdCritical": 90,
   "memoryThresholdWarning": 70,
   "memoryThresholdCritical": 90,
-  "hideDevelopmentResources": false
+  "hideDevelopmentResources": false,
+  "notifyOnStateChange": true
 }
 ```
 
@@ -130,6 +131,25 @@ This is useful when you want the monitor to focus on shared or production-like r
 
 ---
 
+#### `notifyOnStateChange` (boolean)
+**Default:** true
+
+When enabled, AspireMonitor sends a Windows notification when Aspire starts (state changes from not running → running) or stops (state changes from running → not running).
+
+```json
+{
+  "notifyOnStateChange": true
+}
+```
+
+**Examples:**
+- **true** (default): Notifications enabled — get alerts when your AppHost starts/stops
+- **false**: Notifications disabled — silent operation, monitor only
+
+This feature is useful when you're focused on other work and want to be alerted when Aspire becomes ready or goes offline.
+
+---
+
 #### `memoryThresholdWarning` (integer)
 **Default:** 70 (%)
 
@@ -166,7 +186,8 @@ Memory usage threshold that triggers a red (critical) indicator.
   "cpuThresholdCritical": 85,
   "memoryThresholdWarning": 75,
   "memoryThresholdCritical": 85,
-  "hideDevelopmentResources": true
+  "hideDevelopmentResources": true,
+  "notifyOnStateChange": true
 }
 ```
 

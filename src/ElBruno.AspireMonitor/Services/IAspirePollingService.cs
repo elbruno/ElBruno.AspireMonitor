@@ -7,6 +7,7 @@ public interface IAspirePollingService
     event EventHandler<List<AspireResource>>? ResourcesUpdated;
     event EventHandler<string>? StatusChanged;
     event EventHandler<string>? ErrorOccurred;
+    event EventHandler<AspireRunningStateChangedEventArgs>? AspireRunningStateChanged;
     
     void Start();
     void Stop();
