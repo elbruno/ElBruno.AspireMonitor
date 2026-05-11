@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-05-11
+
+### Added
+- Mini-window main-resource filter setting that defaults to endpoint-bearing/main resource entries while preserving all-resource display as an option.
+- Settings toggle for showing only main mini-window resources.
+- SampleHarness duplicate resource validation for endpoint and no-endpoint resources with the same prefix.
+
+### Fixed
+- Normalized application version display so the main and mini windows stay aligned without double `v` prefixes.
+
 ## [1.7.0] - 2026-05-10
 
 ### Added
@@ -38,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Notes
 - No public API or NuGet packaging changes. The global tool (`aspiremon`) is published from the same `ElBruno.AspireMonitor.Tool` package, now versioned 1.5.0.
 
+[1.8.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.8.0
 [1.7.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.7.0
 [1.6.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.6.0
 [1.5.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.5.0
