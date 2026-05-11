@@ -11,16 +11,34 @@ public static class VersionHelper
         
         if (version != null)
         {
-            return $"v{version.Major}.{version.Minor}.{version.Build}";
+            return NormalizeVersion($"{version.Major}.{version.Minor}.{version.Build}");
         }
         
         // Fallback to informational version attribute
         var infoVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
         if (infoVersion != null)
         {
-            return $"v{infoVersion.InformationalVersion}";
+            return NormalizeVersion(infoVersion.InformationalVersion);
         }
         
-        return "v1.0.0";
+        return "1.0.0";
+    }
+
+    private static string NormalizeVersion(string version)
+    {
+        var normalized = version.Trim();
+
+        if (normalized.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[1..];
+        }
+
+        var metadataIndex = normalized.IndexOf('+');
+        if (metadataIndex >= 0)
+        {
+            normalized = normalized[..metadataIndex];
+        }
+
+        return normalized;
     }
 }

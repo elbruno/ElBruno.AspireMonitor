@@ -218,7 +218,8 @@ public class MiniMonitorViewModel : ViewModelBase
             e.PropertyName == nameof(MainViewModel.IsConnected) ||
             e.PropertyName == nameof(MainViewModel.HostUrl) ||
             e.PropertyName == nameof(MainViewModel.MiniWindowResourcesSetting) ||
-            e.PropertyName == nameof(MainViewModel.ShowMiniWindowResourceTelemetry))
+            e.PropertyName == nameof(MainViewModel.ShowMiniWindowResourceTelemetry) ||
+            e.PropertyName == nameof(MainViewModel.ShowOnlyMainMiniWindowResources))
         {
             System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] Triggering UI update due to {e.PropertyName} change");
             UpdateMiniMonitorData();
@@ -376,11 +377,12 @@ public class MiniMonitorViewModel : ViewModelBase
             var matches = _mainViewModel.Resources
                 .Where(r => r.Name.ToLowerInvariant().StartsWith(tokenPair.Lower))
                 .ToList();
+            var visibleMatches = GetVisibleMiniWindowMatches(matches);
 
-            if (matches.Count > 0)
+            if (visibleMatches.Count > 0)
             {
                 // Found one or more matching resources
-                foreach (var match in matches)
+                foreach (var match in visibleMatches)
                 {
                     var item = new MiniResourceItem
                     {
@@ -427,6 +429,21 @@ public class MiniMonitorViewModel : ViewModelBase
         }
 
         OnPropertyChanged(nameof(HasPinnedResources));
+    }
+
+    private List<ResourceViewModel> GetVisibleMiniWindowMatches(List<ResourceViewModel> matches)
+    {
+        if (_mainViewModel?.ShowOnlyMainMiniWindowResources != true || !matches.Any(HasEndpoint))
+            return matches;
+
+        return matches
+            .Where(HasEndpoint)
+            .ToList();
+    }
+
+    private static bool HasEndpoint(ResourceViewModel resource)
+    {
+        return resource.EndpointCount > 0 || resource.HasUrl;
     }
 
     public string DashboardUrl => _mainViewModel?.HostUrl ?? string.Empty;

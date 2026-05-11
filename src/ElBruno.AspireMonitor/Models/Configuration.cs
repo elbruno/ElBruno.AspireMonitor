@@ -15,4 +15,5 @@ public class Configuration
     public bool HideDevelopmentResources { get; set; }
     public string MiniWindowResources { get; set; } = string.Empty;
     public bool ShowMiniWindowResourceTelemetry { get; set; } = true;
+    public bool ShowOnlyMainMiniWindowResources { get; set; } = true;
 }

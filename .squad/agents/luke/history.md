@@ -1101,3 +1101,9 @@ If backend later adds:
 
 ## Learnings
 - The UI Start button path is MiniMonitorWindow/MainWindow binding → `MainViewModel.StartAspireCommand` → `IAspireCommandService.StartAspireAsync` → `aspire start`. Keep this behavior locked with focused tests so docs and code do not regress to `aspire run`.
+
+### 2026-05-11 — Mini monitor main-resource filter
+
+- Added `ShowOnlyMainMiniWindowResources` configuration plumbing with a default of `true`, preserving old config files by relying on the model default when the JSON property is absent.
+- Mini monitor filtering now keeps endpoint-bearing matching resources and hides duplicate no-endpoint executable rows only when an endpoint-bearing match exists; setting the flag to `false` keeps the previous "show all matches" behavior.
+- App version metadata was aligned to 1.7.0 and `VersionHelper` now returns an unprefixed normalized value so views that add `v` do not render `vv...`.
