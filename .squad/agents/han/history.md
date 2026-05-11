@@ -1977,3 +1977,9 @@ public class MiniResourceItem {
 2. **Release docs corrected:**
    - README release heading is aligned to v1.9.0.
    - v1.9.0 release notes link back to the repo changelog from `docs\releases\`.
+
+### 2026-05-11 — Click-to-open Aspire dashboard notification
+
+- Evaluated `NotifyIcon.ShowBalloonTip`: Windows balloon notifications render plain title/body text and expose click events, but do not host embedded hyperlink controls.
+- Updated Aspire-running notifications to include the configured Aspire dashboard URL in the message text and use `BalloonTipClicked` to open that URL in the default browser.
+- Kept notification enable/disable and state-change de-spam behavior intact; tests cover configured URL forwarding, default fallback, and stopped notifications clearing the click destination.
