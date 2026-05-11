@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ElBruno.AspireMonitor.Models;
 
 public class Configuration
@@ -16,4 +18,6 @@ public class Configuration
     public string MiniWindowResources { get; set; } = string.Empty;
     public bool ShowMiniWindowResourceTelemetry { get; set; } = true;
     public bool ShowOnlyMainMiniWindowResources { get; set; } = true;
+    [JsonPropertyName("notifyOnStateChange")]
+    public bool EnableAspireStateNotifications { get; set; } = true;
 }

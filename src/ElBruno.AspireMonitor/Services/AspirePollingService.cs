@@ -21,10 +21,12 @@ public class AspirePollingService : IAspirePollingService, IDisposable
     private int _reconnectAttempts;
     private bool _disposed;
     private readonly int _pollingIntervalMs;
+    private bool? _lastAspireRunningState;
 
     public event EventHandler<List<AspireResource>>? ResourcesUpdated;
     public event EventHandler<string>? StatusChanged;
     public event EventHandler<string>? ErrorOccurred;
+    public event EventHandler<AspireRunningStateChangedEventArgs>? AspireRunningStateChanged;
 
     public PollingServiceState State
     {
@@ -140,6 +142,11 @@ public class AspirePollingService : IAspirePollingService, IDisposable
                 }
 
                 ResourcesUpdated?.Invoke(this, resources);
+
+                if (resources.Count > 0)
+                {
+                    UpdateAspireRunningState(isRunning: true);
+                }
             }
             else if (_lastKnownResources.Count == 0)
             {
@@ -177,6 +184,22 @@ public class AspirePollingService : IAspirePollingService, IDisposable
 
         // Always notify subscribers about the stopped state, even if the polling state didn't change.
         StatusChanged?.Invoke(this, "Not Running");
+        UpdateAspireRunningState(isRunning: false);
+    }
+
+    private void UpdateAspireRunningState(bool isRunning)
+    {
+        if (_lastAspireRunningState == null)
+        {
+            _lastAspireRunningState = isRunning;
+            return;
+        }
+
+        if (_lastAspireRunningState == isRunning)
+            return;
+
+        _lastAspireRunningState = isRunning;
+        AspireRunningStateChanged?.Invoke(this, new AspireRunningStateChangedEventArgs(isRunning));
     }
 
     private void HandleError(string message)

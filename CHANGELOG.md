@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-05-11
+
+### Added
+- Aspire state-change notifications: Windows notifications when Aspire transitions between running and not running states.
+- Settings toggle `notifyOnStateChange` (enabled by default) to control state-change notification delivery.
+
+### Changed
+- Notification center integration for Windows state-change alerts without disrupting user workflow.
+
 ## [1.8.0] - 2026-05-11
 
 ### Added
@@ -48,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Notes
 - No public API or NuGet packaging changes. The global tool (`aspiremon`) is published from the same `ElBruno.AspireMonitor.Tool` package, now versioned 1.5.0.
 
+[1.9.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.9.0
 [1.8.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.8.0
 [1.7.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.7.0
 [1.6.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.6.0

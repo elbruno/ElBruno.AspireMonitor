@@ -5,6 +5,25 @@
 **Role:** DevRel/Docs (Documentation & Developer Relations)
 **Created:** 2026-04-26
 
+## Latest: v1.9.0 Documentation Consistency Fix (2026-05-11)
+
+**Status:** ✅ Complete
+
+**Changes:**
+- Updated README.md "What's New" section header from v1.8.0 → v1.9.0 (line 24)
+- Added `notifyOnStateChange` field to Step 3 Quick Start configuration example in docs/configuration.md (line 41)
+- Verified consistent use of `notifyOnStateChange` JSON field name across:
+  - README.md configuration example (line 125) ✅
+  - README.md configuration table (line 136) ✅
+  - docs/configuration.md Step 3 example (line 41) ✅
+  - docs/configuration.md Full Configuration Example (line 190) ✅
+  - RELEASE-v1.9.0.md (line 30) ✅
+  - CHANGELOG.md (v1.9.0 section) ✅
+
+**Rationale:** Documentation must reflect accurate version numbers and consistently use the documented JSON field name `notifyOnStateChange` for the Aspire state-change notifications feature introduced in v1.9.0. Ensure Aspire naming conventions are maintained throughout.
+
+---
+
 ## Core Context
 
 **Scope:** Comprehensive documentation for v1.0.0 release. Three-tier approach: QUICKSTART (5-min user setup), API-CONTRACT (developer integration reference), plus architecture/config/troubleshooting guides.
@@ -942,3 +961,64 @@ After final audit, remaining mentions of `aspire run` in codebase are:
 - FUTURE-IMPROVEMENTS.md updated to reflect that item 3.11 (Launch from Tray) is now complete
 
 **Status:** ✅ COMPLETE — All user-facing documentation updated; `aspire start` command now consistent across README, guides, and troubleshooting
+
+---
+
+## Session 2026-05-11: v1.9.0 Documentation for State-Change Notifications
+
+**Task:** Document new Aspire state-change notification feature (Windows notifications when Aspire transitions running ↔ not running), controlled by a persisted Settings toggle defaulting enabled.
+
+**Deliverables Completed:**
+
+1. **README.md updates**
+   - Updated "What's New in v1.8.0" section to v1.8.0 (reflecting current release)
+   - Added state-change notifications to the feature table as first item (🔔 icon) with concise description
+   - Updated configuration example JSON to include "notifyOnStateChange": true
+   - Updated config table to document the new setting
+
+2. **docs/configuration.md updates**
+   - Added 
+otifyOnStateChange (boolean) setting documentation under Optional section
+   - Default: 	rue (enabled)
+   - Included purpose, JSON example, use-case explanation
+   - Updated full configuration example to include the new setting
+
+3. **CHANGELOG.md updates**
+   - Added v1.9.0 section with Added/Changed subsections
+   - Listed state-change notifications feature and settings toggle
+   - Added release link reference for v1.9.0
+
+4. **Created docs/releases/RELEASE-v1.9.0.md**
+   - Comprehensive release notes (4K+ chars)
+   - "What's New" section with detailed feature explanation
+   - Upgrade guide for v1.8.x → v1.9.0
+   - Quality table and quick-start instructions
+   - Example notification sequence showing user experience
+
+**Documentation Patterns Reinforced:**
+- ✅ Settings always documented with: name (type), default, purpose, JSON example, use cases
+- ✅ New features placed prominently in README (features table, What's New section)
+- ✅ Configuration guide keeps settings alphabetical by section (Required → Optional)
+- ✅ CHANGELOG uses Keep a Changelog format: Added/Changed/Fixed subsections
+- ✅ Release notes follow v1.7.0 structure: What's New → Upgrade Guide → Quality Table → Quick Start
+- ✅ Settings defaults should be user-friendly (true = enabled, sensible thresholds)
+- ✅ Windows/system integration features (notifications, tray) are highlighted first in feature tables
+
+**Key Insights for Future Sessions:**
+- v1.9.0 is the likely next release after v1.8.0 (confirmed repository convention)
+- Settings toggle pattern: always document as (boolean), default, and provide practical examples of true/false
+- Notification features warrant their own "What's New" section in major releases (v1.7.0 had telemetry toggle, v1.9.0 has state notifications)
+- Release documentation lives under docs/releases/RELEASE-vX.Y.Z.md with cross-links from main docs
+- Configuration guide is the authoritative reference; README examples should link to it
+
+**Files Modified:**
+- ✅ README.md (2 edits: feature table + config example)
+- ✅ docs/configuration.md (2 edits: new setting + full example)
+- ✅ CHANGELOG.md (2 edits: v1.9.0 section + link reference)
+- ✅ docs/releases/RELEASE-v1.9.0.md (created)
+
+**Files Not Modified (Per Scope):**
+- No code changes (feature was already implemented)
+- No .squad/ history rewrites (per Chewie's charter)
+
+**Status:** ✅ COMPLETE — v1.9.0 documentation complete; settings, features, and release notes documented; patterns reinforced for consistency

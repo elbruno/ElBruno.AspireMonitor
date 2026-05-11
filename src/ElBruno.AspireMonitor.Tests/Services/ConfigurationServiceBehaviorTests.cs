@@ -1,6 +1,7 @@
 using ElBruno.AspireMonitor.Models;
 using ElBruno.AspireMonitor.Services;
 using FluentAssertions;
+using System.Text.Json;
 using Xunit;
 
 namespace ElBruno.AspireMonitor.Tests.Services;
@@ -33,6 +34,8 @@ public class ConfigurationServiceBehaviorTests : IDisposable
         File.Exists(_configPath).Should().BeTrue();
         config.PollingIntervalMs.Should().Be(5000);
         config.ShowMiniWindowResourceTelemetry.Should().BeTrue();
+        config.EnableAspireStateNotifications.Should().BeTrue();
+        File.ReadAllText(_configPath).Should().Contain("\"notifyOnStateChange\": true");
         service.GetConfiguration().Should().BeSameAs(config);
     }
 
@@ -85,11 +88,86 @@ public class ConfigurationServiceBehaviorTests : IDisposable
     }
 
     [Fact]
+    public void Constructor_WithExistingConfigMissingAspireStateNotifications_UsesDefaultEnabled()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
+        File.WriteAllText(_configPath, """
+        {
+          "AspireEndpoint": "http://localhost:18888",
+          "PollingIntervalMs": 5000,
+          "CpuThresholdWarning": 70,
+          "CpuThresholdCritical": 90,
+          "MemoryThresholdWarning": 70,
+          "MemoryThresholdCritical": 90
+        }
+        """);
+
+        var config = new ConfigurationService(_configPath).LoadConfiguration();
+
+        config.EnableAspireStateNotifications.Should().BeTrue("legacy config files should keep state notifications enabled by default");
+    }
+
+    [Fact]
     public void NewConfiguration_DefaultsMiniWindowResourceTelemetryToVisible()
     {
         var config = new ElBruno.AspireMonitor.Models.Configuration();
 
         config.ShowMiniWindowResourceTelemetry.Should().BeTrue();
+    }
+
+    [Fact]
+    public void NewConfiguration_DefaultsAspireStateNotificationsToEnabled()
+    {
+        var config = new ElBruno.AspireMonitor.Models.Configuration();
+
+        config.EnableAspireStateNotifications.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SaveConfiguration_PersistsDisabledAspireStateNotifications()
+    {
+        var service = new ConfigurationService(_configPath);
+        var config = new ElBruno.AspireMonitor.Models.Configuration
+        {
+            EnableAspireStateNotifications = false
+        };
+
+        service.SaveConfiguration(config);
+        var reloaded = new ConfigurationService(_configPath).LoadConfiguration();
+
+        reloaded.EnableAspireStateNotifications.Should().BeFalse("a user-disabled notification setting should survive restart");
+    }
+
+    [Fact]
+    public void Constructor_WithDocumentedNotifyOnStateChangeFalse_DisablesAspireStateNotifications()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
+        File.WriteAllText(_configPath, """
+        {
+          "notifyOnStateChange": false
+        }
+        """);
+
+        var config = new ConfigurationService(_configPath).LoadConfiguration();
+
+        config.EnableAspireStateNotifications.Should().BeFalse("the documented JSON setting should control state notifications");
+    }
+
+    [Fact]
+    public void SaveConfiguration_WritesDocumentedNotifyOnStateChangeName()
+    {
+        var service = new ConfigurationService(_configPath);
+
+        service.SaveConfiguration(new ElBruno.AspireMonitor.Models.Configuration
+        {
+            EnableAspireStateNotifications = false
+        });
+
+        var json = File.ReadAllText(_configPath);
+        using var document = JsonDocument.Parse(json);
+
+        document.RootElement.GetProperty("notifyOnStateChange").GetBoolean().Should().BeFalse();
+        document.RootElement.TryGetProperty("EnableAspireStateNotifications", out _).Should().BeFalse();
     }
 
     [Fact]
@@ -171,3 +249,4 @@ public class ConfigurationServiceBehaviorTests : IDisposable
         config.CpuThresholdWarning.Should().Be(70);
     }
 }
+

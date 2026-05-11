@@ -38,6 +38,7 @@ public partial class App : System.Windows.Application
     private NotifyIcon? _notifyIcon;
     private MainWindow? _mainWindow;
     private System.Drawing.Icon? _currentIcon;
+    private IAspireStateNotificationService? _stateNotificationService;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -137,6 +138,10 @@ public partial class App : System.Windows.Application
         
         // Initialize system tray ONCE in App (not in MainWindow)
         InitializeSystemTray(viewModel);
+        _stateNotificationService = new AspireStateNotificationService(
+            _configService,
+            new NotifyIconAspireStateNotificationSink(() => _notifyIcon));
+        _pollingService.AspireRunningStateChanged += OnAspireRunningStateChanged;
         
         // Start polling
         System.Diagnostics.Debug.WriteLine("[App] Starting polling service...");
@@ -208,6 +213,18 @@ public partial class App : System.Windows.Application
         _currentIcon = CreateIconFromPath(logoPath, viewModel);
         _notifyIcon.Icon = _currentIcon;
         _notifyIcon.Text = $"Aspire Monitor - {viewModel.ConnectionStatus}";
+    }
+
+    private void OnAspireRunningStateChanged(object? sender, AspireRunningStateChangedEventArgs args)
+    {
+        try
+        {
+            _stateNotificationService?.NotifyAspireStateChanged(args.IsRunning);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] Failed to show Aspire state notification: {ex.Message}");
+        }
     }
 
     private string GetLogoPathForStatus(MainViewModel viewModel)
@@ -407,3 +424,7 @@ public partial class App : System.Windows.Application
         base.OnExit(e);
     }
 }
+
+
+
+

@@ -1111,3 +1111,12 @@ If backend later adds:
 ### 2026-05-11 — SampleHarness mini monitor filter validation
 - Confirmed the previous SampleHarness did not expose the PR #2 duplicate-filter shape: endpoint-bearing C# web project plus same-prefix no-endpoint resource.
 - Added `filter-probe-api` and paired `filter-probe-api-executable`; `aspire describe --format json` now shows the Project with URLs and Executable with empty `urls` for regression validation.
+
+### 2026-05-11 — Aspire state notifications
+- Added polling-level Aspire running/not-running transition events that suppress the first observed state and repeated identical states.
+- Added persisted `EnableAspireStateNotifications` defaulting enabled so legacy config files keep notifications on unless users disable them.
+- Notification delivery is behind `IAspireStateNotificationService`/`IAspireStateNotificationSink` so tests and UI wiring can replace the Windows tray implementation.
+
+### 2026-05-11 — Notification config JSON name
+- Mapped the public `EnableAspireStateNotifications` C# property to the documented JSON property `notifyOnStateChange`.
+- Added regression coverage that `notifyOnStateChange: false` disables Aspire state notifications and saved config writes the documented name.
