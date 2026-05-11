@@ -140,7 +140,8 @@ public partial class App : System.Windows.Application
         InitializeSystemTray(viewModel);
         _stateNotificationService = new AspireStateNotificationService(
             _configService,
-            new NotifyIconAspireStateNotificationSink(() => _notifyIcon));
+            new NotifyIconAspireStateNotificationSink(() => _notifyIcon),
+            () => viewModel.HostUrl);
         _pollingService.AspireRunningStateChanged += OnAspireRunningStateChanged;
         
         // Start polling
