@@ -21,13 +21,13 @@ ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 
 No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI and opening the Aspire dashboard at the standard default `http://localhost:18888`.
 
-## ✨ What's New in v1.9.0
+## ✨ What's New in v1.10.0
 
-ElBruno.AspireMonitor v1.9.0 adds state-change notifications and improved mini-window filtering:
+ElBruno.AspireMonitor v1.10.0 enhances running notifications with direct access to the Aspire dashboard:
 
-- **Aspire State-Change Notifications** — Get Windows notifications when your Aspire instance starts or stops (enabled by default in Settings).
-- **Mini Monitor Main-Resource Filter** — Filter the mini window to show only main resources (those with endpoints) while preserving the full resource list in settings.
-- **Settings Enhancements** — New toggle for state notifications and resource filtering, both with sensible defaults.
+- **Clickable Aspire Dashboard URL in Running Notifications** — Click the running notification to launch your configured Aspire dashboard directly, eliminating the need to manually find the endpoint.
+- **Interactive State Notifications** — Running notifications are actionable; stopped notifications clear the dashboard click target.
+- **Workflow Integration** — Stay focused on development while instant access to monitoring is just a notification click away.
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
@@ -35,7 +35,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
 | Feature | Description |
 |---------|-------------|
-| 🔔 **State-Change Notifications** | Windows notifications when Aspire starts or stops (configurable via Settings toggle, enabled by default) |
+| 🔔 **State-Change Notifications** | Windows notifications when Aspire starts or stops with clickable dashboard access (configurable via Settings toggle, enabled by default) |
 | 🟢🟡🔴 **Color-Coded Status** | Visual indicators: Green (<70%), Yellow (70-90%), Red (>90%) |
 | ⚡ **Real-Time Updates** | Automatic polling every 5 seconds (configurable) |
 | 📦 **Rich Resource Telemetry** | See type, disk usage percentage, and endpoint counts at a glance |

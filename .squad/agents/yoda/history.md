@@ -1198,3 +1198,24 @@ Participated in parallel multi-agent session with Han (implementation) and Lando
 
 - Added deterministic Aspire state-change notification tests through a notification sink abstraction, avoiding real Windows balloon notifications in unit tests.
 - Covered no initial spam, running/not-running transitions, duplicate suppression, disabled setting suppression, and config/settings persistence including legacy config defaults.
+
+
+### 2026-05-11 — v1.10.0 Clickable Dashboard Notification QA
+
+**Work Completed:**
+- Added deterministic coverage for Aspire running notifications forwarding the configured or detected dashboard URL.
+- Added click-launch coverage through the notification sink URL-launcher seam.
+- Verified disabled notifications suppress both display and dashboard click targets.
+- Verified stopped notifications clear the dashboard URL and do not launch the dashboard.
+- Validated docs/release notes alignment for the clickable dashboard behavior.
+
+**Validation:**
+- Focused notification suite: 13/13 passing.
+- Full `ElBruno.AspireMonitor.Tests` project: 410/410 passing.
+
+**Learnings:**
+- Keep notification click behavior behind an injectable URL launcher so tests never open a real browser.
+- Stopped notifications must explicitly clear the stored dashboard target to avoid stale click launches.
+- The detected `HostUrl` should win when present, with configured `aspireEndpoint` as deterministic fallback.
+
+**Quality Gate Status:** ✅ APPROVED for v1.10.0 release validation.

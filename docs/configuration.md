@@ -146,6 +146,21 @@ When enabled, AspireMonitor sends a Windows notification when Aspire starts (sta
 - **true** (default): Notifications enabled — get alerts when your AppHost starts/stops
 - **false**: Notifications disabled — silent operation, monitor only
 
+**Running Notification Behavior:**
+- When Aspire **starts**, AspireMonitor sends a running notification with the dashboard URL.
+- The URL comes from the current detected dashboard URL when available, otherwise from `aspireEndpoint`.
+- Clicking the running notification opens the dashboard in the default web browser.
+- Stopped notifications do not launch the dashboard and clear any previous click target.
+
+**Example:**
+```
+Aspire starts
+↓
+AspireMonitor sends notification: "Aspire is running"
+↓
+Click the notification → Aspire dashboard opens in browser
+```
+
 This feature is useful when you're focused on other work and want to be alerted when Aspire becomes ready or goes offline.
 
 ---

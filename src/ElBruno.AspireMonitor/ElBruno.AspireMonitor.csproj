@@ -11,9 +11,9 @@
     <RootNamespace>ElBruno.AspireMonitor</RootNamespace>
 
     <!-- Version -->
-    <Version>1.9.0</Version>
-    <AssemblyVersion>1.9.0.0</AssemblyVersion>
-    <FileVersion>1.9.0.0</FileVersion>
+    <Version>1.10.0</Version>
+    <AssemblyVersion>1.10.0.0</AssemblyVersion>
+    <FileVersion>1.10.0.0</FileVersion>
 
     <!-- Not directly packable: WPF apps cannot be .NET tools.
          Distribution happens via the wrapper project ElBruno.AspireMonitor.Tool. -->
