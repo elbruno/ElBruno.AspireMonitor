@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-05-11
+
+### Added
+- Clickable Aspire dashboard URL in running notifications; clicking the notification opens the configured or detected dashboard URL in the default browser.
+- Regression coverage for dashboard URL forwarding, notification click launch, disabled notification suppression, host URL provider precedence, and stopped-notification no-launch behavior.
+
 ## [1.9.0] - 2026-05-11
 
 ### Added
