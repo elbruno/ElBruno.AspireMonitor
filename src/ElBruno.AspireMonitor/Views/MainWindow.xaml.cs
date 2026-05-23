@@ -96,7 +96,10 @@ public partial class MainWindow : Window
                     ViewModel.ShowOnlyMainMiniWindowResources = updatedConfig.ShowOnlyMainMiniWindowResources;
                     // Push the new working directory into the Aspire CLI service
                     // so 'aspire describe' runs from the correct folder.
-                    (System.Windows.Application.Current as App)?.UpdateAspireWorkingDirectory(updatedConfig.ProjectFolder);
+                    (System.Windows.Application.Current as App)?.UpdateAspireWorkingDirectory(
+                        updatedConfig.ProjectFolder,
+                        updatedConfig.EnableWorktreeDiscovery,
+                        updatedConfig.WorktreeBasePath);
                 }
                 // Configuration changed, restart polling service
                 if (ViewModel != null)

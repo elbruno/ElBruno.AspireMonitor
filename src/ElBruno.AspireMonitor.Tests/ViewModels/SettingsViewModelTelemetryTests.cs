@@ -9,6 +9,74 @@ namespace ElBruno.AspireMonitor.Tests.ViewModels;
 
 public class SettingsViewModelTelemetryTests
 {
+    [Fact]
+    public void Constructor_LoadsWorktreeDiscoverySettings_FromConfig()
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new AppConfig
+            {
+                EnableWorktreeDiscovery = true,
+                WorktreeBasePath = @"C:\worktrees"
+            });
+
+        var viewModel = new SettingsViewModel(configService.Object);
+
+        viewModel.EnableWorktreeDiscovery.Should().BeTrue();
+        viewModel.WorktreeBasePath.Should().Be(@"C:\worktrees");
+    }
+
+    [Fact]
+    public void SaveSettings_PersistsWorktreeDiscoverySettings()
+    {
+        var worktreeBasePath = Path.Combine(Path.GetTempPath(), $"Worktrees_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(worktreeBasePath);
+
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new AppConfig());
+        AppConfig? saved = null;
+        configService.Setup(service => service.SaveConfiguration(It.IsAny<AppConfig>()))
+            .Callback<AppConfig>(configuration => saved = configuration);
+
+        try
+        {
+            var viewModel = new SettingsViewModel(configService.Object)
+            {
+                EnableWorktreeDiscovery = true,
+                WorktreeBasePath = worktreeBasePath
+            };
+
+            viewModel.SaveSettings();
+
+            saved.Should().NotBeNull();
+            saved!.EnableWorktreeDiscovery.Should().BeTrue();
+            saved.WorktreeBasePath.Should().Be(worktreeBasePath);
+        }
+        finally
+        {
+            if (Directory.Exists(worktreeBasePath))
+                Directory.Delete(worktreeBasePath, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ValidateConfiguration_InvalidWorktreeBasePath_ReturnsFalseAndMessage()
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration()).Returns(new AppConfig());
+        var viewModel = new SettingsViewModel(configService.Object)
+        {
+            EnableWorktreeDiscovery = true,
+            WorktreeBasePath = @"C:\definitely\does\not\exist"
+        };
+
+        var result = viewModel.Validate();
+
+        result.Should().BeFalse();
+        viewModel.ValidationMessage.Should().Be("Worktree base path does not exist.");
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

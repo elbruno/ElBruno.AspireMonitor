@@ -11,6 +11,102 @@ namespace ElBruno.AspireMonitor.Tests.Services;
 public class AspireCliServiceParsingTests
 {
     [Fact]
+    public async Task DiscoverAspireConfigWorkingDirectoriesAsync_ReturnsOnlyValidWorktreesUnderBasePath()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"AspireCliService_Discovery_{Guid.NewGuid():N}");
+        var worktreeA = Path.Combine(root, "wt-a");
+        var worktreeB = Path.Combine(root, "wt-b");
+        var outside = Path.Combine(Path.GetTempPath(), $"AspireCliService_Outside_{Guid.NewGuid():N}");
+
+        try
+        {
+            Directory.CreateDirectory(worktreeA);
+            Directory.CreateDirectory(worktreeB);
+            Directory.CreateDirectory(outside);
+
+            File.WriteAllText(Path.Combine(worktreeA, "aspire.config.json"), """{ "appHost": { "path": "AppHost.cs" } }""");
+            File.WriteAllText(Path.Combine(worktreeA, "AppHost.cs"), "// apphost");
+
+            File.WriteAllText(Path.Combine(worktreeB, "aspire.config.json"), """{ "appHost": { "path": "missing/AppHost.cs" } }""");
+
+            File.WriteAllText(Path.Combine(outside, "aspire.config.json"), """{ "appHost": { "path": "AppHost.cs" } }""");
+            File.WriteAllText(Path.Combine(outside, "AppHost.cs"), "// apphost");
+
+            var gitOutput = $"""
+            worktree {worktreeA}
+            worktree {worktreeB}
+            worktree {outside}
+            """;
+
+            var service = new WorktreeTestAspireCliService(gitOutput, new Dictionary<string, string>())
+            {
+                EnableWorktreeDiscovery = true,
+                WorktreeBasePath = root
+            };
+
+            var directories = await service.DiscoverAspireConfigWorkingDirectoriesAsync();
+
+            directories.Should().ContainSingle();
+            directories[0].Should().Be(Path.GetFullPath(worktreeA));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+            if (Directory.Exists(outside))
+                Directory.Delete(outside, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ParseResourcesFromDescribeJsonAsync_WithMultipleWorktrees_AggregatesAndPrefixesResources()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"AspireCliService_Parse_{Guid.NewGuid():N}");
+        var worktreeA = Path.Combine(root, "wt-a");
+        var worktreeB = Path.Combine(root, "wt-b");
+
+        try
+        {
+            Directory.CreateDirectory(worktreeA);
+            Directory.CreateDirectory(worktreeB);
+            File.WriteAllText(Path.Combine(worktreeA, "aspire.config.json"), """{ "appHost": { "path": "AppHost.cs" } }""");
+            File.WriteAllText(Path.Combine(worktreeA, "AppHost.cs"), "// apphost");
+            File.WriteAllText(Path.Combine(worktreeB, "aspire.config.json"), """{ "appHost": { "path": "AppHost.cs" } }""");
+            File.WriteAllText(Path.Combine(worktreeB, "AppHost.cs"), "// apphost");
+
+            var gitOutput = $"""
+            worktree {worktreeA}
+            worktree {worktreeB}
+            """;
+
+            var responses = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [Path.GetFullPath(worktreeA)] = """{ "resources": [ { "name": "api", "state": "running" } ] }""",
+                [Path.GetFullPath(worktreeB)] = """{ "resources": [ { "name": "worker", "state": "running" } ] }"""
+            };
+
+            var service = new WorktreeTestAspireCliService(gitOutput, responses)
+            {
+                EnableWorktreeDiscovery = true,
+                WorktreeBasePath = root
+            };
+
+            var result = await service.ParseResourcesFromDescribeJsonAsync();
+
+            result.ErrorMessage.Should().BeNull();
+            result.Resources.Select(resource => resource.Name)
+                .Should().BeEquivalentTo("wt-a/api", "wt-b/worker");
+            result.Resources.All(resource => resource.Environment.Any(entry =>
+                entry.Name == "ASPIREMON_WORKTREE" && !string.IsNullOrWhiteSpace(entry.Value))).Should().BeTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ParseResourcesFromDescribeJsonAsync_MapsCurrentAndLegacyEndpointShapes()
     {
         var json = """
@@ -411,6 +507,37 @@ internal sealed class JsonAspireCliService : AspireCliService
     }
 }
 
+internal sealed class WorktreeTestAspireCliService : AspireCliService
+{
+    private readonly string _worktreeListOutput;
+    private readonly Dictionary<string, string> _jsonByWorkingDirectory;
+
+    public WorktreeTestAspireCliService(string worktreeListOutput, Dictionary<string, string> jsonByWorkingDirectory)
+    {
+        _worktreeListOutput = worktreeListOutput;
+        _jsonByWorkingDirectory = jsonByWorkingDirectory;
+    }
+
+    protected override Task<string> GetGitWorktreeListAsync(string rootPath, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_worktreeListOutput);
+    }
+
+    protected override Task<JsonDocument?> ExecuteDescribeJsonForDirectoryAsync(string workingDirectory, CancellationToken cancellationToken = default)
+    {
+        var key = Path.GetFullPath(workingDirectory);
+        if (_jsonByWorkingDirectory.TryGetValue(key, out var json))
+            return Task.FromResult<JsonDocument?>(JsonDocument.Parse(json));
+
+        return Task.FromResult<JsonDocument?>(null);
+    }
+
+    public override Task<JsonDocument?> ExecuteJsonAsync(string command, string arguments = "", CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<JsonDocument?>(null);
+    }
+}
+
 internal sealed class ThrowingAspireCliService : AspireCliService
 {
     private readonly Exception _exception;
@@ -533,4 +660,3 @@ public class AspireCliServiceCommandExecutionTests
             .WithMessage("Failed to parse JSON output from command:*");
     }
 }
-

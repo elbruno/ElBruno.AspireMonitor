@@ -31,6 +31,9 @@ Open `%APPDATA%\Local\ElBruno\AspireMonitor\config.json`:
 
 ```json
 {
+  "projectFolder": "C:\\Projects\\MyApp\\src\\MyApp.AppHost",
+  "enableWorktreeDiscovery": false,
+  "worktreeBasePath": "",
   "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 5000,
   "cpuThresholdWarning": 70,
@@ -83,6 +86,36 @@ How often AspireMonitor fetches updated resource data, in milliseconds.
 - **2000ms**: More responsive, with moderate API load
 - **5000ms** (default): Balanced responsiveness and low API load
 - **30000ms**: Minimal API load, may miss rapid changes
+
+---
+
+#### `enableWorktreeDiscovery` (boolean)
+**Default:** false
+
+When enabled, AspireMonitor reads git worktrees under your configured base path and only includes worktrees that contain a valid `aspire.config.json` with `appHost.path`.
+
+```json
+{
+  "enableWorktreeDiscovery": true
+}
+```
+
+Use this mode when you run multiple Aspire sessions in parallel worktrees and want them in one monitor view.
+
+---
+
+#### `worktreeBasePath` (string)
+**Default:** `""` (empty)
+
+Optional root folder used when `enableWorktreeDiscovery` is enabled.
+
+```json
+{
+  "worktreeBasePath": "C:\\Projects\\MyRepo"
+}
+```
+
+If set, the folder must exist. If omitted, AspireMonitor uses `projectFolder` as the discovery root.
 
 ---
 
@@ -195,6 +228,9 @@ Memory usage threshold that triggers a red (critical) indicator.
 
 ```json
 {
+  "projectFolder": "C:\\Projects\\MyApp\\src\\MyApp.AppHost",
+  "enableWorktreeDiscovery": true,
+  "worktreeBasePath": "C:\\Projects\\MyRepo",
   "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 3000,
   "cpuThresholdWarning": 75,

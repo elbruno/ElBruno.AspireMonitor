@@ -25,12 +25,14 @@ public partial class App : System.Windows.Application
     /// changes the project folder in Settings so subsequent 'aspire describe' calls
     /// run from the correct directory.
     /// </summary>
-    public void UpdateAspireWorkingDirectory(string? workingDirectory)
+    public void UpdateAspireWorkingDirectory(string? workingDirectory, bool enableWorktreeDiscovery = false, string? worktreeBasePath = null)
     {
         if (_cliService != null)
         {
-            _cliService.WorkingDirectory = workingDirectory;
-            System.Diagnostics.Debug.WriteLine($"[App] CLI WorkingDirectory updated: '{workingDirectory}'");
+            _cliService.EnableWorktreeDiscovery = enableWorktreeDiscovery;
+            _cliService.WorktreeBasePath = worktreeBasePath;
+            _cliService.WorkingDirectory = ResolveCliWorkingDirectory(workingDirectory, enableWorktreeDiscovery, worktreeBasePath);
+            System.Diagnostics.Debug.WriteLine($"[App] CLI WorkingDirectory updated: '{_cliService.WorkingDirectory}', WorktreeDiscovery={enableWorktreeDiscovery}, WorktreeBasePath='{worktreeBasePath}'");
         }
     }
     private AspireLiveLogsService? _logsService;
@@ -108,7 +110,9 @@ public partial class App : System.Windows.Application
         System.Diagnostics.Debug.WriteLine("[App] Creating CLI service...");
         _cliService = new AspireCliService
         {
-            WorkingDirectory = configuration.ProjectFolder
+            EnableWorktreeDiscovery = configuration.EnableWorktreeDiscovery,
+            WorktreeBasePath = configuration.WorktreeBasePath,
+            WorkingDirectory = ResolveCliWorkingDirectory(configuration.ProjectFolder, configuration.EnableWorktreeDiscovery, configuration.WorktreeBasePath)
         };
         System.Diagnostics.Debug.WriteLine($"[App]   CLI WorkingDirectory: '{_cliService.WorkingDirectory}'");
         
@@ -168,6 +172,14 @@ public partial class App : System.Windows.Application
         };
         
         System.Diagnostics.Debug.WriteLine("[App] ========== STARTUP COMPLETE (CLI MODE) ==========");
+    }
+
+    private static string? ResolveCliWorkingDirectory(string? projectFolder, bool enableWorktreeDiscovery, string? worktreeBasePath)
+    {
+        if (enableWorktreeDiscovery && !string.IsNullOrWhiteSpace(worktreeBasePath) && System.IO.Directory.Exists(worktreeBasePath))
+            return worktreeBasePath;
+
+        return projectFolder;
     }
 
     private void InitializeSystemTray(MainViewModel viewModel)
@@ -425,7 +437,6 @@ public partial class App : System.Windows.Application
         base.OnExit(e);
     }
 }
-
 
 
 
