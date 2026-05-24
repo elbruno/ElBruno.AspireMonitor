@@ -200,7 +200,7 @@ public class MiniMonitorViewModel : ViewModelBase
 
     public bool CanStartAspire
     {
-        get => _mainViewModel?.Resources.Count == 0;
+        get => _mainViewModel == null || _mainViewModel.Resources.Count == 0;
     }
 
     public bool CanStopAspire
@@ -215,11 +215,12 @@ public class MiniMonitorViewModel : ViewModelBase
         if (e.PropertyName == nameof(MainViewModel.Resources) ||
             e.PropertyName == nameof(MainViewModel.OverallStatusColor) ||
             e.PropertyName == nameof(MainViewModel.ProjectFolder) ||
-            e.PropertyName == nameof(MainViewModel.IsConnected) ||
-            e.PropertyName == nameof(MainViewModel.HostUrl) ||
-            e.PropertyName == nameof(MainViewModel.MiniWindowResourcesSetting) ||
-            e.PropertyName == nameof(MainViewModel.ShowMiniWindowResourceTelemetry) ||
-            e.PropertyName == nameof(MainViewModel.ShowOnlyMainMiniWindowResources))
+        e.PropertyName == nameof(MainViewModel.LastUpdated) ||
+        e.PropertyName == nameof(MainViewModel.IsConnected) ||
+        e.PropertyName == nameof(MainViewModel.HostUrl) ||
+        e.PropertyName == nameof(MainViewModel.MiniWindowResourcesSetting) ||
+        e.PropertyName == nameof(MainViewModel.ShowMiniWindowResourceTelemetry) ||
+        e.PropertyName == nameof(MainViewModel.ShowOnlyMainMiniWindowResources))
         {
             System.Diagnostics.Debug.WriteLine($"[MiniMonitorViewModel] Triggering UI update due to {e.PropertyName} change");
             UpdateMiniMonitorData();

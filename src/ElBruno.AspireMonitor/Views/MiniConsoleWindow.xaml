@@ -1,0 +1,169 @@
+<Window x:Class="ElBruno.AspireMonitor.Views.MiniConsoleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Aspire Console"
+        Width="720"
+        MinWidth="560"
+        Height="420"
+        MinHeight="300"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterScreen"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Loaded="Window_Loaded"
+        Unloaded="Window_Unloaded"
+        Closing="Window_Closing">
+
+    <Border CornerRadius="12"
+            Background="#E624272E"
+            BorderBrush="#4DFFFFFF"
+            BorderThickness="1"
+            Opacity="0.98"
+            Effect="{StaticResource DropShadowEffect}">
+        <Grid Margin="14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="pack://application:,,,/Resources/aspire-logo.png"
+                           Width="18"
+                           Height="18"
+                           Margin="0,0,8,0"/>
+                    <TextBlock Text="Aspire Console"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="14,0,0,0">
+                    <Ellipse Style="{StaticResource StatusIndicator}"
+                             Fill="{Binding OverallStatusColor}"
+                             VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding LogHeader}"
+                               FontSize="11"
+                               Foreground="#E8E8E8"
+                               VerticalAlignment="Center"
+                               Margin="6,0,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Content="Open Details"
+                            Margin="0,0,8,0"
+                            Padding="10,4"
+                            FontSize="10"
+                            Click="OpenDetails_Click"/>
+                    <Button Content="Clear"
+                            Margin="0,0,8,0"
+                            Padding="10,4"
+                            FontSize="10"
+                            Click="ClearLogs_Click"/>
+                    <Button Content="✕"
+                            Width="24"
+                            Height="24"
+                            Padding="0"
+                            FontSize="11"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#D0D0D0"
+                            Click="Close_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <Border Grid.Row="1"
+                    Background="#33FFFFFF"
+                    CornerRadius="8"
+                    Padding="10"
+                    Margin="0,0,0,10">
+                <DockPanel>
+                    <TextBlock Text="{Binding ConnectionStatus}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="#FFFFFF"
+                               DockPanel.Dock="Left"/>
+                    <TextBlock Text="{Binding LogStatus}"
+                               FontSize="10"
+                               Foreground="#D6D6D6"
+                               HorizontalAlignment="Right"/>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Row="2"
+                    Background="#FF111111"
+                    BorderBrush="#33000000"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                <Grid>
+                    <ScrollViewer x:Name="LogScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding LogLines}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"
+                                               FontFamily="Consolas, Courier New"
+                                               FontSize="10"
+                                               Foreground="#E8E8E8"
+                                               Padding="10,2"
+                                               TextWrapping="NoWrap"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Border Background="#CC111111"
+                            Visibility="{Binding HasLogLines, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="16">
+                            <TextBlock Text="⟡"
+                                       FontSize="28"
+                                       Foreground="#8A8A8A"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding LogEmptyStateMessage}"
+                                       FontSize="11"
+                                       Foreground="#D8D8D8"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="420"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="3"
+                    Background="#26FFFFFF"
+                    CornerRadius="6"
+                    Padding="8,4"
+                    Margin="0,10,0,0">
+                <TextBlock Text="{Binding LogStatus}"
+                           FontSize="9"
+                           Foreground="#D8D8D8"/>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

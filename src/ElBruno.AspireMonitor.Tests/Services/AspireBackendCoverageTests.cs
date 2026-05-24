@@ -459,12 +459,18 @@ public class AspireLiveLogsServiceTests
     {
         var cli = new StreamingAspireCliService("line 1", "line 2") { DelayBetweenLines = TimeSpan.FromMilliseconds(200) };
         using var service = new AspireLiveLogsService(cli);
+        var lines = new List<string>();
+        service.LogLineReceived += (_, args) => lines.Add(args.LogLine);
 
         await service.StartStreamingAsync("api");
         await WaitUntilAsync(() => service.IsStreaming("api"));
+        await Task.Delay(250);
         service.StopStreaming("api");
 
         service.IsStreaming("api").Should().BeFalse();
+        var lineCountAfterStop = lines.Count;
+        await Task.Delay(350);
+        lines.Count.Should().Be(lineCountAfterStop, "stream cancellation should stop additional log lines");
     }
 
     [Fact]

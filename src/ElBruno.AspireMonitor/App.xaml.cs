@@ -39,6 +39,8 @@ public partial class App : System.Windows.Application
     private IAspireCommandService? _commandService;
     private NotifyIcon? _notifyIcon;
     private MainWindow? _mainWindow;
+    private MainViewModel? _mainViewModel;
+    private MiniConsoleWindow? _miniConsoleWindow;
     private System.Drawing.Icon? _currentIcon;
     private IAspireStateNotificationService? _stateNotificationService;
 
@@ -129,8 +131,9 @@ public partial class App : System.Windows.Application
         
         System.Diagnostics.Debug.WriteLine("[App] Creating MainViewModel and MainWindow...");
         // Create MainViewModel and MainWindow with dependencies
-        var viewModel = new MainViewModel(_pollingService, _configService, _commandService);
-        _mainWindow = new MainWindow(_pollingService, _configService, viewModel, _commandService);
+        var viewModel = new MainViewModel(_pollingService, _configService, _commandService, _logsService);
+        _mainViewModel = viewModel;
+        _mainWindow = new MainWindow(_pollingService, _configService, viewModel, _commandService, _logsService);
         
         // Set as application main window
         MainWindow = _mainWindow;
@@ -195,6 +198,7 @@ public partial class App : System.Windows.Application
         var contextMenu = new ContextMenuStrip();
         contextMenu.Items.Add("Details", null, (s, e) => ShowMainWindow());
         contextMenu.Items.Add("Mini Monitor", null, (s, e) => ToggleMiniMonitor());
+        contextMenu.Items.Add("Mini Console", null, (s, e) => ToggleMiniConsole());
         contextMenu.Items.Add("Settings", null, (s, e) => ShowSettings());
         contextMenu.Items.Add("-");
         contextMenu.Items.Add("GitHub", null, (s, e) => OpenGitHub());
@@ -372,6 +376,38 @@ public partial class App : System.Windows.Application
         }
     }
 
+    private void ToggleMiniConsole()
+    {
+        if (_miniConsoleWindow == null)
+        {
+            if (_mainViewModel == null)
+                return;
+
+            _miniConsoleWindow = new MiniConsoleWindow
+            {
+                DataContext = _mainViewModel
+            };
+
+            _miniConsoleWindow.Closed += (_, _) =>
+            {
+                _miniConsoleWindow = null;
+            };
+
+            _miniConsoleWindow.Show();
+            return;
+        }
+
+        if (_miniConsoleWindow.IsVisible)
+        {
+            _miniConsoleWindow.Hide();
+        }
+        else
+        {
+            _miniConsoleWindow.Show();
+            _miniConsoleWindow.Activate();
+        }
+    }
+
     private void ShowSettings()
     {
         if (_mainWindow != null)
@@ -403,6 +439,7 @@ public partial class App : System.Windows.Application
     {
         _pollingService?.Stop();
         _mainWindow?.Close();
+        _miniConsoleWindow?.Close();
         _notifyIcon?.Dispose();
         _currentIcon?.Dispose();
         Shutdown();
@@ -418,6 +455,7 @@ public partial class App : System.Windows.Application
         _logsService?.Dispose();
         _notifyIcon?.Dispose();
         _currentIcon?.Dispose();
+        _miniConsoleWindow?.Close();
         
         // Release single-instance mutex
         if (_singleInstanceMutex != null)
@@ -437,6 +475,3 @@ public partial class App : System.Windows.Application
         base.OnExit(e);
     }
 }
-
-
-

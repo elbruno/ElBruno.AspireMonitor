@@ -21,13 +21,14 @@ ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 
 No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI and opening the Aspire dashboard at the standard default `http://localhost:18888`.
 
-## ✨ What's New in v1.11.0
+## ✨ What's New in v1.12.0
 
-ElBruno.AspireMonitor v1.11.0 adds worktree-aware monitoring for parallel Aspire development:
+ElBruno.AspireMonitor v1.12.0 adds a tray-launched Mini Console for live log monitoring:
 
-- **Git Worktree Discovery Mode** — Detects candidate sessions from `git worktree list --porcelain` under a base folder.
-- **Aspire Config Validation** — Only monitors worktrees with a valid `aspire.config.json` and `appHost.path`.
-- **Unified Multi-Session View** — Aggregates resources across running worktrees and prefixes names with the worktree folder for clarity.
+- **Mini Console tray window** — Open a compact live log window directly from the tray menu.
+- **Shared live log state** — Reuses the existing `MainViewModel` log buffer and status text.
+- **Safe streaming behavior** — Prevents duplicate streams, clamps empty buffers, and treats cancellation as a normal close.
+- **Mini monitor stability** — Keeps the mini monitor behavior intact while refreshing its last-update state from the main view model.
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
@@ -145,7 +146,7 @@ See [Configuration Guide](./docs/configuration.md) for all options.
 ## 📚 Documentation
 
 - **[Quick Start Guide](./docs/QUICKSTART.md)** — Get up and running in 5 minutes
-- **[What's New in v1.11.0](./docs/releases/RELEASE-v1.11.0.md)** — Worktree discovery, aspire.config validation, and multi-session aggregation
+- **[What's New in v1.12.0](./docs/releases/RELEASE-v1.12.0.md)** — Mini Console, shared live logs, and safe cancellation handling
 - **[Architecture Guide](./docs/architecture.md)** — System design, components, data flow
 - **[API Contract & Services](./docs/API-CONTRACT.md)** — Service layer, data contracts, retry logic
 - **[Configuration Guide](./docs/configuration.md)** — Setup, CLI, advanced options

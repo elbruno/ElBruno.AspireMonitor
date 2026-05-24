@@ -15,6 +15,7 @@ public class MainViewModel : ViewModelBase
     private readonly IAspirePollingService? _pollingService;
     private readonly IConfigurationService? _configService;
     private readonly IAspireCommandService? _commandService;
+    private readonly AspireLiveLogsService? _liveLogsService;
     private string _currentStatus = "Disconnected";
     private bool _isConnected;
     private DateTime _lastUpdated = DateTime.Now;
@@ -31,6 +32,8 @@ public class MainViewModel : ViewModelBase
     private ObservableCollection<string> _logLines = new();
     private bool _isLogPaused;
     private bool _hostUrlDetected;
+    private string? _activeLogStreamResourceName;
+    private bool _suppressSelectedResourceLogReload;
     private const int MaxLogLines = 50;
 
     public MainViewModel() : this(null, null, null)
@@ -39,11 +42,16 @@ public class MainViewModel : ViewModelBase
         InitializeSampleData();
     }
 
-    public MainViewModel(IAspirePollingService? pollingService, IConfigurationService? configService, IAspireCommandService? commandService = null)
+    public MainViewModel(
+        IAspirePollingService? pollingService,
+        IConfigurationService? configService,
+        IAspireCommandService? commandService = null,
+        AspireLiveLogsService? liveLogsService = null)
     {
         _pollingService = pollingService;
         _configService = configService;
         _commandService = commandService;
+        _liveLogsService = liveLogsService;
         
         RefreshCommand = new RelayCommand(_ => RefreshData());
         OpenUrlCommand = new RelayCommand(param => OpenUrl(param?.ToString() ?? string.Empty));
@@ -68,6 +76,13 @@ public class MainViewModel : ViewModelBase
             _pollingService.ResourcesUpdated += OnResourcesUpdated;
             _pollingService.StatusChanged += OnStatusChanged;
             _pollingService.ErrorOccurred += OnError;
+        }
+
+        if (_liveLogsService != null)
+        {
+            _liveLogsService.LogLineReceived += OnLiveLogLineReceived;
+            _liveLogsService.LogStreamClosed += OnLiveLogStreamClosed;
+            _liveLogsService.ErrorOccurred += OnLiveLogsError;
         }
     }
 
@@ -101,6 +116,7 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(ErrorTitle));
                 OnPropertyChanged(nameof(ErrorMessage));
                 OnPropertyChanged(nameof(OverallStatusColor));
+                OnPropertyChanged(nameof(LogEmptyStateMessage));
                 CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -250,7 +266,13 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _selectedResource, value))
             {
                 OnPropertyChanged(nameof(LogHeader));
-                LoadResourceLogs();
+                OnPropertyChanged(nameof(LogStatus));
+                OnPropertyChanged(nameof(LogEmptyStateMessage));
+
+                if (!_suppressSelectedResourceLogReload)
+                {
+                    LoadResourceLogs();
+                }
             }
         }
     }
@@ -264,7 +286,14 @@ public class MainViewModel : ViewModelBase
     public bool IsLogPaused
     {
         get => _isLogPaused;
-        set => SetProperty(ref _isLogPaused, value);
+        set
+        {
+            if (SetProperty(ref _isLogPaused, value))
+            {
+                OnPropertyChanged(nameof(LogStatus));
+                OnPropertyChanged(nameof(LogEmptyStateMessage));
+            }
+        }
     }
 
     public string LogHeader => SelectedResource != null 
@@ -272,6 +301,43 @@ public class MainViewModel : ViewModelBase
         : "Logs - Select a resource";
 
     public string LogStatus => $"{LogLines.Count} lines | {(IsLogPaused ? "Paused" : "Live")}";
+
+    public bool HasLogLines => LogLines.Count > 0;
+
+    public string LogEmptyStateMessage
+    {
+        get
+        {
+            if (!IsConnected)
+            {
+                return "Aspire is not running yet. Start Aspire to stream live logs.";
+            }
+
+            if (SelectedResource == null)
+            {
+                return _liveLogsService == null
+                    ? "Live log streaming is unavailable."
+                    : "Select a resource to begin streaming live logs.";
+            }
+
+            if (_liveLogsService == null)
+            {
+                return $"Live log streaming is unavailable for {SelectedResource.Name}.";
+            }
+
+            if (IsLogPaused)
+            {
+                return $"Live logs are paused for {SelectedResource.Name}.";
+            }
+
+            if (LogLines.Count == 0)
+            {
+                return $"Waiting for live output from {SelectedResource.Name}...";
+            }
+
+            return $"Showing live output for {SelectedResource.Name}.";
+        }
+    }
 
     private void RefreshData()
     {
@@ -319,6 +385,7 @@ public class MainViewModel : ViewModelBase
     {
         InvokeOnUiThread(() =>
         {
+            var selectedResourceName = SelectedResource?.Name;
             var config = _configService?.LoadConfiguration();
             var hideDevelopmentResources = config?.HideDevelopmentResources ?? false;
             ReloadMiniWindowConfiguration(config);
@@ -375,13 +442,40 @@ public class MainViewModel : ViewModelBase
 
             System.Diagnostics.Debug.WriteLine($"[MainViewModel] UI updated with {Resources.Count} resources, IsConnected={IsConnected}");
 
-            // If a resource is selected, update its logs
-            if (SelectedResource != null)
+            if (!string.IsNullOrWhiteSpace(selectedResourceName))
             {
-                var updatedResource = Resources.FirstOrDefault(r => r.Name == SelectedResource.Name);
+                var updatedResource = Resources.FirstOrDefault(r => r.Name == selectedResourceName);
                 if (updatedResource != null)
                 {
-                    SelectedResource = updatedResource;
+                    if (!ReferenceEquals(SelectedResource, updatedResource))
+                    {
+                        _suppressSelectedResourceLogReload = true;
+                        try
+                        {
+                            SelectedResource = updatedResource;
+                        }
+                        finally
+                        {
+                            _suppressSelectedResourceLogReload = false;
+                        }
+                    }
+
+                    UpdateSelectedResourceDetails(updatedResource);
+                }
+                else if (SelectedResource != null)
+                {
+                    _suppressSelectedResourceLogReload = true;
+                    try
+                    {
+                        SelectedResource = null;
+                    }
+                    finally
+                    {
+                        _suppressSelectedResourceLogReload = false;
+                    }
+
+                    StopActiveLogStream();
+                    ClearLogs();
                 }
             }
         });
@@ -471,6 +565,7 @@ public class MainViewModel : ViewModelBase
 
     public void Stop()
     {
+        StopActiveLogStream();
         _pollingService?.Stop();
     }
 
@@ -685,35 +780,37 @@ public class MainViewModel : ViewModelBase
     {
         LogLines.Clear();
         OnPropertyChanged(nameof(LogStatus));
+        OnPropertyChanged(nameof(HasLogLines));
+        OnPropertyChanged(nameof(LogEmptyStateMessage));
     }
 
     private void LoadResourceLogs()
     {
+        StopActiveLogStream();
+        LogLines.Clear();
+        OnPropertyChanged(nameof(HasLogLines));
+        OnPropertyChanged(nameof(LogEmptyStateMessage));
+
         if (SelectedResource == null)
         {
-            LogLines.Clear();
             OnPropertyChanged(nameof(LogStatus));
             return;
         }
 
-        // Clear current logs
-        LogLines.Clear();
+        AddLogLine($"[{DateTime.Now:HH:mm:ss}] Streaming live logs for: {SelectedResource.Name}");
 
-        // Add initial log entry
-        AddLogLine($"[{DateTime.Now:HH:mm:ss}] Monitoring logs for: {SelectedResource.Name}");
-        AddLogLine($"[{DateTime.Now:HH:mm:ss}] Status: {SelectedResource.Status}");
-        AddLogLine($"[{DateTime.Now:HH:mm:ss}] CPU: {SelectedResource.CpuUsageText}, Memory: {SelectedResource.MemoryUsageText}");
-        
-        if (SelectedResource.HasUrl)
+        if (_liveLogsService == null)
         {
-            AddLogLine($"[{DateTime.Now:HH:mm:ss}] Endpoint: {SelectedResource.Url}");
+            AddLogLine($"[{DateTime.Now:HH:mm:ss}] Live log streaming is unavailable.");
+            OnPropertyChanged(nameof(LogStatus));
+            OnPropertyChanged(nameof(LogEmptyStateMessage));
+            return;
         }
 
-        AddLogLine($"[{DateTime.Now:HH:mm:ss}] ---");
-        AddLogLine($"[{DateTime.Now:HH:mm:ss}] NOTE: Live log streaming from Aspire CLI will be implemented in Phase 2");
-        AddLogLine($"[{DateTime.Now:HH:mm:ss}] For now, this panel shows resource status updates");
-
+        _activeLogStreamResourceName = SelectedResource.Name;
+        _ = _liveLogsService.StartStreamingAsync(SelectedResource.Name);
         OnPropertyChanged(nameof(LogStatus));
+        OnPropertyChanged(nameof(LogEmptyStateMessage));
     }
 
     private void AddLogLine(string line)
@@ -721,7 +818,9 @@ public class MainViewModel : ViewModelBase
         if (IsLogPaused)
             return;
 
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        var dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+
+        if (dispatcher.CheckAccess())
         {
             LogLines.Add(line);
 
@@ -732,6 +831,82 @@ public class MainViewModel : ViewModelBase
             }
 
             OnPropertyChanged(nameof(LogStatus));
-        });
+            OnPropertyChanged(nameof(HasLogLines));
+            OnPropertyChanged(nameof(LogEmptyStateMessage));
+        }
+        else
+        {
+            dispatcher.Invoke(() =>
+            {
+                LogLines.Add(line);
+
+                while (LogLines.Count > MaxLogLines)
+                {
+                    LogLines.RemoveAt(0);
+                }
+
+                OnPropertyChanged(nameof(LogStatus));
+                OnPropertyChanged(nameof(HasLogLines));
+                OnPropertyChanged(nameof(LogEmptyStateMessage));
+            });
+        }
+    }
+
+    private void UpdateSelectedResourceDetails(ResourceViewModel resource)
+    {
+        if (SelectedResource == null)
+            return;
+
+        SelectedResource.Name = resource.Name;
+        SelectedResource.ResourceType = resource.ResourceType;
+        SelectedResource.Status = resource.Status;
+        SelectedResource.CpuUsage = resource.CpuUsage;
+        SelectedResource.MemoryUsage = resource.MemoryUsage;
+        SelectedResource.DiskUsagePercent = resource.DiskUsagePercent;
+        SelectedResource.EndpointCount = resource.EndpointCount;
+        SelectedResource.Url = resource.Url;
+        SelectedResource.Environment = resource.Environment;
+    }
+
+    private void StopActiveLogStream()
+    {
+        if (_liveLogsService != null && !string.IsNullOrWhiteSpace(_activeLogStreamResourceName))
+        {
+            _liveLogsService.StopStreaming(_activeLogStreamResourceName);
+        }
+
+        _activeLogStreamResourceName = null;
+    }
+
+    private void OnLiveLogLineReceived(object? sender, LogLineReceivedEventArgs args)
+    {
+        if (!string.Equals(args.ResourceName, _activeLogStreamResourceName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        AddLogLine(args.LogLine);
+    }
+
+    private void OnLiveLogStreamClosed(object? sender, LogStreamClosedEventArgs args)
+    {
+        if (!string.Equals(args.ResourceName, _activeLogStreamResourceName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _activeLogStreamResourceName = null;
+
+        if (args.IsError && !string.IsNullOrWhiteSpace(args.ErrorMessage))
+        {
+            AddLogLine($"[{DateTime.Now:HH:mm:ss}] Log stream closed: {args.ErrorMessage}");
+        }
+
+        OnPropertyChanged(nameof(LogStatus));
+        OnPropertyChanged(nameof(LogEmptyStateMessage));
+    }
+
+    private void OnLiveLogsError(object? sender, string error)
+    {
+        if (!string.IsNullOrWhiteSpace(_activeLogStreamResourceName))
+        {
+            AddLogLine($"[{DateTime.Now:HH:mm:ss}] {error}");
+        }
     }
 }

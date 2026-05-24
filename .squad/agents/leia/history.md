@@ -339,3 +339,10 @@ Phase 4 architecture design and integration verification complete. Designed poll
 
 📌 Team update (2026-05-24T09:47:51.869-04:00): Leia completed a research pass on latest Aspire updates and feature opportunities; no code changes or inbox decisions were produced.
 
+### 2026-05-24T10:21:51.482-04:00 — Mini Console Release Prep
+
+**Learnings:**
+- Keep the release boundary on the newest completed Mini Console feature and bump both app/tool versions together to 1.12.0.
+- Use `docs\releases\RELEASE-v1.12.0.md` plus `CHANGELOG.md` as the release notes source, and point `PackageReleaseNotes` at the matching GitHub tag.
+- The publish workflow in `.github\workflows\publish.yml` is release-tag driven, so the GitHub Release must be published (not draft) before NuGet can run.
+- Key paths: `src\ElBruno.AspireMonitor\ElBruno.AspireMonitor.csproj`, `src\ElBruno.AspireMonitor.Tool\ElBruno.AspireMonitor.Tool.csproj`, `src\ElBruno.AspireMonitor\Views\MiniConsoleWindow.xaml`, `src\ElBruno.AspireMonitor\Services\AspireLiveLogsService.cs`, `src\ElBruno.AspireMonitor\ViewModels\MainViewModel.cs`.
