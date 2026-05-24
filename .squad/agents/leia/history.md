@@ -335,3 +335,7 @@ Phase 4 architecture design and integration verification complete. Designed poll
    - AspireApiClient: HTTP wrapper with 3-retry exponential backoff, 5s timeout, graceful degradation
    - AspirePollingService: Background state machine (Idle → Connecting → Polling → Error → Reconnecting)
    - StatusCalculator: Pure color-coding logic with configurab
+
+
+📌 Team update (2026-05-24T09:47:51.869-04:00): Leia completed a research pass on latest Aspire updates and feature opportunities; no code changes or inbox decisions were produced.
+
