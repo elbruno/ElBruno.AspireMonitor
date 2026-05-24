@@ -170,4 +170,17 @@ protected override void OnExit(ExitEventArgs e)
    - Menu mirrors primary features: Details (show window) + Monitor (mini) + Settings (config)
    - Separators group related functions (utility
 
+## Learnings
 
+- `src\ElBruno.AspireMonitor\Views\MainWindow.xaml` should use `Hyperlink` + `RequestNavigate` for browser links; it keeps URL clicks accessible and consistent.
+- `src\ElBruno.AspireMonitor\Views\MainWindow.xaml` selection highlighting should use a `Border.Style` trigger, not `BoolToVisibilityConverter`; that converter is for `Visibility` only.
+- `src\ElBruno.AspireMonitor\Views\MainWindow.xaml.cs` already centralizes URL launching, so UI links can stay thin while the code-behind owns shell navigation.
+
+### 2026-05-24T10:03:12.875-04:00 — Mini Console Tray Window
+
+**Learnings:**
+- `src\ElBruno.AspireMonitor\Views\MiniConsoleWindow.xaml` can stay thin by binding directly to `MainViewModel` log properties (`LogLines`, `LogHeader`, `LogStatus`).
+- `src\ElBruno.AspireMonitor\ViewModels\MainViewModel.cs` should expose `HasLogLines` and `LogEmptyStateMessage` so the console can show safe empty/error states without extra stream plumbing.
+- `src\ElBruno.AspireMonitor\App.xaml.cs` is the right place to own tray-only windows and add new context menu entries like Mini Console.
+
+📌 Team update (2026-05-24T10:03:12.875-04:00): Mini Console now launches as a tray-owned window bound to existing live log state while keeping the mini monitor intact — decided by Han, Luke, and Yoda
