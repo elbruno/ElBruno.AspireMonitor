@@ -9,6 +9,7 @@ namespace ElBruno.AspireMonitor.Services;
 public class AspireCliService
 {
     private const int CommandTimeoutSeconds = 10;
+    private const string AspireConfigFileName = "aspire.config.json";
 
     /// <summary>
     /// Working directory used when invoking the Aspire CLI. The CLI auto-discovers
@@ -16,8 +17,19 @@ public class AspireCliService
     /// match the folder where the user launched 'aspire start'.
     /// </summary>
     public string? WorkingDirectory { get; set; }
+    public bool EnableWorktreeDiscovery { get; set; }
+    public string? WorktreeBasePath { get; set; }
 
     public virtual async Task<string> ExecuteCommandAsync(string command, string arguments = "", CancellationToken cancellationToken = default)
+    {
+        return await ExecuteCommandCoreAsync(command, arguments, null, cancellationToken);
+    }
+
+    private async Task<string> ExecuteCommandCoreAsync(
+        string command,
+        string arguments,
+        string? explicitWorkingDirectory,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -33,9 +45,15 @@ public class AspireCliService
                 StandardErrorEncoding = Encoding.UTF8
             };
 
-            if (!string.IsNullOrWhiteSpace(WorkingDirectory) && Directory.Exists(WorkingDirectory))
+            var resolvedWorkingDirectory = explicitWorkingDirectory;
+            if (string.IsNullOrWhiteSpace(resolvedWorkingDirectory))
             {
-                startInfo.WorkingDirectory = WorkingDirectory;
+                resolvedWorkingDirectory = WorkingDirectory;
+            }
+
+            if (!string.IsNullOrWhiteSpace(resolvedWorkingDirectory) && Directory.Exists(resolvedWorkingDirectory))
+            {
+                startInfo.WorkingDirectory = resolvedWorkingDirectory;
             }
 
             using var process = new Process { StartInfo = startInfo };
@@ -113,12 +131,75 @@ public class AspireCliService
         }
     }
 
+    protected virtual async Task<JsonDocument?> ExecuteDescribeJsonForDirectoryAsync(string workingDirectory, CancellationToken cancellationToken = default)
+    {
+        var output = await ExecuteCommandCoreAsync("aspire", "describe --format json", workingDirectory, cancellationToken);
+        if (string.IsNullOrWhiteSpace(output))
+            return null;
+
+        return JsonDocument.Parse(output);
+    }
+
+    protected virtual Task<string> GetGitWorktreeListAsync(string rootPath, CancellationToken cancellationToken = default)
+    {
+        var escapedRoot = rootPath.Replace("\"", "\\\"");
+        return ExecuteCommandCoreAsync("git", $"-C \"{escapedRoot}\" worktree list --porcelain", rootPath, cancellationToken);
+    }
+
+    public virtual async Task<IReadOnlyList<string>> DiscoverAspireConfigWorkingDirectoriesAsync(CancellationToken cancellationToken = default)
+    {
+        var basePath = ResolveWorktreeBasePath();
+        if (string.IsNullOrWhiteSpace(basePath) || !Directory.Exists(basePath))
+            return Array.Empty<string>();
+
+        var discoveredDirectories = new List<string>();
+
+        if (HasValidAspireConfig(basePath))
+        {
+            discoveredDirectories.Add(Path.GetFullPath(basePath));
+        }
+
+        try
+        {
+            var worktreeOutput = await GetGitWorktreeListAsync(basePath, cancellationToken);
+            foreach (var worktreePath in ParseWorktreePaths(worktreeOutput))
+            {
+                if (!IsWithinBasePath(worktreePath, basePath))
+                    continue;
+
+                if (!HasValidAspireConfig(worktreePath))
+                    continue;
+
+                discoveredDirectories.Add(Path.GetFullPath(worktreePath));
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AspireCliService] Worktree discovery fallback: {ex.Message}");
+        }
+
+        return discoveredDirectories
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
     public virtual async Task<ResourceCollection> ParseResourcesFromDescribeJsonAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            using var jsonDoc = await ExecuteJsonAsync("aspire", "describe --format json", cancellationToken);
-            
+            var workingDirectories = EnableWorktreeDiscovery
+                ? (await DiscoverAspireConfigWorkingDirectoriesAsync(cancellationToken)).ToList()
+                : new List<string>();
+
+            if (workingDirectories.Count > 1)
+            {
+                return await ParseResourcesAcrossWorktreesAsync(workingDirectories, cancellationToken);
+            }
+
+            using var jsonDoc = workingDirectories.Count == 1
+                ? await ExecuteDescribeJsonForDirectoryAsync(workingDirectories[0], cancellationToken)
+                : await ExecuteJsonAsync("aspire", "describe --format json", cancellationToken);
+             
             if (jsonDoc == null)
                 return new ResourceCollection { ErrorMessage = "No output from 'aspire describe'" };
 
@@ -153,6 +234,141 @@ public class AspireCliService
         {
             System.Diagnostics.Debug.WriteLine($"[AspireCliService] Unexpected error: {ex}");
             return new ResourceCollection { ErrorMessage = $"Error: {ex.Message}" };
+        }
+    }
+
+    private async Task<ResourceCollection> ParseResourcesAcrossWorktreesAsync(
+        IReadOnlyList<string> workingDirectories,
+        CancellationToken cancellationToken = default)
+    {
+        var allResources = new List<AspireResource>();
+
+        foreach (var workingDirectory in workingDirectories)
+        {
+            try
+            {
+                using var jsonDoc = await ExecuteDescribeJsonForDirectoryAsync(workingDirectory, cancellationToken);
+                if (jsonDoc == null)
+                    continue;
+
+                if (!jsonDoc.RootElement.TryGetProperty("resources", out var resourcesArray) || resourcesArray.ValueKind != JsonValueKind.Array)
+                    continue;
+
+                foreach (var resourceElement in resourcesArray.EnumerateArray())
+                {
+                    var resource = ParseResource(resourceElement);
+                    if (resource == null)
+                        continue;
+
+                    PrefixResourceWithWorktree(resource, workingDirectory);
+                    allResources.Add(resource);
+                }
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Command failed", StringComparison.OrdinalIgnoreCase))
+            {
+                System.Diagnostics.Debug.WriteLine($"[AspireCliService] Skipping inactive worktree '{workingDirectory}': {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AspireCliService] Failed to parse worktree '{workingDirectory}': {ex.Message}");
+            }
+        }
+
+        if (allResources.Count == 0)
+            return new ResourceCollection { ErrorMessage = "No Aspire app is currently running." };
+
+        return new ResourceCollection(allResources);
+    }
+
+    private static void PrefixResourceWithWorktree(AspireResource resource, string workingDirectory)
+    {
+        var worktreeName = Path.GetFileName(workingDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        if (string.IsNullOrWhiteSpace(worktreeName))
+            return;
+
+        resource.Name = $"{worktreeName}/{resource.Name}";
+        resource.Id = $"{worktreeName}/{resource.Id}";
+        resource.Environment.Add(new AspireEnvironmentEntry
+        {
+            Name = "ASPIREMON_WORKTREE",
+            Value = workingDirectory
+        });
+    }
+
+    private string? ResolveWorktreeBasePath()
+    {
+        if (!EnableWorktreeDiscovery)
+            return null;
+
+        if (!string.IsNullOrWhiteSpace(WorktreeBasePath))
+            return WorktreeBasePath;
+
+        return WorkingDirectory;
+    }
+
+    private static IEnumerable<string> ParseWorktreePaths(string output)
+    {
+        if (string.IsNullOrWhiteSpace(output))
+            yield break;
+
+        var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var line in lines)
+        {
+            const string prefix = "worktree ";
+            if (!line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var path = line[prefix.Length..].Trim();
+            if (string.IsNullOrWhiteSpace(path))
+                continue;
+
+            yield return path;
+        }
+    }
+
+    private static bool IsWithinBasePath(string candidatePath, string basePath)
+    {
+        var fullBasePath = EnsureTrailingSeparator(Path.GetFullPath(basePath));
+        var fullCandidatePath = EnsureTrailingSeparator(Path.GetFullPath(candidatePath));
+        return fullCandidatePath.StartsWith(fullBasePath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string EnsureTrailingSeparator(string path)
+    {
+        if (path.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) ||
+            path.EndsWith(Path.AltDirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+            return path;
+
+        return path + Path.DirectorySeparatorChar;
+    }
+
+    private static bool HasValidAspireConfig(string directory)
+    {
+        var configPath = Path.Combine(directory, AspireConfigFileName);
+        if (!File.Exists(configPath))
+            return false;
+
+        try
+        {
+            using var stream = File.OpenRead(configPath);
+            using var document = JsonDocument.Parse(stream);
+            if (!document.RootElement.TryGetProperty("appHost", out var appHostElement))
+                return false;
+
+            if (!appHostElement.TryGetProperty("path", out var appHostPathElement))
+                return false;
+
+            var appHostPath = appHostPathElement.GetString();
+            if (string.IsNullOrWhiteSpace(appHostPath))
+                return false;
+
+            var resolvedAppHostPath = Path.GetFullPath(Path.Combine(directory, appHostPath));
+            return File.Exists(resolvedAppHostPath) || Directory.Exists(resolvedAppHostPath);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AspireCliService] Invalid aspire.config.json at '{configPath}': {ex.Message}");
+            return false;
         }
     }
 

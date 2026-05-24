@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-05-24T10:21:51.482-04:00
+
+### Added
+- Tray-launched Mini Console window for live Aspire log monitoring from the system tray.
+- Shared live log buffer and status state backed by `MainViewModel`.
+- Cancellation-safe streaming with duplicate stream protection and buffer clamping.
+- Mini monitor last-update refresh so the pinned-resource view stays in sync with the main model.
+
+## [1.11.0] - 2026-05-23
+
+### Added
+- Optional git worktree discovery mode that finds monitored Aspire sessions by reading `aspire.config.json` and validating `appHost.path` in each worktree root.
+- New settings for `enableWorktreeDiscovery` and `worktreeBasePath` with validation and live reload support.
+- Backend coverage for worktree discovery filtering and multi-worktree resource aggregation with worktree-prefixed resource names.
+
 ## [1.10.0] - 2026-05-11
 
 ### Added
@@ -64,6 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No public API or NuGet packaging changes. The global tool (`aspiremon`) is published from the same `ElBruno.AspireMonitor.Tool` package, now versioned 1.5.0.
 
 [1.9.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.9.0
+[1.12.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.12.0
+[1.11.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.11.0
+[1.10.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.10.0
 [1.8.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.8.0
 [1.7.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.7.0
 [1.6.0]: https://github.com/elbruno/ElBruno.AspireMonitor/releases/tag/v1.6.0

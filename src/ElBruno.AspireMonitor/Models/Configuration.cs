@@ -20,4 +20,6 @@ public class Configuration
     public bool ShowOnlyMainMiniWindowResources { get; set; } = true;
     [JsonPropertyName("notifyOnStateChange")]
     public bool EnableAspireStateNotifications { get; set; } = true;
+    public bool EnableWorktreeDiscovery { get; set; }
+    public string WorktreeBasePath { get; set; } = string.Empty;
 }

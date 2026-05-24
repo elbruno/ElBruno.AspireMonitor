@@ -40,6 +40,23 @@ public partial class SettingsWindow : Window
         }
     }
 
+    private void BrowseWorktreeBaseFolder_Click(object sender, RoutedEventArgs e)
+    {
+        using (var dialog = new FolderBrowserDialog())
+        {
+            dialog.Description = "Select your worktree base folder";
+            dialog.ShowNewFolderButton = false;
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                if (ViewModel != null)
+                {
+                    ViewModel.WorktreeBasePath = dialog.SelectedPath;
+                }
+            }
+        }
+    }
+
     private void OK_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel?.Validate() == true)

@@ -14,6 +14,8 @@ public class SettingsViewModel : ViewModelBase
     private bool _showMiniWindowResourceTelemetry = true;
     private bool _showOnlyMainMiniWindowResources = true;
     private bool _enableAspireStateNotifications = true;
+    private bool _enableWorktreeDiscovery;
+    private string _worktreeBasePath = string.Empty;
     private string _projectFolder = string.Empty;
     private string _miniWindowResources = string.Empty;
     private string _validationMessage = string.Empty;
@@ -78,6 +80,18 @@ public class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _enableAspireStateNotifications, value);
     }
 
+    public bool EnableWorktreeDiscovery
+    {
+        get => _enableWorktreeDiscovery;
+        set => SetProperty(ref _enableWorktreeDiscovery, value);
+    }
+
+    public string WorktreeBasePath
+    {
+        get => _worktreeBasePath;
+        set => SetProperty(ref _worktreeBasePath, value);
+    }
+
     public string ValidationMessage
     {
         get => _validationMessage;
@@ -105,6 +119,15 @@ public class SettingsViewModel : ViewModelBase
             }
         }
 
+        if (EnableWorktreeDiscovery && !string.IsNullOrWhiteSpace(WorktreeBasePath))
+        {
+            if (!Directory.Exists(WorktreeBasePath))
+            {
+                ValidationMessage = "Worktree base path does not exist.";
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -123,7 +146,9 @@ public class SettingsViewModel : ViewModelBase
             MiniWindowResources = MiniWindowResources ?? string.Empty,
             ShowMiniWindowResourceTelemetry = ShowMiniWindowResourceTelemetry,
             ShowOnlyMainMiniWindowResources = ShowOnlyMainMiniWindowResources,
-            EnableAspireStateNotifications = EnableAspireStateNotifications
+            EnableAspireStateNotifications = EnableAspireStateNotifications,
+            EnableWorktreeDiscovery = EnableWorktreeDiscovery,
+            WorktreeBasePath = WorktreeBasePath ?? string.Empty
         };
 
         _configService.SaveConfiguration(config);
@@ -144,5 +169,7 @@ public class SettingsViewModel : ViewModelBase
         ShowMiniWindowResourceTelemetry = config.ShowMiniWindowResourceTelemetry;
         ShowOnlyMainMiniWindowResources = config.ShowOnlyMainMiniWindowResources;
         EnableAspireStateNotifications = config.EnableAspireStateNotifications;
+        EnableWorktreeDiscovery = config.EnableWorktreeDiscovery;
+        WorktreeBasePath = config.WorktreeBasePath ?? string.Empty;
     }
 }

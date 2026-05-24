@@ -223,3 +223,12 @@ Measured with `dotnet test --collect:"XPlat Code Coverage"`:
 **Next Actions for Han:**
 1. Implement h
 
+
+## Learnings
+
+- `AspireLiveLogsService` needs linked cancellation tokens so `StopStreaming` and disposal can end live log streams without reporting false errors.
+- Live log buffers should clamp `bufferSize` to at least 1 to avoid empty-queue underflow when callers request `0`.
+- `MiniMonitorViewModel` should react to `MainViewModel.LastUpdated` so the mini window's last-update label stays fresh after polling.
+- Key files touched: `src\ElBruno.AspireMonitor\Services\AspireLiveLogsService.cs`, `src\ElBruno.AspireMonitor\ViewModels\MiniMonitorViewModel.cs`, `src\ElBruno.AspireMonitor.Tests\Services\AspireLiveLogsServiceEdgeCaseTests.cs`, `src\ElBruno.AspireMonitor.Tests\ViewModels\MiniMonitorViewModelStatusTests.cs`.
+
+📌 Team update (2026-05-24T10:03:12.875-04:00): Mini Console tests now cover duplicate starts, cancellation, buffer trimming, status mapping, and dashboard visibility — decided by Han, Luke, and Yoda

@@ -21,13 +21,14 @@ ElBruno.AspireMonitor is a lightweight Windows tray tool that:
 
 No third-party Aspire SDK dependency. No agents. Just a tray app talking to the Aspire CLI and opening the Aspire dashboard at the standard default `http://localhost:18888`.
 
-## ✨ What's New in v1.10.0
+## ✨ What's New in v1.12.0
 
-ElBruno.AspireMonitor v1.10.0 enhances running notifications with direct access to the Aspire dashboard:
+ElBruno.AspireMonitor v1.12.0 adds a tray-launched Mini Console for live log monitoring:
 
-- **Clickable Aspire Dashboard URL in Running Notifications** — Click the running notification to launch your configured Aspire dashboard directly, eliminating the need to manually find the endpoint.
-- **Interactive State Notifications** — Running notifications are actionable; stopped notifications clear the dashboard click target.
-- **Workflow Integration** — Stay focused on development while instant access to monitoring is just a notification click away.
+- **Mini Console tray window** — Open a compact live log window directly from the tray menu.
+- **Shared live log state** — Reuses the existing `MainViewModel` log buffer and status text.
+- **Safe streaming behavior** — Prevents duplicate streams, clamps empty buffers, and treats cancellation as a normal close.
+- **Mini monitor stability** — Keeps the mini monitor behavior intact while refreshing its last-update state from the main view model.
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
@@ -42,6 +43,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 | 🏷️ **Environment Badges** | Compact badges summarize resource environment variables |
 | 🙈 **Hide Development Resources** | Optionally filter development-only resources from the list |
 | 🧭 **Open Dashboard** | One-click button opens the configured Aspire dashboard URL |
+| 🌲 **Worktree Discovery** | Optionally discover and monitor Aspire sessions running in git worktrees under a base path |
 | 🔄 **Auto-Reconnect** | Gracefully handles network interruptions |
 | 📊 **Multi-Resource Monitoring** | Track unlimited Aspire resources |
 | 🪟 **Tray + main window + mini window** | Click the tray icon for the full resource list; the mini window pins just what you care about |
@@ -118,6 +120,8 @@ Example:
 ```json
 {
   "projectFolder": "C:\\Projects\\MyApp\\src\\MyApp.AppHost",
+  "enableWorktreeDiscovery": true,
+  "worktreeBasePath": "C:\\Projects\\MyRepo",
   "aspireEndpoint": "http://localhost:18888",
   "pollingIntervalMs": 5000,
   "miniWindowResources": "web, store, gateway",
@@ -129,6 +133,8 @@ Example:
 | Field | Purpose |
 |---|---|
 | `projectFolder` | Your Aspire AppHost folder |
+| `enableWorktreeDiscovery` | Enables discovery across git worktrees using `aspire.config.json` |
+| `worktreeBasePath` | Optional root folder where worktrees are searched (must exist if set) |
 | `aspireEndpoint` | Aspire dashboard URL (default `http://localhost:18888`) |
 | `pollingIntervalMs` | Resource refresh interval (default 5000) |
 | `miniWindowResources` | Comma-separated list of resource name prefixes to pin to the mini window. Empty = mini window only shows the dashboard link. Case-insensitive prefix match (e.g. `web` matches `web-xggqzmyn`) |
@@ -140,7 +146,7 @@ See [Configuration Guide](./docs/configuration.md) for all options.
 ## 📚 Documentation
 
 - **[Quick Start Guide](./docs/QUICKSTART.md)** — Get up and running in 5 minutes
-- **[What's New in v1.7.0](./docs/whats-new.md)** — Mini monitor telemetry, telemetry toggle, and hardened parsing
+- **[What's New in v1.12.0](./docs/releases/RELEASE-v1.12.0.md)** — Mini Console, shared live logs, and safe cancellation handling
 - **[Architecture Guide](./docs/architecture.md)** — System design, components, data flow
 - **[API Contract & Services](./docs/API-CONTRACT.md)** — Service layer, data contracts, retry logic
 - **[Configuration Guide](./docs/configuration.md)** — Setup, CLI, advanced options

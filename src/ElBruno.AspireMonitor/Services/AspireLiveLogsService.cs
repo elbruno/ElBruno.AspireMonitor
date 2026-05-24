@@ -25,7 +25,7 @@ public class AspireLiveLogsService : IDisposable
             return;
         }
 
-        var logStream = new LogStream(resourceName, bufferSize);
+        var logStream = new LogStream(resourceName, Math.Max(1, bufferSize));
         if (!_activeStreams.TryAdd(resourceName, logStream))
         {
             System.Diagnostics.Debug.WriteLine($"[AspireLiveLogsService] Failed to register stream for resource: {resourceName}");
@@ -36,18 +36,27 @@ public class AspireLiveLogsService : IDisposable
 
         _ = Task.Run(async () =>
         {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, logStream.CancellationToken);
+
             try
             {
-                await foreach (var line in _cliService.GetLiveLogsAsync(resourceName, cancellationToken))
+                await foreach (var line in _cliService.GetLiveLogsAsync(resourceName, linkedCts.Token))
                 {
-                    if (cancellationToken.IsCancellationRequested)
+                    if (linkedCts.Token.IsCancellationRequested)
                         break;
 
                     logStream.AddLine(line);
                     LogLineReceived?.Invoke(this, new LogLineReceivedEventArgs(resourceName, line));
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[AspireLiveLogsService] Log stream ended for: {resourceName}");
+                System.Diagnostics.Debug.WriteLine(linkedCts.Token.IsCancellationRequested
+                    ? $"[AspireLiveLogsService] Log stream canceled for: {resourceName}"
+                    : $"[AspireLiveLogsService] Log stream ended for: {resourceName}");
+                LogStreamClosed?.Invoke(this, new LogStreamClosedEventArgs(resourceName, false, null));
+            }
+            catch (OperationCanceledException) when (linkedCts.Token.IsCancellationRequested || logStream.IsCancellationRequested)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AspireLiveLogsService] Log stream canceled for: {resourceName}");
                 LogStreamClosed?.Invoke(this, new LogStreamClosedEventArgs(resourceName, false, null));
             }
             catch (Exception ex)
@@ -59,8 +68,9 @@ public class AspireLiveLogsService : IDisposable
             finally
             {
                 _activeStreams.TryRemove(resourceName, out _);
+                logStream.Dispose();
             }
-        }, cancellationToken);
+        });
     }
 
     public void StopStreaming(string resourceName)
@@ -106,6 +116,7 @@ public class AspireLiveLogsService : IDisposable
         private readonly int _maxBufferSize;
         private readonly object _lock = new();
         private readonly CancellationTokenSource _cts = new();
+        private bool _disposed;
 
         public string ResourceName { get; }
 
@@ -137,7 +148,38 @@ public class AspireLiveLogsService : IDisposable
 
         public void Cancel()
         {
-            _cts.Cancel();
+            if (_disposed)
+                return;
+
+            try
+            {
+                _cts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
+        public CancellationToken CancellationToken => _cts.Token;
+
+        public bool IsCancellationRequested => _cts.IsCancellationRequested;
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            try
+            {
+                _cts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+
+            _cts.Dispose();
         }
     }
 }

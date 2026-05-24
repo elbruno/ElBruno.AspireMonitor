@@ -230,3 +230,12 @@ public class MainViewModel : IDisposable
 **Last Updated:** 2026-04-26  
 **Author:** Luke (Backend Developer)  
 **Project:** ElBruno.AspireMonitor
+
+### 7. Graceful Cancellation for Live Streams
+
+Use the same cancellation pattern for long-running log streams:
+- link the caller token to a per-stream `CancellationTokenSource`
+- treat `OperationCanceledException` as a normal close, not an error
+- clamp ring buffers to at least one entry before enqueuing
+
+This keeps stop/dispose flows deterministic and prevents false error events when the user closes a live log view.

@@ -119,15 +119,19 @@
                          VerticalAlignment="Center"/>
 
                 <!-- Host URL (Clickable) -->
-                <TextBlock Grid.Row="0" 
+                <TextBlock Grid.Row="0"
                            Grid.Column="1"
-                           Style="{StaticResource ClickableUrl}"
-                           Text="{Binding HostUrl}"
                            FontSize="14"
                            FontWeight="Bold"
                            VerticalAlignment="Center"
-                           Margin="5,0"
-                           MouseLeftButtonDown="HostUrl_Click"/>
+                           Margin="5,0">
+                    <Hyperlink NavigateUri="{Binding HostUrl}"
+                               RequestNavigate="Url_RequestNavigate"
+                               Foreground="#2196F3"
+                               TextDecorations="Underline">
+                        <Run Text="{Binding HostUrl}"/>
+                    </Hyperlink>
+                </TextBlock>
 
                 <Button Grid.Row="0"
                         Grid.Column="2"
@@ -238,9 +242,18 @@
                                     <Border BorderBrush="#EEEEEE" 
                                             BorderThickness="0,0,0,1" 
                                             Padding="10,8"
-                                            Background="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Background}"
                                             MouseLeftButtonDown="Resource_Click"
                                             Cursor="Hand">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Background" Value="#E8F0FE"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -290,13 +303,15 @@
                                                                    FontWeight="SemiBold"
                                                                    Foreground="#4F46E5"/>
                                                     </Border>
-                                                    <TextBlock Text="{Binding Url}"
-                                                               FontSize="9"
-                                                               Foreground="#2196F3"
-                                                               TextDecorations="Underline"
-                                                               Cursor="Hand"
-                                                               MouseLeftButtonDown="ResourceUrl_Click"
-                                                               Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                    <TextBlock FontSize="9"
+                                                               Visibility="{Binding HasUrl, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <Hyperlink NavigateUri="{Binding Url}"
+                                                                   RequestNavigate="Url_RequestNavigate"
+                                                                   Foreground="#2196F3"
+                                                                   TextDecorations="Underline">
+                                                            <Run Text="{Binding Url}"/>
+                                                        </Hyperlink>
+                                                    </TextBlock>
                                                 </WrapPanel>
                                             </StackPanel>
 

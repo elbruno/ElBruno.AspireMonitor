@@ -214,6 +214,11 @@ Successfully implemented all Phase 2 backend components with 72/72 tests passing
    - Mock external dependencies (HttpClient, Timer)
    - Test edge cases thoroughly (null, empty, large data, timeouts)
 
+7. **Live Log Streaming:**
+   - Keep log streams selection-scoped so resource polling does not restart active streams.
+   - Cancel previous streams before starting a new resource stream.
+   - Marshal log updates onto the UI dispatcher with a null-safe fallback for tests and headless runs.
+
 ---
 
 ## Key Decisions for Team
@@ -221,4 +226,6 @@ Successfully implemented all Phase 2 backend components with 72/72 tests passing
 1. **Polly Dependency:** Added Polly 8.5.0 for retry policies (industry standard, well-tested)
 2. **Configuration Storage:** AppData\Local\ElBruno\AspireMonitor\config.json (Windows standard)
 3. **Event-Driven Updates:** Services raise events, ViewModels handle 
+4. **Live Logs Ownership:** MainViewModel owns selected-resource log stream state; App injects AspireLiveLogsService and selection refreshes only sync properties, not stream identity.
 
+📌 Team update (2026-05-24T10:03:12.875-04:00): Live log streaming is selection-scoped, cancellation is treated as a normal close, and the buffer clamps to at least 1 — decided by Han, Luke, and Yoda

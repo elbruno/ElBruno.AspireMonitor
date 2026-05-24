@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Navigation;
 using System.Windows.Media;
 using ElBruno.AspireMonitor.ViewModels;
 using ElBruno.AspireMonitor.Services;
@@ -18,11 +19,16 @@ public partial class MainWindow : Window
     {
     }
 
-    public MainWindow(IAspirePollingService? pollingService, IConfigurationService? configService, MainViewModel? viewModel = null, IAspireCommandService? commandService = null)
+    public MainWindow(
+        IAspirePollingService? pollingService,
+        IConfigurationService? configService,
+        MainViewModel? viewModel = null,
+        IAspireCommandService? commandService = null,
+        AspireLiveLogsService? liveLogsService = null)
     {
         InitializeComponent();
         _configService = configService;
-        DataContext = viewModel ?? new MainViewModel(pollingService, configService, commandService);
+        DataContext = viewModel ?? new MainViewModel(pollingService, configService, commandService, liveLogsService);
         
         if (ViewModel != null)
         {
@@ -96,7 +102,10 @@ public partial class MainWindow : Window
                     ViewModel.ShowOnlyMainMiniWindowResources = updatedConfig.ShowOnlyMainMiniWindowResources;
                     // Push the new working directory into the Aspire CLI service
                     // so 'aspire describe' runs from the correct folder.
-                    (System.Windows.Application.Current as App)?.UpdateAspireWorkingDirectory(updatedConfig.ProjectFolder);
+                    (System.Windows.Application.Current as App)?.UpdateAspireWorkingDirectory(
+                        updatedConfig.ProjectFolder,
+                        updatedConfig.EnableWorktreeDiscovery,
+                        updatedConfig.WorktreeBasePath);
                 }
                 // Configuration changed, restart polling service
                 if (ViewModel != null)
@@ -178,14 +187,6 @@ public partial class MainWindow : Window
         HideWindow();
     }
 
-    private void HostUrl_Click(object sender, MouseButtonEventArgs e)
-    {
-        if (ViewModel?.HostUrl != null)
-        {
-            OpenUrl(ViewModel.HostUrl);
-        }
-    }
-
     private void Dashboard_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel?.HostUrl != null)
@@ -194,14 +195,10 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ResourceUrl_Click(object sender, MouseButtonEventArgs e)
+    private void Url_RequestNavigate(object sender, RequestNavigateEventArgs e)
     {
-        if (sender is System.Windows.Controls.TextBlock textBlock && 
-            textBlock.DataContext is ResourceViewModel resource && 
-            !string.IsNullOrEmpty(resource.Url))
-        {
-            OpenUrl(resource.Url);
-        }
+        OpenUrl(e.Uri.AbsoluteUri);
+        e.Handled = true;
     }
 
     private void OpenUrl(string url)

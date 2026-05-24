@@ -1,9 +1,11 @@
+using ElBruno.AspireMonitor.Models;
 using AppConfig = ElBruno.AspireMonitor.Models.Configuration;
 using ElBruno.AspireMonitor.Services;
 using ElBruno.AspireMonitor.ViewModels;
 using FluentAssertions;
 using Moq;
 using Xunit;
+using ElBruno.AspireMonitor.Tests.Services;
 
 namespace ElBruno.AspireMonitor.Tests.ViewModels;
 
@@ -40,6 +42,32 @@ public class MainViewModelCommandTests
             service => service.DetectAspireEndpointAsync(It.IsAny<Action<string>?>()),
             Times.Never,
             "endpoint detection only runs after a successful start");
+    }
+
+    [Fact]
+    public async Task SelectResource_WithLiveLogsService_StreamsLogsIntoLogPanel()
+    {
+        var configService = new Mock<IConfigurationService>();
+        configService.Setup(service => service.LoadConfiguration())
+            .Returns(new AppConfig { ProjectFolder = Environment.CurrentDirectory });
+
+        using var liveLogsService = new AspireLiveLogsService(new StreamingAspireCliService("line 1", "line 2"));
+        var viewModel = new MainViewModel(null, configService.Object, null, liveLogsService);
+
+        var resource = new ResourceViewModel
+        {
+            Name = "api",
+            Status = ResourceStatus.Running
+        };
+        viewModel.Resources.Add(resource);
+
+        viewModel.SelectResource(resource);
+
+        await WaitUntilAsync(() => viewModel.LogLines.Any(line => line.Contains("line 2")));
+
+        viewModel.LogLines.Should().Contain(line => line.Contains("Streaming live logs for: api"));
+        viewModel.LogLines.Should().Contain("line 1");
+        viewModel.LogLines.Should().Contain("line 2");
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition)
