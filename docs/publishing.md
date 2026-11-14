@@ -30,7 +30,7 @@ Open `src/ElBruno.AspireMonitor/ElBruno.AspireMonitor.csproj` and update:
 ```xml
 <PropertyGroup>
   <Version>1.0.0</Version>
-  <TargetFramework>net10.0</TargetFramework>
+  <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
   <OutputType>Exe</OutputType>
   <PublishDir>bin/Release/net10.0/win-x64/publish</PublishDir>
   
@@ -158,7 +158,7 @@ The publish workflow (`.github/workflows/publish.yml`) automatically:
 2. **Runs on:** Ubuntu latest
 3. **Steps:**
    - Checkout code
-   - Setup .NET 10
+   - Setup .NET 11 SDK (builds the .NET 10 and .NET 11 targets)
    - Restore dependencies
    - Run tests
    - Build release package

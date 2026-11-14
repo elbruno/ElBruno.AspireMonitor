@@ -241,7 +241,7 @@ public Status CalculateStatus(double cpuUsage, double memoryUsage)
          "type": "coreclr",
          "request": "launch",
          "preLaunchTask": "build",
-         "program": "${workspaceFolder}/bin/Debug/net10.0/ElBruno.AspireMonitor.dll",
+         "program": "${workspaceFolder}/bin/Debug/net11.0-windows/ElBruno.AspireMonitor.dll",
          "args": [],
          "cwd": "${workspaceFolder}",
          "stopAtEntry": false,

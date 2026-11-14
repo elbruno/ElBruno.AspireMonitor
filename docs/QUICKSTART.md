@@ -7,7 +7,7 @@ Get monitoring your Aspire resources in 5 minutes.
 Before starting, ensure you have:
 
 - **Windows 10 or later** — WPF is Windows-only
-- **.NET 10 Runtime** — [Download](https://dotnet.microsoft.com/en-us/download)
+- **.NET 10 or .NET 11 Runtime** — [Download](https://dotnet.microsoft.com/en-us/download)
 - **Aspire running** — Locally or remotely (default dashboard URL: `http://localhost:18888`)
 
 Verify your setup:
