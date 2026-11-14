@@ -59,8 +59,8 @@ never reduce that count or change any test outcome.
 
 | Component | Target framework | Rationale |
 |---|---|---|
-| Monitor (WPF) | net10.0-windows | Uses WPF; follows latest stable .NET |
-| SampleHarness services | net10.0 | Matches the Aspire 13.3 C# templates and service-defaults guidance |
-| SampleHarness.Tests | net10.0 | Must match the AppHost SDK and Aspire.Hosting.Testing version |
+| Monitor (WPF) | net10.0-windows; net11.0-windows | Multi-targets the previous and current .NET versions; tool payloads must match their respective runtime targets |
+| SampleHarness services | net10.0; net11.0 | Retains .NET 10 while validating the Aspire 13.3 sample on .NET 11 |
+| SampleHarness.Tests | net10.0; net11.0 | Must match the AppHost SDK and Aspire.Hosting.Testing version on both targets |
 
 Upgrading either framework requires updating this table and verifying all tests pass.

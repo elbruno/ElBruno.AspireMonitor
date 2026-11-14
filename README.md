@@ -3,7 +3,7 @@
 [![NuGet](https://img.shields.io/nuget/v/ElBruno.AspireMonitor.svg)](https://www.nuget.org/packages/ElBruno.AspireMonitor/)
 [![Downloads](https://img.shields.io/nuget/dt/ElBruno.AspireMonitor.svg)](https://www.nuget.org/packages/ElBruno.AspireMonitor/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/elbruno/ElBruno.AspireMonitor/publish.yml?branch=main)](https://github.com/elbruno/ElBruno.AspireMonitor/actions)
-[![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-10%20%7C%2011-blue)](https://dotnet.microsoft.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **A Windows system tray monitor for Aspire distributed applications.**
@@ -73,7 +73,7 @@ Then launch anytime from any terminal:
 aspiremon
 ```
 
-The tool is Windows-only (the underlying app is WPF). Requires the [.NET 10 Runtime](https://dotnet.microsoft.com/en-us/download).
+The tool is Windows-only (the underlying app is WPF). Requires the [.NET 10 or .NET 11 Runtime](https://dotnet.microsoft.com/en-us/download); the package includes a matching desktop payload for both targets.
 
 **Or download the executable** from [GitHub Releases](https://github.com/elbruno/ElBruno.AspireMonitor/releases/latest).
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
@@ -81,7 +81,7 @@ For detailed setup instructions, see [Quick Start Guide](./docs/QUICKSTART.md).
 ## 📋 Requirements
 
 - **Windows 10 or later** (WPF is Windows-only)
-- **.NET 10 Runtime** ([download](https://dotnet.microsoft.com/en-us/download))
+- **.NET 10 or .NET 11 Runtime** ([download](https://dotnet.microsoft.com/en-us/download))
 - **Aspire** running locally on your machine
 
 ## 🚀 Usage
